@@ -81,7 +81,7 @@ public class Particle {
   //checking if particle system is out of bounds or not
   public boolean outOfBounds() {
     return (pos.x > terrain_values[2]) || (pos.x < terrain_values[0]) ||
-      (pos.y > terrain_values[1]) || (pos.y < terrain_values[3]);
+      (pos.y > terrain_values[1]) || (pos.y < 0);
   }
 
   // method to update the particle 

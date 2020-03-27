@@ -19,6 +19,8 @@ void setup() {
   rock = new Rocket(width/2, 50);
   //frameRate(2);
   partSys = new ParticleSystem(new PVector(width/2, height/2), new PVector(0, -1));
+
+  platforms.add(new Platform(250, 200));
 }
 
 void draw() {
@@ -35,6 +37,8 @@ void draw() {
 
   // updating the particle system
   partSys.update();
+
+  for (Platform p : platforms) p.show();
 }
 
 /**

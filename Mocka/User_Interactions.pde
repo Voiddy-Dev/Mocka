@@ -23,3 +23,12 @@ void keyReleased() {
     right = false;
   }
 }
+
+//just to have fun with the particle system
+void mouseDragged() {
+  PVector diff = new PVector(pmouseX - mouseX, pmouseY - mouseY);
+  diff.normalize();
+
+  partSys.pos = new PVector(mouseX, mouseY);
+  partSys.init = diff.copy();
+}

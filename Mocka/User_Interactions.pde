@@ -10,6 +10,9 @@ void keyPressed() {
   if (keyCode == RIGHT) {
     right = true;
   }
+  if (key == 'r') {
+    rock = new Rocket(width/2, 50);
+  }
 }
 
 void keyReleased() {
@@ -22,4 +25,15 @@ void keyReleased() {
   if (keyCode == RIGHT) {
     right = false;
   }
+}
+
+float ppmouseX = 0, ppmouseY = 0;
+
+void mousePressed() {
+  ppmouseX = mouseX;
+  ppmouseY = mouseY;
+}
+
+void mouseMoved() {
+  if (ppmouseX == 0 && ppmouseY == 0)mousePressed();
 }

@@ -43,4 +43,8 @@ void terrain() {
   rectMode(CORNER);
   // Simple small rectangle at the bottom of the screen
   rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
+
+  strokeWeight(5);
+  stroke(0);
+  //line(ppmouseX, ppmouseY, mouseX, mouseY);
 }

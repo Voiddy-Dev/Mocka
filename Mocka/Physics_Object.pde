@@ -65,6 +65,9 @@ public abstract class PhysObj {
      pos.y = terrain_values[1];
      }
      */
+    pointCollision(0, POINT_HEIGHT);
+    pointCollision(LEGS_WIDTH, LEGS_HEIGHT);
+    pointCollision(-LEGS_WIDTH, LEGS_HEIGHT); 
 
 
     // drag
@@ -74,5 +77,21 @@ public abstract class PhysObj {
     // reset all the vectors
     acc.set(0, 0);
     accRot = 0;
+  }
+
+  void pointCollision(float rpx, float rpy) {
+    // r means position specified relative to ship
+    float apx = pos.x + cos(posRot) * rpx - sin(posRot) * rpy;
+    float apy = pos.y + cos(posRot) * rpy + sin(posRot) * rpx;
+    stroke(0);
+    ellipse(apx, apy, 10, 10);
+    float GROUND = terrain_values[1];
+    if (apy > GROUND || true) {
+      // Absolute velocities
+      float avx = apx + cos(velRot) * 10;
+      float avy = apy + sin(velRot) * 10;
+      stroke(255, 0, 0);
+      ellipse(avx, avy, 5, 5);
+    }
   }
 }

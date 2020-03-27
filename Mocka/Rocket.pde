@@ -1,3 +1,16 @@
+PShape rocketBody;
+
+void setupRocketBody() {
+  rocketBody = createShape();
+  rocketBody.beginShape();
+  rocketBody.noFill();
+  rocketBody.stroke(GAME_COLOR);
+  rocketBody.vertex(0, POINT_HEIGHT);
+  rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
+  rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
+  rocketBody.endShape(CLOSE);
+}
+
 public class Rocket extends PhysObj {
   int size = 20;
 
@@ -15,11 +28,7 @@ public class Rocket extends PhysObj {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-
-    line(0, POINT_HEIGHT, LEGS_WIDTH, LEGS_HEIGHT);
-    line(LEGS_WIDTH, LEGS_HEIGHT, -LEGS_WIDTH, LEGS_HEIGHT);
-    line(-LEGS_WIDTH, LEGS_HEIGHT, 0, POINT_HEIGHT);
-
+    shape(rocketBody);
     popMatrix();
   }
 

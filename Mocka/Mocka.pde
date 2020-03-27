@@ -15,6 +15,7 @@ void setup() {
   terrain_values[2] = width;
   terrain_values[3] = 100;
 
+  setupRocketBody();
   rock = new Rocket(width/2, 50);
 }
 

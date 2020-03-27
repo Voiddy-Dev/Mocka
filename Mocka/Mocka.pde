@@ -15,7 +15,7 @@ void setup() {
   terrain_values[2] = width;
   terrain_values[3] = 100;
 
-  rock = new Rocket(50, 50);
+  rock = new Rocket(width/2, 50);
 }
 
 void draw() {
@@ -23,7 +23,10 @@ void draw() {
   background(255); // white background
   terrain(); // terrain
 
-  rock.applyForce(new PVector(0, 1));
+  // user interactions
+  rock.interactions();
+
+  // updating and displaying the rocket
   rock.update();
   rock.show();
 }

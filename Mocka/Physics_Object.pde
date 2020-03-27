@@ -1,8 +1,9 @@
-// Main class for the Physics Object
+// Main class for the Physics Object //<>//
 public abstract class PhysObj {
   PVector pos, vel, acc; // posal physics
   float accRot, velRot, posRot; // Angular physics
   int mass; // mass of the rocket
+  float G = 0.5; // gravity value
 
   // Constructor for the rocket
   public PhysObj(PVector pos, int mass) {
@@ -29,30 +30,33 @@ public abstract class PhysObj {
 
   // Updating all the physics.
   public void update() {
-    vel.add(acc); //<>//
+    //Gravity
+    applyForce(new PVector(0, G));
+
+    vel.add(acc);
     velRot += accRot;
     pos.add(vel);
     posRot += velRot;
 
-    if (pos.x < 0) {
-      vel.x *= -1;
-      pos.x = 0;
+    // Make it wrap around in X
+    if (pos.x < terrain_values[0]) {
+      pos.x = terrain_values[2];
     } 
     if (pos.x > terrain_values[2]) {
-      vel.x *= -1;
-      pos.x = terrain_values[2];
+      pos.x = terrain_values[0];
     }
 
-    if (pos.y < 0) {
-      vel.y *= -1;
-      pos.y = 0;
-    }
-
+    // if object touches the terrain make it bounce a little
     if (pos.y > terrain_values[1]) {
-      vel.y *= -1;
+      vel.y *= -0.5; // making it bounce a bit
       pos.y = terrain_values[1];
     }
 
+    // drag
+    vel.mult(0.97);
+    velRot *= 0.97;
+
+    // reset all the vectors
     acc.set(0, 0);
     accRot = 0;
   }

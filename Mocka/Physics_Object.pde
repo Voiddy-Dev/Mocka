@@ -1,9 +1,10 @@
-// Main class for the Physics Object //<>//
+// Main class for the Physics Object //<>// //<>//
 public abstract class PhysObj {
   PVector pos, vel, acc; // posal physics
   float accRot, velRot, posRot; // Angular physics
-  int mass; // mass of the rocket
-  float G = 0.5; // gravity value
+  float mass; // mass of the rocket
+  float angularMass; // AKA moment of inertia
+  float G = 0.23; // gravity value
 
   // Constructor for the rocket
   public PhysObj(PVector pos, int mass) {
@@ -16,16 +17,17 @@ public abstract class PhysObj {
     this.posRot = -PI/2;
 
     this.mass = mass;
+    this.angularMass = 1.0;
   }
 
   // Applying the necessary force.
   public void applyForce(PVector force) {
-    acc.add(force);
+    acc.add(PVector.div(force, mass));
   }
 
   // Applying the necessary rotation.
-  public void applyRot(float rotation) {
-    accRot += rotation;
+  public void applyTorque(float torque) {
+    accRot += torque/angularMass;
   }
 
   // Updating all the physics.
@@ -53,8 +55,8 @@ public abstract class PhysObj {
     }
 
     // drag
-    vel.mult(0.97);
-    velRot *= 0.97;
+    vel.mult(0.997);
+    velRot *= 0.997;
 
     // reset all the vectors
     acc.set(0, 0);

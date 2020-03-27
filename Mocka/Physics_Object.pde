@@ -74,7 +74,7 @@ public abstract class PhysObj {
 
     // drag
     vel.mult(0.997);
-    velRot *= 0.997;
+    velRot *= 0.95;
 
     // reset all the vectors
     acc.set(0, 0);
@@ -118,6 +118,9 @@ public abstract class PhysObj {
 
     float dotprod = rfy * rpx - rfx * rpy;
     applyTorque(0.0001 * dotprod / rfr);
+
+    dotprod = -0.0001*(rfx*rpx + rfy*rpy)/sq(rfr);
+    applyForce(new PVector(rpx*dotprod, rpy*dotprod));
 
     stroke(255, 0, 0);
     strokeWeight(2);

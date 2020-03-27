@@ -67,7 +67,7 @@ public class Particle {
     this.vel = new PVector(random(acc.x - around_value, acc.x + around_value), 
       random(acc.y - around_value, acc.y + around_value));
     // SLOW THE FUCK DOWN M8
-    this.acc.mult(0.1);
+    this.acc.mult(0.2);
   }
 
   public int getLifespan() {

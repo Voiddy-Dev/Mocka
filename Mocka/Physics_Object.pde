@@ -1,4 +1,14 @@
-// Main class for the Physics Object //<>// //<>//
+// GEOMETRY PARAMS for all rockets //<>//
+/** Position correspond to COM (center of mass)
+ * All other attributes of the ship (hit points) are
+ * given with respect to the COM. */
+
+float LEGS_HEIGHT = 20;
+float LEGS_WIDTH = 13; // measured in x displacement from COM
+float POINT_HEIGHT = -25; // from COM
+// (so half of distance between the two legs)
+
+// Main class for the Physics Object //<>//
 public abstract class PhysObj {
   PVector pos, vel, acc; // posal physics
   float accRot, velRot, posRot; // Angular physics
@@ -14,7 +24,7 @@ public abstract class PhysObj {
 
     this.accRot = 0;
     this.velRot = 0;
-    this.posRot = -PI/2;
+    this.posRot = 0;
 
     this.mass = mass;
     this.angularMass = 1.0;
@@ -48,11 +58,14 @@ public abstract class PhysObj {
       pos.x = terrain_values[0];
     }
 
+    /*
     // if object touches the terrain make it bounce a little
-    if (pos.y > terrain_values[1]) {
-      vel.y *= -0.5; // making it bounce a bit
-      pos.y = terrain_values[1];
-    }
+     if (pos.y > terrain_values[1]) {
+     vel.y *= -0.5; // making it bounce a bit
+     pos.y = terrain_values[1];
+     }
+     */
+
 
     // drag
     vel.mult(0.997);

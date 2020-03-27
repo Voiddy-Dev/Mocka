@@ -1,13 +1,3 @@
-// GEOMETRY PARAMS for all rockets
-/** Position correspond to COM (center of mass)
- * All other attributes of the ship (hit points) are
- * given with respect to the COM. */
-//float
-
-// PHYSICS PARAMS for all rockets
-
-float THRUST_VECTORING_MAXIMUM_DEFLECTION_ANGLE = radians(10);
-
 public class Rocket extends PhysObj {
   int size = 20;
 
@@ -18,21 +8,18 @@ public class Rocket extends PhysObj {
 
   // method to display the rocket 
   public void show() {
-    strokeWeight(5);
     stroke(GAME_COLOR);
+    strokeWeight(1);
+    noFill();    
 
-    //float topPointx = size*cos(posRot) + pos.x;
-    //float topPointy = size*sin(posRot) + pos.y;
-    //line(topPointx, topPointy, pos.x, pos.y);
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-    line(0, 0, size, 0);
 
-    strokeWeight(1);
-    noFill();
-    rectMode(CENTER);
-    rect(0, 0, size * 2, size * 2);
+    line(0, POINT_HEIGHT, LEGS_WIDTH, LEGS_HEIGHT);
+    line(LEGS_WIDTH, LEGS_HEIGHT, -LEGS_WIDTH, LEGS_HEIGHT);
+    line(-LEGS_WIDTH, LEGS_HEIGHT, 0, POINT_HEIGHT);
+
     popMatrix();
   }
 
@@ -51,6 +38,6 @@ public class Rocket extends PhysObj {
 
   // Pushing towards a direction.
   public void push(float force) {
-    applyForce(new PVector(force*cos(posRot), force*sin(posRot)));
+    applyForce(new PVector(force*sin(posRot), -force*cos(posRot)));
   }
 }

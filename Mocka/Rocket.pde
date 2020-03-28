@@ -40,7 +40,8 @@ public class Rocket extends PhysObj {
     noFill();    
 
     if (up) {
-      PVector thrust = new PVector(vel.x*sin(posRot), -vel.y*cos(posRot));
+      float multiplier = 4;
+      PVector thrust = new PVector(vel.x - multiplier*sin(posRot), vel.y + multiplier*cos(posRot));
       PVector part_Pos = new PVector(pos.x, pos.y + ((rocket_icon.height * 0.15)/2) * cos(posRot));
       exhaust.turnOn(part_Pos, thrust);
     }

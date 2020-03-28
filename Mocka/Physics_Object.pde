@@ -17,7 +17,7 @@ public abstract class PhysObj {
     this.posRot = 0;
 
     this.mass = mass;
-    this.angularMass = 15.0;
+    this.angularMass = 70.0;
   }
 
   // Applying the necessary force.
@@ -33,7 +33,7 @@ public abstract class PhysObj {
   // Updating all the physics.
   public void update() {
     //Gravity
-    applyForce(new PVector(0, G));
+    //applyForce(new PVector(0, G));
 
     int num_collisions = 0;
     for (int i = 0; i < ROCKET_BODY_POINTS; i++) {
@@ -48,6 +48,12 @@ public abstract class PhysObj {
       //applyForce(new PVector(0, -G));
       //accRot -= velRot * 0.01;
     }
+
+    //applyForceAbsolute(ppmouseX, ppmouseY, mouseX-ppmouseX, mouseY-ppmouseY);
+    float point_ax = pos.x + cos(posRot)*rocketBodyPoints[0].x - sin(posRot)*rocketBodyPoints[0].y;
+    float point_ay = pos.y + sin(posRot)*rocketBodyPoints[0].x + cos(posRot)*rocketBodyPoints[0].y;
+    float mult = 0.001;
+    applyForceAbsolute(point_ax, point_ay, (mouseX-point_ax)*mult, (mouseY-point_ay)*mult);
 
     vel.add(acc);
     velRot += accRot;
@@ -74,16 +80,11 @@ public abstract class PhysObj {
 
     // drag
     //vel.mult(0.995);
-    //velRot *= 0.95;
+    velRot *= 0.98;
 
     // reset all the vectors
     acc.set(0, 0);
     accRot = 0;
-
-    //applyForceAbsolute(ppmouseX, ppmouseY, mouseX-ppmouseX, mouseY-ppmouseY);
-    //float point_ax = pos.x - sin(posRot)*POINT_HEIGHT;
-    //float point_ay = pos.y + cos(posRot)*POINT_HEIGHT;
-    //applyForceAbsolute(point_ax, point_ay, mouseX-point_ax, mouseY-point_ay);
   }
 
   int pointCollides(float rpx, float rpy, float rpr, float rpphi) {
@@ -113,7 +114,7 @@ public abstract class PhysObj {
       float avx = vel.x + cos(posRot + rpphi) * rpr * velRot / num_collisions;
       float avy = vel.y + sin(posRot + rpphi) * rpr * velRot / num_collisions;
 
-      applyForceAbsolute(apx, apy, -avx * mass * 0.36, -avy * mass * 0.36);
+      applyForceAbsolute(apx, apy, -avx * mass * 1, -avy * mass * 1.5);
       pos.y = min(pos.y, pos.y - apy + GROUND);
     }
   }

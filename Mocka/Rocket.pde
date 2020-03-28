@@ -1,6 +1,6 @@
 // Geometry of rocket body
 
-float rocketBodyMult = 10;
+float rocketBodyMult = 30;
 
 PVector[] rocketBodyPoints = {
   new PVector(0, -1.8).mult(rocketBodyMult), // TIP
@@ -64,9 +64,9 @@ public class Rocket extends PhysObj {
       this.push(2.0*G);
     } 
     if (left) {
-      this.applyTorque(-0.03);
+      this.applyTorque(-0.06);
     } else if (right) {
-      this.applyTorque(0.03);
+      this.applyTorque(0.06);
     }
   }
 

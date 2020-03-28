@@ -11,7 +11,7 @@ void keyPressed() {
     right = true;
   }
   if (key == 'r') {
-    rock = new Rocket(width/2, height-80);
+    rock = new Rocket(width/2, height-120);
   }
 }
 

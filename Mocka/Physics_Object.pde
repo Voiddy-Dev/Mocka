@@ -57,7 +57,7 @@ public abstract class PhysObj {
     pointCollision(num_collisions, -LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT); 
 
     if (num_collisions > 0) {
-      applyForce(new PVector(0, -G));
+      //applyForce(new PVector(0, -G));
     }
 
     vel.add(acc);

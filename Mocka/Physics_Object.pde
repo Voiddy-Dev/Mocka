@@ -131,13 +131,8 @@ public abstract class PhysObj {
       float avx = vel.x + cos(posRot + rpphi) * rpr * velRot / num_collisions;
       float avy = vel.y + sin(posRot + rpphi) * rpr * velRot / num_collisions;
 
-      // 3600 somehow magically comes from FPS squared
-      applyForceAbsolute(apx, apy, 0.4 * -avx * mass * 3600, -avy * mass * 3600);
-      //pos.y--;
+      applyForceAbsolute(apx, apy, 0.4 * -avx * mass * 0.36, -avy * mass * 0.36);
       pos.y = min(pos.y, pos.y - apy + GROUND);
-      //applyForce(new PVector(0, -G));
-      //applyForceAbsolute(apx, apy, avx * mass * 10, avy * mass * 10);
-      //applyForceAbsolute(apx, apy, mouseX-apx, mouseY-apy);
     }
   }
 
@@ -156,9 +151,9 @@ public abstract class PhysObj {
     float rfr = sqrt(rpx*rpx + rpy*rpy);
 
     float dotprod = rfy * rpx - rfx * rpy;
-    applyTorque(0.0001 * dotprod / rfr);
+    applyTorque(dotprod / rfr);
 
-    dotprod = 0.0001*(rfx*rpx + rfy*rpy)/sq(rfr);
+    dotprod = (rfx*rpx + rfy*rpy)/sq(rfr);
     applyForce(new PVector(rpx_*dotprod, rpy_*dotprod));
 
     stroke(255, 0, 0);

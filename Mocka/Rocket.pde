@@ -1,25 +1,29 @@
-PShape rocketBody;
+float rocketBodyMult = 10;
+
+PVector[] rocketBodyPoints = {
+  new PVector(0, -1.8).mult(rocketBodyMult), // TIP
+  new PVector(.5, -1.5).mult(rocketBodyMult), //
+  new PVector(.6, -1.3).mult(rocketBodyMult), // 
+  new PVector(1.2, .7).mult(rocketBodyMult), // HIP
+  new PVector(.9, 1.8).mult(rocketBodyMult), // RIGHT CORNER
+  new PVector(-.9, 1.8).mult(rocketBodyMult), // LEFT  CORNER
+  new PVector(-1.2, .7).mult(rocketBodyMult), // HIP
+  new PVector(-.6, -1.3).mult(rocketBodyMult), //
+  new PVector(-.5, -1.5).mult(rocketBodyMult)  //
+};
+
+PShape rocketBodyShape;
 
 void setupRocketBody() {
-  rocketBody = createShape();
-  rocketBody.beginShape();
-  rocketBody.noFill();
-  rocketBody.strokeWeight(0.1);
-  rocketBody.stroke(GAME_COLOR);
-  //rocketBody.vertex(0, POINT_HEIGHT);
-  //rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
-  //rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
-  rocketBody.vertex(-.6, -1.3);
-  rocketBody.vertex(-.5, -1.5);
-  rocketBody.vertex(0, -1.8);
-  rocketBody.vertex(.5, -1.5);
-  rocketBody.vertex(.6, -1.3);
-  rocketBody.vertex(1.2, .7);
-  rocketBody.vertex(.9, 1.8);
-  rocketBody.vertex(-.9, 1.8);
-  rocketBody.vertex(-1.2, .7);
-  rocketBody.endShape(CLOSE);
-  rocketBody.scale(10);
+  rocketBodyShape = createShape();
+  rocketBodyShape.beginShape();
+  rocketBodyShape.noFill();
+  rocketBodyShape.stroke(GAME_COLOR);
+  for (PVector p : rocketBodyPoints) {
+    rocketBodyShape.vertex(p.x, p.y);
+  }
+  rocketBodyShape.endShape(CLOSE);
+  //rocketBody.scale(40);
 }
 
 public class Rocket extends PhysObj {
@@ -39,7 +43,7 @@ public class Rocket extends PhysObj {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-    shape(rocketBody);
+    shape(rocketBodyShape);
     popMatrix();
   }
 

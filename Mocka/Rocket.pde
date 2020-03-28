@@ -4,11 +4,22 @@ void setupRocketBody() {
   rocketBody = createShape();
   rocketBody.beginShape();
   rocketBody.noFill();
+  rocketBody.strokeWeight(0.1);
   rocketBody.stroke(GAME_COLOR);
-  rocketBody.vertex(0, POINT_HEIGHT);
-  rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
-  rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
+  //rocketBody.vertex(0, POINT_HEIGHT);
+  //rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
+  //rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
+  rocketBody.vertex(-.6, -1.3);
+  rocketBody.vertex(-.5, -1.5);
+  rocketBody.vertex(0, -1.8);
+  rocketBody.vertex(.5, -1.5);
+  rocketBody.vertex(.6, -1.3);
+  rocketBody.vertex(1.2, .7);
+  rocketBody.vertex(.9, 1.8);
+  rocketBody.vertex(-.9, 1.8);
+  rocketBody.vertex(-1.2, .7);
   rocketBody.endShape(CLOSE);
+  rocketBody.scale(10);
 }
 
 public class Rocket extends PhysObj {

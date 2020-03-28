@@ -2,21 +2,22 @@
 public class ParticleSystem {
   // list of particles
   ArrayList<Particle> particles;
-  // position and direction for particles
-  PVector pos, init;
 
   // constructor with only the positino and the direction the particles
   // should go towards
-  public ParticleSystem(PVector pos, PVector init) {
-    this.pos = pos;
-    this.init = init;
+  public ParticleSystem() {
+    //    // create 20 original particles
+    //    this.particles = new ArrayList();
+    //    for (int i = 0; i < 20; i++) {
+    //      Particle new_one = new Particle(pos, init);
+    //      particles.add(new_one);
+    //    }
+    particles = new ArrayList();
+  }
 
-    // create 20 original particles
-    this.particles = new ArrayList();
-    for (int i = 0; i < 20; i++) {
-      Particle new_one = new Particle(pos, init);
-      particles.add(new_one);
-    }
+  public void turnOn(PVector pos, PVector init) {
+    // create random particles
+    particles.add(new Particle(pos, init));
   }
 
   //called everytime to update everything
@@ -34,9 +35,6 @@ public class ParticleSystem {
         p.update(); // and update it
       }
     }
-
-    // create random particles
-    particles.add(new Particle(pos, init));
   }
 }
 

@@ -24,10 +24,13 @@ void setupRocketBody() {
 
 public class Rocket extends PhysObj {
   int size = 20;
+  ParticleSystem exhaust;
 
   // Constructor of the Rocket.
   public Rocket(float x, float y) {
     super(new PVector(x, y), 1);
+
+    exhaust = new ParticleSystem();
   }
 
   // method to display the rocket 
@@ -36,10 +39,18 @@ public class Rocket extends PhysObj {
     strokeWeight(1);
     noFill();    
 
+    if (up) {
+      PVector thrust = new PVector(vel.x*sin(posRot), -vel.y*cos(posRot));
+      PVector part_Pos = new PVector(pos.x, pos.y + ((rocket_icon.height * 0.15)/2) * cos(posRot));
+      exhaust.turnOn(part_Pos, thrust);
+    }
+    exhaust.update();
+
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
     shape(rocketBody);
+    shape(rocket_icon, -((rocket_icon.width*0.15)/2), -((rocket_icon.height * 0.15)/2));
     popMatrix();
   }
 

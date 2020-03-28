@@ -28,7 +28,7 @@ public class ParticleSystem {
       } else {
         p.reduceLife(); // otherwise reduce its lifespan
 
-        p.update(); // and update it
+        p.update();
       }
     }
   }
@@ -42,7 +42,7 @@ public class Particle {
   int MAX_LIFESPAN = 125;
 
   //size of the particles for some interesting modifiers
-  int size_of_particle;
+  int size_of_particle, max_size;
 
   PVector pos, vel, acc;
 
@@ -53,7 +53,8 @@ public class Particle {
   public Particle(PVector start, PVector init, PVector velocity) {
     this.lifespan = (int) random(MIN_LIFESPAN, MAX_LIFESPAN);
 
-    size_of_particle = (int) random(5, 15);
+    size_of_particle = (int) random(10, 20);
+    max_size = size_of_particle;
 
     this.pos = start.copy();
     this.acc = init.copy();
@@ -61,7 +62,7 @@ public class Particle {
     this.vel = velocity.copy();
 
     //randomness spread
-    this.acc.add(PVector.random2D().mult(0.02));
+    this.acc.add(PVector.random2D().mult(0.01));
   }
 
   public int getLifespan() {
@@ -79,6 +80,7 @@ public class Particle {
   }
 
   // method to update the particle 
+  // will change the size
   public void update() {
     // physics stuff
     vel.add(acc);
@@ -86,7 +88,10 @@ public class Particle {
 
     // display the particle - in accordance to its lifespan
     noStroke();
-    fill(0, map(this.getLifespan(), 0, 200, 0, 255));
+    fill(0, map(this.getLifespan(), 0, MAX_LIFESPAN, 0, 255));
     ellipse(pos.x, pos.y, size_of_particle, size_of_particle);
+    if (size_of_particle > 0) {
+      size_of_particle = (int) map(lifespan, 0, MAX_LIFESPAN, 0, max_size);
+    }
   }
 }

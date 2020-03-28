@@ -20,7 +20,8 @@ void draw() {
 Server myServer;
 
 void serverEvent(Server serv, Client myClient) {
-  println("New client on ip "+myClient.ip());
   Player myPlayer = new Player(myClient);
   players.add(myPlayer);
+
+  println("New Client with IP: " + myClient.ip() + " - UUID: " + myPlayer.UUID);
 }

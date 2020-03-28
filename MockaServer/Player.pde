@@ -1,10 +1,13 @@
 ArrayList<Player> players;
 int UUID_available = 0;
 
-void updatePlayers() {
-  for (Player p : players) if (!p.client.active()) {
-    //po
-    players.remove(p);
+void updatePlayers() {  
+  for (int i = players.size()-1; i >= 0; i--) {
+    Player p = players.get(i);
+
+    if (!p.client.active()) {
+      players.remove(i);
+    }
   }
 }
 

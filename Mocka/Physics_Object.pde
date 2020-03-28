@@ -1,22 +1,4 @@
-// GEOMETRY PARAMS for all rockets //<>// //<>//
-/** Position correspond to COM (center of mass)
- * All other attributes of the ship (hit points) are
- * given with respect to the COM. */
-
-float multfact = 0.5;
-
-float TOTAL_HEIGHT = 74 * multfact; // measured from screenshot
-float HEIGHT_OF_COM_FROM_FLOOR = 29.3 * multfact;
-
-// all measured in x displacement from COM
-float LEGS_WIDTH = 15 * multfact;  // measured from screenshot
-float LEGS_HEIGHT = HEIGHT_OF_COM_FROM_FLOOR;
-float POINT_HEIGHT = HEIGHT_OF_COM_FROM_FLOOR - TOTAL_HEIGHT;
-float LEGS_COM_DIST = sqrt(sq(LEGS_HEIGHT) + sq(LEGS_WIDTH));
-float LEGS_ANG_FROM_VERT = atan2(LEGS_HEIGHT, LEGS_WIDTH);
-// (so half of distance between the two legs)
-
-// Main class for the Physics Object
+// Main class for the Physics Object //<>//
 public abstract class PhysObj {
   PVector pos, vel, acc; // posal physics
   float accRot, velRot, posRot; // Angular physics
@@ -53,16 +35,16 @@ public abstract class PhysObj {
     //Gravity
     applyForce(new PVector(0, G));
 
-    int num_collisions = 
-      pointCollides(0, POINT_HEIGHT, -POINT_HEIGHT, 0)
-      + pointCollides(LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI - LEGS_ANG_FROM_VERT)
-      + pointCollides(-LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT);
+    int num_collisions = 0;
+    for (int i = 0; i < ROCKET_BODY_POINTS; i++) {
+      num_collisions += pointCollides(rocketBodyPoints[i].x, rocketBodyPoints[i].y, rocketBodyPointsPolar[i].x, rocketBodyPointsPolar[i].y);
+    }
 
-    pointCollision(num_collisions, 0, POINT_HEIGHT, -POINT_HEIGHT, 0);
-    pointCollision(num_collisions, LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI - LEGS_ANG_FROM_VERT);
-    pointCollision(num_collisions, -LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT); 
+    for (int i = 0; i < ROCKET_BODY_POINTS; i++) {
+      pointCollision(num_collisions, rocketBodyPoints[i].x, rocketBodyPoints[i].y, rocketBodyPointsPolar[i].x, rocketBodyPointsPolar[i].y);
+    }
 
-    if (num_collisions > 0) {
+    if (num_collisions > 1) {
       //applyForce(new PVector(0, -G));
       //accRot -= velRot * 0.01;
     }
@@ -99,8 +81,8 @@ public abstract class PhysObj {
     accRot = 0;
 
     //applyForceAbsolute(ppmouseX, ppmouseY, mouseX-ppmouseX, mouseY-ppmouseY);
-    float point_ax = pos.x - sin(posRot)*POINT_HEIGHT;
-    float point_ay = pos.y + cos(posRot)*POINT_HEIGHT;
+    //float point_ax = pos.x - sin(posRot)*POINT_HEIGHT;
+    //float point_ay = pos.y + cos(posRot)*POINT_HEIGHT;
     //applyForceAbsolute(point_ax, point_ay, mouseX-point_ax, mouseY-point_ay);
   }
 
@@ -131,7 +113,7 @@ public abstract class PhysObj {
       float avx = vel.x + cos(posRot + rpphi) * rpr * velRot / num_collisions;
       float avy = vel.y + sin(posRot + rpphi) * rpr * velRot / num_collisions;
 
-      applyForceAbsolute(apx, apy, 0.4 * -avx * mass * 0.36, -avy * mass * 0.36);
+      applyForceAbsolute(apx, apy, -avx * mass * 0.36, -avy * mass * 0.36);
       pos.y = min(pos.y, pos.y - apy + GROUND);
     }
   }
@@ -162,7 +144,7 @@ public abstract class PhysObj {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-    //line(rpx, rpy, rpx+rfx, rpy+rfy);
+    line(rpx, rpy, rpx+rfx*100, rpy+rfy*100);
     popMatrix();
   }
 }

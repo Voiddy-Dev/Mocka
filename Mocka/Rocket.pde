@@ -1,3 +1,5 @@
+// Geometry of rocket body
+
 float rocketBodyMult = 10;
 
 PVector[] rocketBodyPoints = {
@@ -12,23 +14,31 @@ PVector[] rocketBodyPoints = {
   new PVector(-.5, -1.5).mult(rocketBodyMult)  //
 };
 
+PVector[] rocketBodyPointsPolar;
+int ROCKET_BODY_POINTS = rocketBodyPoints.length;
+
 PShape rocketBodyShape;
 
 void setupRocketBody() {
-  rocketBodyShape = createShape();
-  rocketBodyShape.beginShape();
-  rocketBodyShape.noFill();
-  rocketBodyShape.stroke(GAME_COLOR);
-  for (PVector p : rocketBodyPoints) {
-    rocketBodyShape.vertex(p.x, p.y);
+  // Compute polar coordinates for rocket body points
+  rocketBodyPointsPolar = new PVector[rocketBodyPoints.length]; 
+  for (int i = 0; i < ROCKET_BODY_POINTS; i++) {
+    PVector p = rocketBodyPoints[i];
+    float phi = atan2(p.y, p.x);
+    float r = p.mag();
+    rocketBodyPointsPolar[i] = new PVector(phi, r);
   }
+
+  // Create PSHape
+  rocketBodyShape = createShape(); 
+  rocketBodyShape.beginShape(); 
+  rocketBodyShape.noFill(); 
+  rocketBodyShape.stroke(GAME_COLOR); 
+  for (PVector p : rocketBodyPoints) rocketBodyShape.vertex(p.x, p.y); 
   rocketBodyShape.endShape(CLOSE);
-  //rocketBody.scale(40);
 }
 
 public class Rocket extends PhysObj {
-  int size = 20;
-
   // Constructor of the Rocket.
   public Rocket(float x, float y) {
     super(new PVector(x, y), 1);
@@ -36,14 +46,14 @@ public class Rocket extends PhysObj {
 
   // method to display the rocket 
   public void show() {
-    stroke(GAME_COLOR);
-    strokeWeight(1);
-    noFill();    
+    stroke(GAME_COLOR); 
+    strokeWeight(1); 
+    noFill(); 
 
-    pushMatrix();
-    translate(pos.x, pos.y);
-    rotate(posRot);
-    shape(rocketBodyShape);
+    pushMatrix(); 
+    translate(pos.x, pos.y); 
+    rotate(posRot); 
+    shape(rocketBodyShape); 
     popMatrix();
   }
 

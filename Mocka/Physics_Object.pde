@@ -3,9 +3,15 @@
  * All other attributes of the ship (hit points) are
  * given with respect to the COM. */
 
-float LEGS_HEIGHT = 20;
-float LEGS_WIDTH = 13; // measured in x displacement from COM
-float POINT_HEIGHT = -25; // from COM
+float multfact = 0.5;
+
+float TOTAL_HEIGHT = 74 * multfact; // measured from screenshot
+float HEIGHT_OF_COM_FROM_FLOOR = 29.3 * multfact;
+
+// all measured in x displacement from COM
+float LEGS_WIDTH = 15 * multfact;  // measured from screenshot
+float LEGS_HEIGHT = HEIGHT_OF_COM_FROM_FLOOR;
+float POINT_HEIGHT = HEIGHT_OF_COM_FROM_FLOOR - TOTAL_HEIGHT;
 float LEGS_COM_DIST = sqrt(sq(LEGS_HEIGHT) + sq(LEGS_WIDTH));
 float LEGS_ANG_FROM_VERT = atan2(LEGS_HEIGHT, LEGS_WIDTH);
 // (so half of distance between the two legs)

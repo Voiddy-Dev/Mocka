@@ -22,7 +22,7 @@ public abstract class PhysObj {
   float accRot, velRot, posRot; // Angular physics
   float mass; // mass of the rocket
   float angularMass; // AKA moment of inertia
-  float G = 0.3; // gravity value
+  float G = 0.08; // gravity value
 
   // Constructor for the rocket
   public PhysObj(PVector pos, int mass) {
@@ -51,7 +51,7 @@ public abstract class PhysObj {
   // Updating all the physics.
   public void update() {
     //Gravity
-    applyForce(new PVector(0, G*0.2));
+    applyForce(new PVector(0, G));
 
     int num_collisions = 
       pointCollides(0, POINT_HEIGHT, -POINT_HEIGHT, 0)
@@ -64,6 +64,7 @@ public abstract class PhysObj {
 
     if (num_collisions > 0) {
       //applyForce(new PVector(0, -G));
+      //accRot -= velRot * 0.01;
     }
 
     vel.add(acc);

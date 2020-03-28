@@ -36,7 +36,7 @@ public class Rocket extends PhysObj {
   // Arrow keys
   public void interactions() {
     if (up) {
-      this.push(1.77*G);
+      this.push(2.0*G);
     } 
     if (left) {
       this.applyTorque(-0.03);

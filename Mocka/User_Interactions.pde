@@ -10,6 +10,9 @@ void keyPressed() {
   if (keyCode == RIGHT) {
     right = true;
   }
+  if (key == 'r') {
+    rock = new Rocket(width/2, 400);
+  }
 }
 
 void keyReleased() {
@@ -24,11 +27,13 @@ void keyReleased() {
   }
 }
 
-//just to have fun with the particle system
-void mouseDragged() {
-  PVector diff = new PVector(pmouseX - mouseX, pmouseY - mouseY);
-  diff.normalize();
+float ppmouseX = 0, ppmouseY = 0;
 
-  partSys.pos = new PVector(mouseX, mouseY);
-  partSys.init = diff.copy();
+void mousePressed() {
+  ppmouseX = mouseX;
+  ppmouseY = mouseY;
+}
+
+void mouseMoved() {
+  if (ppmouseX == 0 && ppmouseY == 0)mousePressed();
 }

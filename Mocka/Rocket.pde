@@ -1,42 +1,74 @@
-// Main class for the Rocket
+PShape rocketBody;
+
+void setupRocketBody() {
+  rocketBody = createShape();
+  rocketBody.beginShape();
+  rocketBody.noFill();
+  rocketBody.strokeWeight(0.1);
+  rocketBody.stroke(GAME_COLOR);
+  //rocketBody.vertex(0, POINT_HEIGHT);
+  //rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
+  //rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
+  rocketBody.vertex(-.6, -1.3);
+  rocketBody.vertex(-.5, -1.5);
+  rocketBody.vertex(0, -1.8);
+  rocketBody.vertex(.5, -1.5);
+  rocketBody.vertex(.6, -1.3);
+  rocketBody.vertex(1.2, .7);
+  rocketBody.vertex(.9, 1.8);
+  rocketBody.vertex(-.9, 1.8);
+  rocketBody.vertex(-1.2, .7);
+  rocketBody.endShape(CLOSE);
+  rocketBody.scale(10);
+}
+
 public class Rocket extends PhysObj {
   int size = 20;
+  ParticleSystem exhaust;
 
   // Constructor of the Rocket.
   public Rocket(float x, float y) {
-    super(new PVector(x, y), 30);
+    super(new PVector(x, y), 1);
+
+    exhaust = new ParticleSystem();
   }
 
   // method to display the rocket 
   public void show() {
-    strokeWeight(5);
     stroke(GAME_COLOR);
-    float topPointx = size*cos(posRot) + pos.x;
-    float topPointy = size*sin(posRot) + pos.y;
-
-    line(topPointx, topPointy, pos.x, pos.y);
-
     strokeWeight(1);
-    noFill();
-    rectMode(CENTER);
-    rect(pos.x, pos.y, size * 2, size * 2);
+    noFill();    
+
+    if (up) {// If applying force update the exhaust
+      PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
+        pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
+      exhaust.turnOn(part_Pos, acc, vel);
+    }
+    exhaust.update();
+
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(posRot);
+    shape(rocketBody);
+    shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
+    popMatrix();
   }
 
   // User interactions
   // Arrow keys
   public void interactions() {
     if (up) {
-      this.push(0.7);
+      this.push(2.0*G);
     } 
     if (left) {
-      this.applyRot(-0.003);
+      this.applyTorque(-0.03);
     } else if (right) {
-      this.applyRot(0.003);
+      this.applyTorque(0.03);
     }
   }
 
   // Pushing towards a direction.
   public void push(float force) {
-    applyForce(new PVector(force*cos(posRot), force*sin(posRot)));
+    applyForce(new PVector(force*sin(posRot), -force*cos(posRot)));
   }
 }

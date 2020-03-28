@@ -2,7 +2,10 @@ color GAME_COLOR; // Random color that can be used throughout the code
 int[] terrain_values = new int[4]; // rect values for the terrain
 
 Rocket rock;
-ParticleSystem partSys;
+
+PShape rocket_icon;
+
+float ROCKET_ICON_SCALE = 0.15;
 
 void setup() {
   size(1200, 800);
@@ -16,11 +19,13 @@ void setup() {
   terrain_values[2] = width;
   terrain_values[3] = 100;
 
-  rock = new Rocket(width/2, 50);
+  setupRocketBody();
+  rock = new Rocket(width/2, height-80);
   //frameRate(2);
-  partSys = new ParticleSystem(new PVector(width/2, height/2), new PVector(0, -1));
-
   platforms.add(new Platform(250, 200));
+
+  rocket_icon = loadShape("rocket.svg");
+  rocket_icon.scale(ROCKET_ICON_SCALE);
 }
 
 void draw() {
@@ -34,11 +39,6 @@ void draw() {
   // updating and displaying the rocket
   rock.update();
   rock.show();
-
-  // updating the particle system
-  partSys.update();
-
-  for (Platform p : platforms) p.show();
 }
 
 /**
@@ -52,4 +52,8 @@ void terrain() {
   rectMode(CORNER);
   // Simple small rectangle at the bottom of the screen
   rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
+
+  strokeWeight(5);
+  stroke(0);
+  //line(ppmouseX, ppmouseY, mouseX, mouseY);
 }

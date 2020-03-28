@@ -2,20 +2,17 @@
 public class ParticleSystem {
   // list of particles
   ArrayList<Particle> particles;
-  // position and direction for particles
-  PVector pos, init;
 
   // constructor with only the positino and the direction the particles
   // should go towards
-  public ParticleSystem(PVector pos, PVector init) {
-    this.pos = pos;
-    this.init = init;
+  public ParticleSystem() {
+    particles = new ArrayList();
+  }
 
-    // create 20 original particles
-    this.particles = new ArrayList();
-    for (int i = 0; i < 20; i++) {
-      Particle new_one = new Particle(pos, init);
-      particles.add(new_one);
+  public void turnOn(PVector pos, PVector init, PVector vel) {
+    // create random particles
+    for (int i = 0; i < 3; i ++) {
+      particles.add(new Particle(pos, init, vel));
     }
   }
 
@@ -31,12 +28,9 @@ public class ParticleSystem {
       } else {
         p.reduceLife(); // otherwise reduce its lifespan
 
-        p.update(); // and update it
+        p.update();
       }
     }
-
-    // create random particles
-    particles.add(new Particle(pos, init));
   }
 }
 
@@ -48,7 +42,7 @@ public class Particle {
   int MAX_LIFESPAN = 125;
 
   //size of the particles for some interesting modifiers
-  int size_of_particle;
+  int size_of_particle, max_size;
 
   PVector pos, vel, acc;
 
@@ -56,18 +50,19 @@ public class Particle {
   float around_value = QUARTER_PI;
 
   //constructor of Particle
-  public Particle(PVector start, PVector init) {
+  public Particle(PVector start, PVector init, PVector velocity) {
     this.lifespan = (int) random(MIN_LIFESPAN, MAX_LIFESPAN);
 
-    size_of_particle = (int) random(5, 15);
+    size_of_particle = (int) random(10, 20);
+    max_size = size_of_particle;
 
     this.pos = start.copy();
     this.acc = init.copy();
     // random spread so that not all particles are agglutinated
-    this.vel = new PVector(random(acc.x - around_value, acc.x + around_value), 
-      random(acc.y - around_value, acc.y + around_value));
-    // SLOW THE FUCK DOWN M8
-    this.acc.mult(0.2);
+    this.vel = velocity.copy();
+
+    //randomness spread
+    this.acc.add(PVector.random2D().mult(0.01));
   }
 
   public int getLifespan() {
@@ -85,6 +80,7 @@ public class Particle {
   }
 
   // method to update the particle 
+  // will change the size
   public void update() {
     // physics stuff
     vel.add(acc);
@@ -92,7 +88,10 @@ public class Particle {
 
     // display the particle - in accordance to its lifespan
     noStroke();
-    fill(0, map(this.getLifespan(), 0, 200, 0, 255));
+    fill(0, map(this.getLifespan(), 0, MAX_LIFESPAN, 0, 255));
     ellipse(pos.x, pos.y, size_of_particle, size_of_particle);
+    if (size_of_particle > 0) {
+      size_of_particle = (int) map(lifespan, 0, MAX_LIFESPAN, 0, max_size);
+    }
   }
 }

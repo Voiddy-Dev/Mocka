@@ -17,7 +17,7 @@ void setup() {
   terrain_values[3] = 100;
 
   setupRocketBody();
-  rock = new Rocket(width/2, 50);
+  rock = new Rocket(width/2, 400);
   //frameRate(2);
   partSys = new ParticleSystem(new PVector(width/2, height/2), new PVector(0, -1));
 
@@ -37,9 +37,9 @@ void draw() {
   rock.show();
 
   // updating the particle system
-  partSys.update();
+  //partSys.update();
 
-  for (Platform p : platforms) p.show();
+  //for (Platform p : platforms) p.show();
 }
 
 /**

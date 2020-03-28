@@ -16,7 +16,7 @@ public abstract class PhysObj {
   float accRot, velRot, posRot; // Angular physics
   float mass; // mass of the rocket
   float angularMass; // AKA moment of inertia
-  float G = 0.23; // gravity value
+  float G = 0.3; // gravity value
 
   // Constructor for the rocket
   public PhysObj(PVector pos, int mass) {
@@ -29,7 +29,7 @@ public abstract class PhysObj {
     this.posRot = 0;
 
     this.mass = mass;
-    this.angularMass = 1.0;
+    this.angularMass = 15.0;
   }
 
   // Applying the necessary force.
@@ -45,7 +45,20 @@ public abstract class PhysObj {
   // Updating all the physics.
   public void update() {
     //Gravity
-    //applyForce(new PVector(0, G));
+    applyForce(new PVector(0, G*0.2));
+
+    int num_collisions = 
+      pointCollides(0, POINT_HEIGHT, -POINT_HEIGHT, 0)
+      + pointCollides(LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI - LEGS_ANG_FROM_VERT)
+      + pointCollides(-LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT);
+
+    pointCollision(num_collisions, 0, POINT_HEIGHT, -POINT_HEIGHT, 0);
+    pointCollision(num_collisions, LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI - LEGS_ANG_FROM_VERT);
+    pointCollision(num_collisions, -LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT); 
+
+    if (num_collisions > 0) {
+      applyForce(new PVector(0, -G));
+    }
 
     vel.add(acc);
     velRot += accRot;
@@ -67,14 +80,12 @@ public abstract class PhysObj {
      pos.y = terrain_values[1];
      }
      */
-    pointCollision(0, POINT_HEIGHT, -POINT_HEIGHT, 0);
-    pointCollision(LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI - LEGS_ANG_FROM_VERT);
-    pointCollision(-LEGS_WIDTH, LEGS_HEIGHT, LEGS_COM_DIST, PI + LEGS_ANG_FROM_VERT); 
+
 
 
     // drag
-    vel.mult(0.997);
-    velRot *= 0.95;
+    //vel.mult(0.995);
+    //velRot *= 0.95;
 
     // reset all the vectors
     acc.set(0, 0);
@@ -83,22 +94,43 @@ public abstract class PhysObj {
     //applyForceAbsolute(ppmouseX, ppmouseY, mouseX-ppmouseX, mouseY-ppmouseY);
     float point_ax = pos.x - sin(posRot)*POINT_HEIGHT;
     float point_ay = pos.y + cos(posRot)*POINT_HEIGHT;
-    applyForceAbsolute(point_ax, point_ay, mouseX-point_ax, mouseY-point_ay);
+    //applyForceAbsolute(point_ax, point_ay, mouseX-point_ax, mouseY-point_ay);
   }
 
-  void pointCollision(float rpx, float rpy, float rpr, float rpphi) {
+  int pointCollides(float rpx, float rpy, float rpr, float rpphi) {
     // r means position specified relative to ship
     float apx = pos.x + cos(posRot) * rpx - sin(posRot) * rpy;
     float apy = pos.y + cos(posRot) * rpy + sin(posRot) * rpx;
     stroke(0);
-    ellipse(apx, apy, 10, 10);
+    strokeWeight(1);
+    noFill();
+    //ellipse(apx, apy, 10, 10);
     float GROUND = terrain_values[1];
-    if (apy > GROUND || true) {
-      // Absolute velocities
-      float avx = vel.x + cos(posRot + rpphi) * rpr * velRot;
-      float avy = vel.y + sin(posRot + rpphi) * rpr * velRot;
+    if (apy > GROUND) return 1;
+    else return 0;
+  }
 
-      //applyForceAbsolute(apx, apy, avx * mass, avy * mass);
+  void pointCollision(int num_collisions, float rpx, float rpy, float rpr, float rpphi) {
+    // r means position specified relative to ship
+    float apx = pos.x + cos(posRot) * rpx - sin(posRot) * rpy;
+    float apy = pos.y + cos(posRot) * rpy + sin(posRot) * rpx;
+    stroke(0);
+    strokeWeight(1);
+    noFill();
+    //ellipse(apx, apy, 10, 10);
+    float GROUND = terrain_values[1];
+    if (apy > GROUND) {
+      // Absolute velocities
+      float avx = vel.x + cos(posRot + rpphi) * rpr * velRot / num_collisions;
+      float avy = vel.y + sin(posRot + rpphi) * rpr * velRot / num_collisions;
+
+      // 3600 somehow magically comes from FPS squared
+      applyForceAbsolute(apx, apy, 0.4 * -avx * mass * 3600, -avy * mass * 3600);
+      //pos.y--;
+      pos.y = min(pos.y, pos.y - apy + GROUND);
+      //applyForce(new PVector(0, -G));
+      //applyForceAbsolute(apx, apy, avx * mass * 10, avy * mass * 10);
+      //applyForceAbsolute(apx, apy, mouseX-apx, mouseY-apy);
     }
   }
 
@@ -119,8 +151,8 @@ public abstract class PhysObj {
     float dotprod = rfy * rpx - rfx * rpy;
     applyTorque(0.0001 * dotprod / rfr);
 
-    dotprod = -0.0001*(rfx*rpx + rfy*rpy)/sq(rfr);
-    applyForce(new PVector(rpx*dotprod, rpy*dotprod));
+    dotprod = 0.0001*(rfx*rpx + rfy*rpy)/sq(rfr);
+    applyForce(new PVector(rpx_*dotprod, rpy_*dotprod));
 
     stroke(255, 0, 0);
     strokeWeight(2);
@@ -128,7 +160,7 @@ public abstract class PhysObj {
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-    line(rpx, rpy, rpx+rfx, rpy+rfy);
+    //line(rpx, rpy, rpx+rfx, rpy+rfy);
     popMatrix();
   }
 }

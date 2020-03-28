@@ -9,9 +9,11 @@ public class ParticleSystem {
     particles = new ArrayList();
   }
 
-  public void turnOn(PVector pos, PVector init) {
+  public void turnOn(PVector pos, PVector init, PVector vel) {
     // create random particles
-    for (int i = 0; i < 3; i ++) particles.add(new Particle(pos, init));
+    for (int i = 0; i < 3; i ++) {
+      particles.add(new Particle(pos, init, vel));
+    }
   }
 
   //called everytime to update everything
@@ -48,7 +50,7 @@ public class Particle {
   float around_value = QUARTER_PI;
 
   //constructor of Particle
-  public Particle(PVector start, PVector init) {
+  public Particle(PVector start, PVector init, PVector velocity) {
     this.lifespan = (int) random(MIN_LIFESPAN, MAX_LIFESPAN);
 
     size_of_particle = (int) random(5, 15);
@@ -56,10 +58,10 @@ public class Particle {
     this.pos = start.copy();
     this.acc = init.copy();
     // random spread so that not all particles are agglutinated
-    this.vel = new PVector(random(acc.x - around_value, acc.x + around_value), 
-      random(acc.y - around_value, acc.y + around_value));
-    // SLOW THE FUCK DOWN M8
-    this.acc.mult(0.2);
+    this.vel = velocity.copy();
+
+    //randomness spread
+    this.acc.add(PVector.random2D().mult(0.02));
   }
 
   public int getLifespan() {

@@ -5,6 +5,8 @@ Rocket rock;
 
 PShape rocket_icon;
 
+float ROCKET_ICON_SCALE = 0.15;
+
 void setup() {
   size(1200, 800);
 
@@ -23,7 +25,7 @@ void setup() {
   platforms.add(new Platform(250, 200));
 
   rocket_icon = loadShape("rocket.svg");
-  rocket_icon.scale(0.15);
+  rocket_icon.scale(ROCKET_ICON_SCALE);
 }
 
 void draw() {

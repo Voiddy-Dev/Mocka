@@ -39,11 +39,10 @@ public class Rocket extends PhysObj {
     strokeWeight(1);
     noFill();    
 
-    if (up) {
-      float multiplier = 4;
-      PVector thrust = new PVector(vel.x - multiplier*sin(posRot), vel.y + multiplier*cos(posRot));
-      PVector part_Pos = new PVector(pos.x, pos.y + ((rocket_icon.height * 0.15)/2) * cos(posRot));
-      exhaust.turnOn(part_Pos, thrust);
+    if (up) {// If applying force update the exhaust
+      PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
+        pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
+      exhaust.turnOn(part_Pos, acc, vel);
     }
     exhaust.update();
 
@@ -51,7 +50,7 @@ public class Rocket extends PhysObj {
     translate(pos.x, pos.y);
     rotate(posRot);
     shape(rocketBody);
-    shape(rocket_icon, -((rocket_icon.width*0.15)/2), -((rocket_icon.height * 0.15)/2));
+    shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
     popMatrix();
   }
 

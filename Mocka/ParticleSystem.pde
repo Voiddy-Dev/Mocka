@@ -38,8 +38,8 @@ public class ParticleSystem {
 public class Particle {
   private int lifespan;
   // MIN AND MAX LIFESPAN
-  int MIN_LIFESPAN = 50;
-  int MAX_LIFESPAN = 125;
+  int MIN_LIFESPAN = 35;
+  int MAX_LIFESPAN = 85;
 
   //size of the particles for some interesting modifiers
   int size_of_particle, max_size;
@@ -62,7 +62,9 @@ public class Particle {
     this.vel = velocity.copy();
 
     //randomness spread
-    this.acc.add(PVector.random2D().mult(0.01));
+    PVector random_downwards = new PVector(random(this.acc.x - around_value, this.acc.x + around_value), 
+      random(this.acc.y - around_value, this.acc.y + around_value));  
+    this.acc.add(random_downwards.mult(0.05));
   }
 
   public int getLifespan() {

@@ -9,6 +9,19 @@ void updatePlayers() {
       players.remove(i);
     }
   }
+
+  // Display connect UUID
+  StringBuilder str = new StringBuilder();
+
+  for (Player p : players) {
+    str.append("Connected Client: ").append(p.client.ip());
+    str.append(" - UUID: ").append(p.UUID);
+    str.append("\n");
+  }
+
+  textSize(25);
+  fill(0);
+  text(str.toString(), 50, 50, width - 50, height - 50);
 }
 
 class Player {

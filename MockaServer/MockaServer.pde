@@ -1,11 +1,17 @@
+import hypermedia.net.*;
 import processing.net.*;
 
 void setup() {
   size(1200, 800); 
-  
+
   myServer = new Server(this, 25567);
+  udp = new UDP(this, 6000);
+  //udp.log(true); // lets log everything for now
+  udp.listen(true);
   println("Starting server");
   players = new ArrayList<Player>(0);
+
+  setupRocketBody();
 }
 
 void draw() {
@@ -16,6 +22,14 @@ void draw() {
     stop();
   }
   updatePlayers();
+
+  if (rocket_x != 0) {
+    pushMatrix();
+    translate(rocket_x, rocket_y);
+    rotate(rocket_ang);
+    shape(rocketBody);
+    popMatrix();
+  }
 }
 
 Server myServer;

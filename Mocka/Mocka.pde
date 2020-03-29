@@ -1,3 +1,4 @@
+import hypermedia.net.*;
 import processing.net.*;
 
 color GAME_COLOR; // Random color that can be used throughout the code
@@ -28,6 +29,12 @@ void setup() {
 
   // setting up 
   client = new Client(this, "127.0.0.1", 25567);
+
+  // create a new datagram connection on port 6100
+  // and wait for incomming message
+  udp = new UDP( this, 6100 );
+  //udp.log( true );     // <-- printout the connection activity
+  udp.listen( true );
 }
 
 void draw() {
@@ -41,6 +48,8 @@ void draw() {
   // updating and displaying the rocket
   rock.update();
   rock.show();
+
+  send_udp_to_server();
 }
 
 /**

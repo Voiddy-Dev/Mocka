@@ -9,6 +9,8 @@ PShape rocket_icon;
 
 float ROCKET_ICON_SCALE = 0.15;
 
+int UUID = -1;
+
 void setup() {
   size(1200, 800);
 
@@ -49,7 +51,7 @@ void draw() {
   rock.update();
   rock.show();
 
-  send_udp_to_server();
+  if (UUID != -1) send_udp_to_server();
 }
 
 /**

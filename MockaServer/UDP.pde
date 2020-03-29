@@ -6,6 +6,8 @@ float rocket_x = 0;
 float rocket_y = 0;
 float rocket_ang = 0;
 
+int UDP_CLIENT_PORT = 6100;
+
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler
 void receive( byte[] data, String ip, int port ) {  // <-- extended handler
@@ -13,10 +15,13 @@ void receive( byte[] data, String ip, int port ) {  // <-- extended handler
   rocket_y = convertToFloat(subset(data, 4, 4));
   rocket_ang = convertToFloat(subset(data, 8, 4));
 
-  //String message = "x: " + x + ", y: " + y + ", ang: " + ang;
+  int senderUUID = (int) data[12];
 
-  //// print the result
-  //println( "receive: \""+message+"\" from "+ip+" on port "+port );
+  for (Player p : players) {
+    if (p.UUID != senderUUID) {
+      udp.send(data, p.client.ip(), UDP_CLIENT_PORT);
+    }
+  }
 }
 
 public static float convertToFloat(byte[] array) {

@@ -38,6 +38,8 @@ void serverEvent(Server serv, Client myClient) {
   Player myPlayer = new Player(myClient);
   players.add(myPlayer);
 
+  myPlayer.client.write(myPlayer.UUID);
+
   println("New Client with IP: " + myClient.ip() + " - UUID: " + myPlayer.UUID);
 }
 

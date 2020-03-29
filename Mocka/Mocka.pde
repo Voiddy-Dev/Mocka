@@ -11,6 +11,8 @@ float ROCKET_ICON_SCALE = 0.15;
 
 int UUID = -1;
 
+String serv_ip = "lmhleetmcgang.ddns.net";  // the remote IP address
+
 void setup() {
   size(1200, 800);
 
@@ -30,11 +32,11 @@ void setup() {
   rocket_icon.scale(ROCKET_ICON_SCALE);
 
   // setting up 
-  client = new Client(this, "127.0.0.1", 25567);
+  client = new Client(this, serv_ip, 25567);
 
   // create a new datagram connection on port 6100
   // and wait for incomming message
-  udp = new UDP( this, 6100 );
+  udp = new UDP(this, 16441);
   //udp.log( true );     // <-- printout the connection activity
   udp.listen( true );
 }

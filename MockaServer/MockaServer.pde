@@ -5,7 +5,7 @@ void setup() {
   size(1200, 800); 
 
   myServer = new Server(this, 25567);
-  udp = new UDP(this, 6000);
+  udp = new UDP(this, 16440);
   //udp.log(true); // lets log everything for now
   udp.listen(true);
   println("Starting server");

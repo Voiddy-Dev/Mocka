@@ -6,7 +6,7 @@ float rocket_x = 0;
 float rocket_y = 0;
 float rocket_ang = 0;
 
-int UDP_CLIENT_PORT = 6100;
+int UDP_CLIENT_PORT = 16441;
 
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler

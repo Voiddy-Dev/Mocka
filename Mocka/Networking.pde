@@ -35,8 +35,7 @@ void receive( byte[] data, String ip, int port ) {  // <-- extended handler
   }
 }
 
-String serv_ip_udp = "localhost";  // the remote IP address
-int serv_port_udp = 6000;    // the destination port
+int serv_port_udp = 16440;    // the destination port
 
 // Reminder a float is 4 bytes
 void send_udp_to_server() {
@@ -56,7 +55,7 @@ void send_udp_to_server() {
   else message[12] = -1;
 
   // Send the message now
-  udp.send(message, serv_ip_udp, serv_port_udp);
+  udp.send(message, serv_ip, serv_port_udp);
 }
 
 // I <3 StackOverflow

@@ -52,6 +52,10 @@ void draw() {
   rock.show();
 
   if (UUID != -1) send_udp_to_server();
+
+  for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
+    entry.getValue().update();
+  }
 }
 
 /**

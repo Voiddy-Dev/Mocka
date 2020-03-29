@@ -1,26 +1,36 @@
 import java.nio.ByteBuffer;
 
+HashMap<Integer, Enemy> enemies = new HashMap();
+
 Client client;
 UDP udp;
 
 // TCP
-
 void clientEvent(Client someClient) {
   UUID = client.read();
-  
+
   println("UUID: "  + UUID);
 }
-
 
 // UDP
 
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler
 void receive( byte[] data, String ip, int port ) {  // <-- extended handler
-  String message = new String( data );
+  float rocket_x = convertToFloat(subset(data, 0, 4));
+  float rocket_y = convertToFloat(subset(data, 4, 4));
+  float rocket_ang = convertToFloat(subset(data, 8, 4));
 
-  // print the result
-  println( "receive: \""+message+"\" from "+ip+" on port "+port );
+  int senderUUID = (int) data[12];
+  boolean deltWith = false;
+
+  if (enemies.containsKey(senderUUID)) {
+    enemies.get(senderUUID).setValues(rocket_x, rocket_y, rocket_ang);
+  } else {
+    Enemy newEnemy = new Enemy(senderUUID);
+    newEnemy.setValues(rocket_x, rocket_y, rocket_ang);
+    enemies.put(senderUUID, newEnemy);
+  }
 }
 
 String serv_ip_udp = "localhost";  // the remote IP address
@@ -42,7 +52,7 @@ void send_udp_to_server() {
   System.arraycopy(msg_angle, 0, message, 8, 4);
   if (UUID >= 0 && UUID <= 255) message[12] = (byte) UUID;
   else message[12] = -1;
-  
+
   // Send the message now
   udp.send(message, serv_ip_udp, serv_port_udp);
 }

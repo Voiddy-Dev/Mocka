@@ -1,8 +1,9 @@
+import processing.net.*;
+
 color GAME_COLOR; // Random color that can be used throughout the code
 int[] terrain_values = new int[4]; // rect values for the terrain
 
 Rocket rock;
-
 PShape rocket_icon;
 
 float ROCKET_ICON_SCALE = 0.15;
@@ -19,13 +20,14 @@ void setup() {
   terrain_values[2] = width;
   terrain_values[3] = 100;
 
+  //setting up rockets
   setupRocketBody();
   rock = new Rocket(width/2, height-80);
-  //frameRate(2);
-  platforms.add(new Platform(250, 200));
-
   rocket_icon = loadShape("rocket.svg");
   rocket_icon.scale(ROCKET_ICON_SCALE);
+
+  // setting up 
+  client = new Client(this, "127.0.0.1", 25567);
 }
 
 void draw() {

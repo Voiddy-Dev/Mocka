@@ -22,11 +22,13 @@ void receive( byte[] data, String ip, int port ) {  // <-- extended handler
   float rocket_ang = convertToFloat(subset(data, 8, 4));
 
   int senderUUID = (int) data[12];
-  boolean deltWith = false;
 
+  // checks if we already know this enemy 
   if (enemies.containsKey(senderUUID)) {
+    // update its values if we do know the enemy
     enemies.get(senderUUID).setValues(rocket_x, rocket_y, rocket_ang);
   } else {
+    // create the new enemy if we dont know
     Enemy newEnemy = new Enemy(senderUUID);
     newEnemy.setValues(rocket_x, rocket_y, rocket_ang);
     enemies.put(senderUUID, newEnemy);

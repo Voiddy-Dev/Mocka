@@ -53,8 +53,13 @@ void draw() {
 
   if (UUID != -1) send_udp_to_server();
 
-  for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
-    entry.getValue().update();
+  for (final HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
+    (new Thread() {
+      public void run() {
+        entry.getValue().update();
+      }
+    }
+    ).start();
   }
 }
 

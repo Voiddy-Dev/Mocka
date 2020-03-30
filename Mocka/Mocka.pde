@@ -1,3 +1,5 @@
+import processing.svg.*;
+
 import hypermedia.net.*;
 import processing.net.*;
 
@@ -11,7 +13,7 @@ float ROCKET_ICON_SCALE = 0.15;
 
 int UUID = -1;
 
-String serv_ip = "lmhleetmcgang.ddns.net";  // the remote IP address
+String serv_ip = "localhost";  // the remote IP address
 
 void setup() {
   size(1200, 800, FX2D);

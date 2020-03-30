@@ -44,12 +44,12 @@ public class Rocket extends PhysObj {
         pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
       exhaust.turnOn(part_Pos, acc, vel);
     }
-    exhaust.update();
+    exhaust.update(GAME_COLOR);
 
     pushMatrix();
     translate(pos.x, pos.y);
     rotate(posRot);
-    shape(rocketBody);
+    //shape(rocketBody);
     shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
     popMatrix();
   }

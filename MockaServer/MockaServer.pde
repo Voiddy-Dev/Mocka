@@ -6,7 +6,7 @@ void setup() {
 
   myServer = new Server(this, 25567);
   udp = new UDP(this, 16440);
-  udp.log(true); // lets log everything for now
+  //udp.log(true); // lets log everything for now
   udp.listen(true);
   println("Starting server");
   players = new ArrayList<Player>(0);
@@ -37,12 +37,18 @@ void serverEvent(Server serv, Client myClient) {
 
 // ClientEvent message is generated when a client disconnects.
 void disconnectEvent(Client someClient) {
+  int safeKeep = -1;
   for (int i = players.size()-1; i >= 0; i--) {
     Player p = players.get(i);
 
     if (p.client.equals(someClient)) {
       players.remove(i);
+      safeKeep = i;
       println("Client with UUID " + p.UUID + " disconnected");
     }
+  }
+
+  if (safeKeep != -1) { // problem if someone connects and disconnects at the same time
+    myServer.write(safeKeep); // tell everyone who disconnected
   }
 }

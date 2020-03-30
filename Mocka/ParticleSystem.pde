@@ -17,7 +17,7 @@ public class ParticleSystem {
   }
 
   //called everytime to update everything
-  public void update() {
+  public void update(color c) {
     // go through every particle
     for (int i = particles.size()-1; i >= 0; i--) {
       Particle p = particles.get(i);
@@ -28,7 +28,7 @@ public class ParticleSystem {
       } else {
         p.reduceLife(); // otherwise reduce its lifespan
 
-        p.update();
+        p.update(c);
       }
     }
   }
@@ -83,14 +83,14 @@ public class Particle {
 
   // method to update the particle 
   // will change the size
-  public void update() {
+  public void update(color c) {
     // physics stuff
     vel.add(acc);
     pos.add(vel);
 
     // display the particle - in accordance to its lifespan
     noStroke();
-    fill(0, map(this.getLifespan(), 0, MAX_LIFESPAN, 0, 255));
+    fill(c, map(this.getLifespan(), 0, MAX_LIFESPAN, 0, 255));
     ellipse(pos.x, pos.y, size_of_particle, size_of_particle);
     if (size_of_particle > 0) {
       size_of_particle = (int) map(lifespan, 0, MAX_LIFESPAN, 0, max_size);

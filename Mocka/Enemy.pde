@@ -1,10 +1,14 @@
 public class Enemy {
   color ENEMY_COLOR;
-  int UUID;
+  int UUID, sup;
 
   PShape bod;
 
   float x = -100, y = -1, ang = -1;
+  float acc_x = -1, acc_y = -1;
+  float vel_x = -1, vel_y = -1;
+
+  ParticleSystem exhaust;
 
   void setupEnemyBody() {
     bod = createShape();
@@ -29,12 +33,19 @@ public class Enemy {
     setupEnemyBody();
 
     this.UUID = UUID;
+
+    exhaust = new ParticleSystem();
   }
 
-  void setValues(float x, float y, float ang) {
+  void setValues(float x, float y, float ang, int sup, float acc_x, float acc_y, float vel_x, float vel_y) {
     this.x = x;
     this.y = y;
     this.ang = ang;
+    this.sup = sup;
+    this.acc_x = acc_x;
+    this.acc_y = acc_y;
+    this.vel_x = vel_x;
+    this.vel_y = vel_y;
   }
 
   void update() {
@@ -42,8 +53,16 @@ public class Enemy {
       pushMatrix();
       translate(x, y);
       rotate(ang);
-      shape(bod);
+      shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
       popMatrix();
     }
+
+    if (sup == 0) {// If applying force update the exhaust
+      PVector part_Pos = new PVector(x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(ang), 
+        y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(ang));
+      exhaust.turnOn(part_Pos, new PVector(this.acc_x, this.acc_y), new PVector(this.vel_x, this.vel_y));
+    }
+
+    exhaust.update(ENEMY_COLOR);
   }
 }

@@ -40,7 +40,7 @@ byte[] createPongMessage(float rX, float rY, float rAng, int sUUID, int sup, flo
     index += MAX_PACKET_LENGTH;
   }
 
-  println(ret.length);
+  //println(ret.length);
 
   return ret;
 }

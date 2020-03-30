@@ -37,7 +37,7 @@ void setup() {
   // create a new datagram connection on port 6100
   // and wait for incomming message
   udp = new UDP(this, 16441);
-  udp.log(true);     // <-- printout the connection activity
+  //udp.log(true);     // <-- printout the connection activity
   udp.listen( true );
 }
 

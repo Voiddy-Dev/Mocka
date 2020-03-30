@@ -2,26 +2,38 @@ import java.nio.ByteBuffer;
 
 UDP udp;
 
-float rocket_x = 0;
-float rocket_y = 0;
-float rocket_ang = 0;
-
 int UDP_CLIENT_PORT = 16441;
 
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler
 void receive( byte[] data, String ip, int port ) {  // <-- extended handler
-  rocket_x = convertToFloat(subset(data, 0, 4));
-  rocket_y = convertToFloat(subset(data, 4, 4));
-  rocket_ang = convertToFloat(subset(data, 8, 4));
+  float rocket_x = convertToFloat(subset(data, 0, 4));
+  float rocket_y = convertToFloat(subset(data, 4, 4));
+  float rocket_ang = convertToFloat(subset(data, 8, 4));
 
   int senderUUID = (int) data[12];
 
+  udp.send(createPongMessage(rocket_x, rocket_y, rocket_ang, senderUUID), ip, port);
+}
+
+byte[] createPongMessage(float rX, float rY, float rAng, int sUUID) {
+  // 13 bytes for each player except the one sending the message
+  byte[] ret = new byte[13 * (players.size())];
+  int index = 0;
   for (Player p : players) {
-    if (p.UUID != senderUUID) {
-      udp.send(data, p.client.ip(), UDP_CLIENT_PORT);
+    if (p.UUID == sUUID) { // i
+      p.setValues(rX, rY, rAng);
     }
+
+    byte[] pMsg = p.createByteArray(); 
+    System.arraycopy(pMsg, 0, ret, index, 13);
+
+    index += 13;
   }
+
+  println(ret.length);
+
+  return ret;
 }
 
 public static float convertToFloat(byte[] array) {
@@ -53,4 +65,9 @@ void setupRocketBody() {
   rocketBody.vertex(-1.2, .7);
   rocketBody.endShape(CLOSE);
   rocketBody.scale(10);
+}
+
+// I <3 StackOverflow
+public static byte[] float2ByteArray (float value) {  
+  return ByteBuffer.allocate(4).putFloat(value).array();
 }

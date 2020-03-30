@@ -6,7 +6,7 @@ void setup() {
 
   myServer = new Server(this, 25567);
   udp = new UDP(this, 16440);
-  //udp.log(true); // lets log everything for now
+  udp.log(true); // lets log everything for now
   udp.listen(true);
   println("Starting server");
   players = new ArrayList<Player>(0);
@@ -22,14 +22,6 @@ void draw() {
     stop();
   }
   updatePlayers();
-
-  if (rocket_x != 0) {
-    pushMatrix();
-    translate(rocket_x, rocket_y);
-    rotate(rocket_ang);
-    shape(rocketBody);
-    popMatrix();
-  }
 }
 
 Server myServer;

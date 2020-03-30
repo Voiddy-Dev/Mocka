@@ -14,24 +14,44 @@ void clientEvent(Client someClient) {
 
 // UDP
 
+void parseUDPData(byte[] data) {
+  int nb = data.length / 13;
+
+  println("Number: " + nb);
+
+  int index = 0;
+  for (int i = 0; i < nb; i ++) {
+    float rocket_x = convertToFloat(subset(data, index, 4));
+    float rocket_y = convertToFloat(subset(data, index + 4, 4));
+    float rocket_ang = convertToFloat(subset(data, index + 8, 4));
+    
+    println(rocket_x, rocket_y, rocket_ang);
+
+    int senderUUID = (int) data[12];
+
+    // checks if we already know this enemy 
+    if (enemies.containsKey(senderUUID)) {
+      // update its values if we do know the enemy
+      enemies.get(senderUUID).setValues(rocket_x, rocket_y, rocket_ang);
+    } else {
+      // create the new enemy if we dont know
+      Enemy newEnemy = new Enemy(senderUUID);
+      newEnemy.setValues(rocket_x, rocket_y, rocket_ang);
+      enemies.put(senderUUID, newEnemy);
+    } 
+
+    index += 13;
+  }
+}
+
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler
 void receive( byte[] data, String ip, int port ) {  // <-- extended handler
-  float rocket_x = convertToFloat(subset(data, 0, 4));
-  float rocket_y = convertToFloat(subset(data, 4, 4));
-  float rocket_ang = convertToFloat(subset(data, 8, 4));
-
-  int senderUUID = (int) data[12];
-
-  // checks if we already know this enemy 
-  if (enemies.containsKey(senderUUID)) {
-    // update its values if we do know the enemy
-    enemies.get(senderUUID).setValues(rocket_x, rocket_y, rocket_ang);
+  println(data.length);
+  if (data.length != 0 && data.length % 13 == 0) {
+    parseUDPData(data);
   } else {
-    // create the new enemy if we dont know
-    Enemy newEnemy = new Enemy(senderUUID);
-    newEnemy.setValues(rocket_x, rocket_y, rocket_ang);
-    enemies.put(senderUUID, newEnemy);
+    println("ERROR IN UDP RECEIVE");
   }
 }
 

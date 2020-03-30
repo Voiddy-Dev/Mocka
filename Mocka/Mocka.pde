@@ -14,7 +14,7 @@ int UUID = -1;
 String serv_ip = "localhost";//"lmhleetmcgang.ddns.net";  // the remote IP address
 
 void setup() {
-  size(1200, 800);
+  size(1200, 800, FX2D);
 
   // create random color that could be used from here on out
   GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));

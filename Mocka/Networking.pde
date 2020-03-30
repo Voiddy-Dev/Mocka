@@ -9,7 +9,7 @@ UDP udp;
 void clientEvent(Client someClient) {
   UUID = client.read();
 
-  println("UUID: "  + UUID);
+  //println("UUID: "  + UUID);
 }
 
 // UDP
@@ -23,11 +23,11 @@ void parseUDPData(byte[] data) {
     float rocket_y = convertToFloat(subset(data, index + 4, 4));
     float rocket_ang = convertToFloat(subset(data, index + 8, 4));
 
-    println(rocket_x, rocket_y, rocket_ang);
+    //println(rocket_x, rocket_y, rocket_ang);
 
     int senderUUID = (int) data[index + 12];
 
-    println("UUID:", senderUUID);
+    //println("UUID:", senderUUID);
 
     // checks if we already know this enemy 
     if (enemies.containsKey(senderUUID)) {
@@ -47,7 +47,7 @@ void parseUDPData(byte[] data) {
 // This handler is necessary for UDP
 // void receive( byte[] data ) {       // <-- default handler
 void receive( byte[] data, String ip, int port ) {  // <-- extended handler
-  println("--");
+  //println("--");
   if (data.length != 0 && data.length % 13 == 0) {
     parseUDPData(data);
   } else {

@@ -40,7 +40,7 @@ class Player {
     this.y = y;
     this.ang = ang;
 
-    println("Set: ", x, y, ang);
+    //println("Set: ", x, y, ang);
   }
 
   byte[] createByteArray() {
@@ -59,7 +59,7 @@ class Player {
     if (UUID >= 0 && UUID <= 255) message[12] = (byte) UUID;
     else message[12] = -1;
 
-    println(message);
+    //println(message);
 
     return message;
   }

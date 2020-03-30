@@ -31,7 +31,7 @@ byte[] createPongMessage(float rX, float rY, float rAng, int sUUID) {
     index += 13;
   }
 
-  println(ret.length);
+  //println(ret.length);
 
   return ret;
 }

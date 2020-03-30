@@ -2,11 +2,11 @@ import hypermedia.net.*;
 import processing.net.*;
 
 void setup() {
-  size(1200, 800); 
+  size(10, 10); 
 
   myServer = new Server(this, 25567);
   udp = new UDP(this, 16440);
-  udp.log(true); // lets log everything for now
+  //udp.log(true); // lets log everything for now
   udp.listen(true);
   println("Starting server");
   players = new ArrayList<Player>(0);

@@ -1,17 +1,17 @@
 // Geometry of rocket body
 
-float rocketBodyMult = 30;
+float rocketBodyMult = 30.0 * (10.0 / 36);
 
 PVector[] rocketBodyPoints = {
   new PVector(0, -1.8).mult(rocketBodyMult), // TIP
-  new PVector(.5, -1.5).mult(rocketBodyMult), //
+  //new PVector(.5, -1.5).mult(rocketBodyMult), //
   new PVector(.6, -1.3).mult(rocketBodyMult), // 
   new PVector(1.2, .7).mult(rocketBodyMult), // HIP
   new PVector(.9, 1.8).mult(rocketBodyMult), // RIGHT CORNER
   new PVector(-.9, 1.8).mult(rocketBodyMult), // LEFT  CORNER
   new PVector(-1.2, .7).mult(rocketBodyMult), // HIP
   new PVector(-.6, -1.3).mult(rocketBodyMult), //
-  new PVector(-.5, -1.5).mult(rocketBodyMult)  //
+  //new PVector(-.5, -1.5).mult(rocketBodyMult)  //
 };
 
 PVector[] rocketBodyPointsPolar;
@@ -54,6 +54,16 @@ public class Rocket extends PhysObj {
     translate(pos.x, pos.y); 
     rotate(posRot); 
     shape(rocketBodyShape); 
+
+    for (PVector p : rocketBodyPointsPolar) {
+      pushMatrix();
+      rotate(p.x);
+      translate(p.y, 0);
+      stroke(0);
+      point(0, 0);
+      popMatrix();
+    }
+
     popMatrix();
   }
 
@@ -61,12 +71,12 @@ public class Rocket extends PhysObj {
   // Arrow keys
   public void interactions() {
     if (up) {
-      this.push(2.0*G);
+      this.push(2.1*G);
     } 
     if (left) {
-      this.applyTorque(-0.06);
+      this.applyTorque(-1.0);
     } else if (right) {
-      this.applyTorque(0.06);
+      this.applyTorque(1.0);
     }
   }
 

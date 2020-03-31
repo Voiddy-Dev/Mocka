@@ -10,8 +10,11 @@ void keyPressed() {
   if (keyCode == RIGHT) {
     right = true;
   }
+}
+
+void keyTyped() {
   if (key == 'r') {
-    rock = new Rocket(width/2, height-120);
+    rock = new Rocket(width/2, height-70);
   }
 }
 

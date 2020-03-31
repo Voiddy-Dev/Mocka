@@ -1,7 +1,7 @@
 import processing.net.*;
 
 void setup() {
-  size(1200, 800); 
+  size(10, 10); 
   myServer = new Server(this, 25567);
   println("Starting server");
   players = new ArrayList<Player>(0);

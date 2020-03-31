@@ -5,7 +5,8 @@ Rocket rock;
 ParticleSystem partSys;
 
 void setup() {
-  size(1200, 800);
+  size(600, 400, FX2D);
+  //frameRate(6);
 
   // create random color that could be used from here on out
   GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
@@ -17,7 +18,7 @@ void setup() {
   terrain_values[3] = 100;
 
   setupRocketBody();
-  rock = new Rocket(width/2, height-120);
+  rock = new Rocket(width/2, height-400);
   //frameRate(2);
   partSys = new ParticleSystem(new PVector(width/2, height/2), new PVector(0, -1));
 
@@ -25,15 +26,17 @@ void setup() {
 }
 
 void draw() {
+  TIME_DELTA = map(mouseX, 0, width, 1.0/60, 1);
+
   // Basic ui
   background(255); // white background
-  terrain(); // terrain
-
   // user interactions
   rock.interactions();
 
   // updating and displaying the rocket
   rock.update();
+
+  terrain(); // terrain
   rock.show();
 
   // updating the particle system
@@ -52,7 +55,7 @@ void terrain() {
 
   rectMode(CORNER);
   // Simple small rectangle at the bottom of the screen
-  rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
+  //rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
 
   strokeWeight(5);
   stroke(0);

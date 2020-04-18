@@ -1,19 +1,7 @@
-import processing.svg.*;
-
-import hypermedia.net.*;
-import processing.net.*;
-
 color GAME_COLOR; // Random color that can be used throughout the code
 int[] terrain_values = new int[4]; // rect values for the terrain
 
 Rocket rock;
-PShape rocket_icon;
-
-float ROCKET_ICON_SCALE = 0.15;
-
-int UUID = -1;
-
-String serv_ip = "lmhleetmcgang.ddns.net";  // the remote IP address
 
 void setup() {
   size(1200, 800, FX2D);
@@ -27,29 +15,18 @@ void setup() {
   terrain_values[2] = width;
   terrain_values[3] = 100;
 
-  //setting up rockets
+  setupBox2D();
   setupRocketBody();
   rock = new Rocket(width/2, height-80);
-  rocket_icon = loadShape("rocket.svg");
-  rocket_icon.scale(ROCKET_ICON_SCALE);
-
-  // setting up 
-  client = new Client(this, serv_ip, 25567);
-
-  // create a new datagram connection on port 6100
-  // and wait for incomming message
-  udp = new UDP(this, 16441);
-  //udp.log(true);     // <-- printout the connection activity
-  udp.listen( true );
 }
 
 void draw() {
-  // Basic ui
   background(255); // white background
   terrain(); // terrain
 
   // user interactions
   rock.interactions();
+  box2d.step();
 
   // updating and displaying the rocket
   rock.update();

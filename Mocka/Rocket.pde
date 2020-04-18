@@ -1,6 +1,14 @@
+import processing.svg.*;
+
+PShape rocket_icon;
 PShape rocketBody;
 
+float ROCKET_ICON_SCALE = 0.15;
+
 void setupRocketBody() {
+  rocket_icon = loadShape("rocket.svg");
+  rocket_icon.scale(ROCKET_ICON_SCALE);
+
   rocketBody = createShape();
   rocketBody.beginShape();
   rocketBody.noFill();
@@ -23,6 +31,7 @@ void setupRocketBody() {
 }
 
 public class Rocket extends PhysObj {
+  Body body; // Box2d body
   int size = 20;
   ParticleSystem exhaust;
 
@@ -31,6 +40,34 @@ public class Rocket extends PhysObj {
     super(new PVector(x, y), 1);
 
     exhaust = new ParticleSystem();
+    makeBody(new Vec2(x, y));
+  }
+
+  void makeBody(Vec2 center) {
+
+    // Define a polygon (this is what we use for a rectangle)
+    PolygonShape sd = new PolygonShape();
+
+    Vec2[] vertices = new Vec2[4];
+    vertices[0] = box2d.vectorPixelsToWorld(new Vec2(-15, 25));
+    vertices[1] = box2d.vectorPixelsToWorld(new Vec2(15, 0));
+    vertices[2] = box2d.vectorPixelsToWorld(new Vec2(20, -15));
+    vertices[3] = box2d.vectorPixelsToWorld(new Vec2(-10, -10));
+
+    sd.set(vertices, vertices.length);
+
+    // Define the body and make it from the shape
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.DYNAMIC;
+    bd.position.set(box2d.coordPixelsToWorld(center));
+    body = box2d.createBody(bd);
+
+    body.createFixture(sd, 1.0);
+
+
+    // Give it some initial random velocity
+    body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
+    body.setAngularVelocity(random(-5, 5));
   }
 
   // method to display the rocket 

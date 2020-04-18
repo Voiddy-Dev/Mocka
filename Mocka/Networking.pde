@@ -1,4 +1,10 @@
+import processing.net.*;
+import hypermedia.net.*;
 import java.nio.ByteBuffer;
+
+int UUID = -1;
+
+String serv_ip = "lmhleetmcgang.ddns.net";  // the remote IP address
 
 HashMap<Integer, Enemy> enemies = new HashMap();
 
@@ -6,6 +12,17 @@ Client client;
 UDP udp;
 
 int MAX_PACKET_LENGTH = 30;
+
+void setupNetworking() {
+  // setting up 
+  client = new Client(this, serv_ip, 25567);
+
+  // create a new datagram connection on port 6100
+  // and wait for incomming message
+  udp = new UDP(this, 16441);
+  //udp.log(true);     // <-- printout the connection activity
+  udp.listen( true );
+}
 
 // TCP
 void clientEvent(Client someClient) {

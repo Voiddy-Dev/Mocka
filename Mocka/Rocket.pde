@@ -32,7 +32,7 @@ void setupRocketBody() {
   // Create PSHape
   rocketBodyShape = createShape(); 
   rocketBodyShape.beginShape(); 
-  rocketBodyShape.noFill(); 
+  //rocketBodyShape.noFill(); 
   rocketBodyShape.stroke(GAME_COLOR); 
   for (PVector p : rocketBodyPoints) rocketBodyShape.vertex(p.x, p.y); 
   rocketBodyShape.endShape(CLOSE);
@@ -51,18 +51,13 @@ public class Rocket extends PhysObj {
     noFill(); 
 
     pushMatrix(); 
-    translate(pos.x, pos.y); 
+    translate(pos.x, pos.y);
     rotate(posRot); 
-    shape(rocketBodyShape); 
+    rocketBodyShape.setFill(GAME_COLOR);
+    shape(rocketBodyShape);
 
-    for (PVector p : rocketBodyPointsPolar) {
-      pushMatrix();
-      rotate(p.x);
-      translate(p.y, 0);
-      stroke(0);
-      point(0, 0);
-      popMatrix();
-    }
+    stroke(0);
+    point(0, 0);
 
     popMatrix();
   }

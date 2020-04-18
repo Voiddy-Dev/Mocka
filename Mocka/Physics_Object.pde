@@ -35,11 +35,11 @@ public abstract class PhysObj {
   }
 
   // Updating all the physics.
-  public void update() {
+  public void step() {
     doCollisions();
 
     //Gravity
-    if (!HAS_LANDED)applyForce(new PVector(0, G));
+    applyForce(new PVector(0, G));
 
     vel.add(acc.mult(TIME_DELTA));
     velRot += accRot * TIME_DELTA;
@@ -152,4 +152,19 @@ public abstract class PhysObj {
     //float torque = relativeForce.dot(relativePoint);
     applyTorque(torque / 60.);
   }
+}
+
+// From this tutorial
+// https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-oriented-rigid-bodies--gamedev-8032
+
+float crossProduct(PVector a, PVector b) {
+  return a.x * b.y - a.y * b.x;
+}
+
+PVector CrossProduct(PVector a, float s) {
+  return new PVector(s * a.y, -s * a.x);
+}
+
+PVector CrossProduct(float s, PVector b) {
+  return new PVector(-s * b.y, s * b.x);
 }

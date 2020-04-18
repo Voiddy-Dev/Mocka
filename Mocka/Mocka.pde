@@ -33,8 +33,8 @@ void draw() {
   // user interactions
   rock.interactions();
 
-  // updating and displaying the rocket
-  rock.update();
+  // step physics simulation of the rocket
+  rock.step();
 
   terrain(); // terrain
   rock.show();

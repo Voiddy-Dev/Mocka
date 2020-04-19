@@ -29,7 +29,7 @@ void draw() {
   box2d.step();
 
   // updating and displaying the rocket
-  rock.update();
+  //rock.update();
   rock.show();
 
   if (UUID != -1) send_udp_to_server();

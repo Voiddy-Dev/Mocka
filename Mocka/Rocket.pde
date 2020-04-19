@@ -30,14 +30,18 @@ void setupRocketBody() {
   rocketBody.scale(10);
 }
 
-public class Rocket extends PhysObj {
+public class Rocket {
+  float x, y;
+  float angle;
+
   Body body; // Box2d body
   int size = 20;
   ParticleSystem exhaust;
 
   // Constructor of the Rocket.
   public Rocket(float x, float y) {
-    super(new PVector(x, y), 1);
+    this.x = x;
+    this.y = y;
 
     exhaust = new ParticleSystem();
     makeBody(new Vec2(x, y));
@@ -76,16 +80,16 @@ public class Rocket extends PhysObj {
     strokeWeight(1);
     noFill();    
 
-    if (up) {// If applying force update the exhaust
-      PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
-        pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
-      exhaust.turnOn(part_Pos, acc, vel);
-    }
+    //if (up) {// If applying force update the exhaust
+    //  PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
+    //    pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
+    //  exhaust.turnOn(part_Pos, acc, vel);
+    //}
     exhaust.update(GAME_COLOR);
 
     pushMatrix();
-    translate(pos.x, pos.y);
-    rotate(posRot);
+    translate(x, y);
+    rotate(angle);
     //shape(rocketBody);
     shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
     popMatrix();
@@ -94,18 +98,18 @@ public class Rocket extends PhysObj {
   // User interactions
   // Arrow keys
   public void interactions() {
-    if (up) {
-      this.push(2.0*G);
-    } 
-    if (left) {
-      this.applyTorque(-0.03);
-    } else if (right) {
-      this.applyTorque(0.03);
-    }
+    //if (up) {
+    //  this.push(2.0*G);
+    //} 
+    //if (left) {
+    //  this.applyTorque(-0.03);
+    //} else if (right) {
+    //  this.applyTorque(0.03);
+    //}
   }
 
   // Pushing towards a direction.
   public void push(float force) {
-    applyForce(new PVector(force*sin(posRot), -force*cos(posRot)));
+    //applyForce(new PVector(force*sin(posRot), -force*cos(posRot)));
   }
 }

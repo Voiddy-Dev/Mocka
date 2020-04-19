@@ -1,17 +1,16 @@
 color GAME_COLOR; // Random color that can be used throughout the code
-int[] terrain_values = new int[4]; // rect values for the terrain
 
 Rocket rock;
 
 void setup() {
   size(1200, 800, FX2D);
+  setupBox2D();
 
   // create random color that could be used from here on out
   GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
 
   setupTerrain();
 
-  setupBox2D();
   setupRocketBody();
   rock = new Rocket(width/2, height-80);
 }

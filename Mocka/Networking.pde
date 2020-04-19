@@ -93,9 +93,9 @@ void send_udp_to_server() {
   // 1 byte for UUID
   // = MAX_PACKET_LENGTH bytes
   byte[] message = new byte[MAX_PACKET_LENGTH];
-  byte[] msg_x = float2ByteArray(rock.x);
-  byte[] msg_y = float2ByteArray(rock.y);
-  byte[] msg_angle = float2ByteArray(rock.angle);
+  byte[] msg_x = float2ByteArray(rock.body.getPosition().x);
+  byte[] msg_y = float2ByteArray(rock.body.getPosition().y);
+  byte[] msg_angle = float2ByteArray(rock.body.getAngle());
   System.arraycopy(msg_x, 0, message, 0, 4); // copy first 4 bytes
   System.arraycopy(msg_y, 0, message, 4, 4);
   System.arraycopy(msg_angle, 0, message, 8, 4);

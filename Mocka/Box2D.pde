@@ -11,5 +11,5 @@ void setupBox2D() {
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   // We are setting a custom gravity
-  box2d.setGravity(0, -20);
+  box2d.setGravity(0, -30);
 }

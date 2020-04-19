@@ -2,10 +2,7 @@ ArrayList<Platform> platforms = new ArrayList();
 
 void setupTerrain() {
   // setup terrain values
-  terrain_values[0] = 0;
-  terrain_values[1] = height-50;
-  terrain_values[2] = width;
-  terrain_values[3] = 100;
+  platforms.add(new Platform(width/2, height - 50, width, 100));
 }
 
 void showTerrain() {
@@ -14,16 +11,18 @@ void showTerrain() {
 
   rectMode(CORNER);
   // Simple small rectangle at the bottom of the screen
-  rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
+  for (Platform p : platforms) p.show();
 
   strokeWeight(5);
   stroke(0);
-  //line(ppmouseX, ppmouseY, mouseX, mouseY);
 }
 
 public class Platform {
   // coordinates and used var
-  int x, y, used, w;
+  int x, y, w, h;
+  int used;
+
+  Body body;
 
   // constant that corresponds the necessary wait time
   // to make a platform disappear
@@ -31,12 +30,32 @@ public class Platform {
   int HEIGHT = 20;
 
   // constructor and initialize the platform
-  public Platform(int x, int y) {
+  public Platform(int x, int y, int w, int h) {
     this.x = x;
     this.y = y;
-    this.w = (int) random(70, 170);
+    this.w = w;
+    this.h = h;
 
     this.used = NECESSARY_FRAMES;
+
+    // Define the polygon
+    PolygonShape sd = new PolygonShape();
+    // Figure out the box2d coordinates
+    float box2dW = box2d.scalarPixelsToWorld(w/2);
+    float box2dH = box2d.scalarPixelsToWorld(h/2);
+    // We're just a box
+    sd.setAsBox(box2dW, box2dH);
+
+
+    // Create the body
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.STATIC;
+    bd.angle = 0;
+    bd.position.set(box2d.coordPixelsToWorld(x, y));
+    body = box2d.createBody(bd);
+
+    // Attached the shape to the body using a Fixture
+    body.createFixture(sd, 1);
   }
 
   // reduce the used variable if possible otherwise return false
@@ -49,7 +68,7 @@ public class Platform {
 
   // returns true if something is touching the platform
   public boolean isTouching(int inX, int inY) {
-    return (inX <= x + w/2) && (inX >= x - w/2) && (inY <= y + HEIGHT/2) && (inY >= y - HEIGHT/2);
+    return (inX <= x + w/2) && (inX >= x - w/2) && (inY <= y + h/2) && (inY >= y - h/2);
   }
 
   // display the platform
@@ -57,7 +76,7 @@ public class Platform {
     rectMode(CENTER);
     noStroke();
     fill(GAME_COLOR);
-    rect(x, y, w, HEIGHT);
+    rect(x, y, w, h);
 
     // display units
     fill(255);

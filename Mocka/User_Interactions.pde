@@ -14,6 +14,7 @@ void keyPressed() {
 
 void keyTyped() {
   if (key == 'r') {
+    rock.killBody();
     rock = new Rocket(width/2, 400);
   }
 }

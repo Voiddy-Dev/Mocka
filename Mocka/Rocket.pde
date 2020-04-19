@@ -31,18 +31,12 @@ void setupRocketBody() {
 }
 
 public class Rocket {
-  float x, y;
-  float angle;
-
   Body body; // Box2d body
   int size = 20;
   ParticleSystem exhaust;
 
   // Constructor of the Rocket.
   public Rocket(float x, float y) {
-    this.x = x;
-    this.y = y;
-
     exhaust = new ParticleSystem();
     makeBody(new Vec2(x, y));
   }
@@ -55,14 +49,14 @@ public class Rocket {
     float rocketBodyMult = 30.0 * (10.0 / 36);
     PVector[] rocketBodyPoints = {
       new PVector(0, -1.8).mult(rocketBodyMult), // TIP
-      //new PVector(.5, -1.5).mult(rocketBodyMult), //
-      new PVector(.6, -1.3).mult(rocketBodyMult), // 
+      new PVector(.5, -1.5).mult(rocketBodyMult), //
+      //new PVector(.6, -1.3).mult(rocketBodyMult), // 
       new PVector(1.2, .7).mult(rocketBodyMult), // HIP
       new PVector(.9, 1.8).mult(rocketBodyMult), // RIGHT CORNER
       new PVector(-.9, 1.8).mult(rocketBodyMult), // LEFT  CORNER
       new PVector(-1.2, .7).mult(rocketBodyMult), // HIP
-      new PVector(-.6, -1.3).mult(rocketBodyMult), //
-      //new PVector(-.5, -1.5).mult(rocketBodyMult)  //
+      //new PVector(-.6, -1.3).mult(rocketBodyMult), //
+      new PVector(-.5, -1.5).mult(rocketBodyMult), //
     };
 
     Vec2[] vertices = new Vec2[rocketBodyPoints.length];
@@ -86,6 +80,10 @@ public class Rocket {
     //body.setAngularVelocity(random(-5, 5));
   }
 
+  void killBody() {
+    box2d.destroyBody(body);
+  }
+
   // method to display the rocket 
   public void show() {
     // We look at each body and get its screen position
@@ -102,23 +100,23 @@ public class Rocket {
     translate(pos.x, pos.y);
     rotate(-a);
     stroke(GAME_COLOR);
+    fill(GAME_COLOR);
+    //noFill();    
     strokeWeight(1);
-    noFill();    
     beginShape();
-    //println(vertices.length);
     // For every vertex, convert to pixel vector
     for (int i = 0; i < ps.getVertexCount(); i++) {
       Vec2 v = box2d.vectorWorldToPixels(ps.getVertex(i));
       vertex(v.x, v.y);
     }
     endShape(CLOSE);
-    shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
+    //shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
     popMatrix();
 
     ///////////////
 
-
     //if (up) {// If applying force update the exhaust
+    //  float angle = 0;
     //  PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
     //    pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
     //  exhaust.turnOn(part_Pos, acc, vel);
@@ -129,18 +127,16 @@ public class Rocket {
   // User interactions
   // Arrow keys
   public void interactions() {
-    //if (up) {
-    //  this.push(2.0*G);
-    //} 
-    //if (left) {
-    //  this.applyTorque(-0.03);
-    //} else if (right) {
-    //  this.applyTorque(0.03);
-    //}
-  }
-
-  // Pushing towards a direction.
-  public void push(float force) {
-    //applyForce(new PVector(force*sin(posRot), -force*cos(posRot)));
+    if (up) {
+      float angle = body.getAngle();
+      float mag = - box2d.world.getGravity().y * 10;
+      Vec2 force = new Vec2(-mag * sin(angle), mag * cos(angle));
+      body.applyForceToCenter(force);
+    } 
+    if (left) {
+      body.applyTorque(30);
+    } else if (right) {
+      body.applyTorque(-30);
+    }
   }
 }

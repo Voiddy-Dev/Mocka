@@ -115,12 +115,16 @@ public class Rocket {
 
     ///////////////
 
-    //if (up) {// If applying force update the exhaust
-    //  float angle = 0;
-    //  PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
-    //    pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(posRot));
-    //  exhaust.turnOn(part_Pos, acc, vel);
-    //}
+    if (up) {// If applying force update the exhaust
+      float angle = body.getAngle();
+      PVector part_Pos = new PVector(pos.x + ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(angle), 
+        pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(angle));
+      Vec2 bodyvel = body.getLinearVelocity();
+      PVector acc = new PVector(0, 0.1).rotate(-angle);
+      PVector vel = new PVector(bodyvel.x, bodyvel.y).mult(0.01);
+      vel.add(PVector.mult(acc, 35));
+      exhaust.turnOn(part_Pos, acc, vel);
+    }
     exhaust.update(GAME_COLOR);
   }
 

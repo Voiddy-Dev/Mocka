@@ -1,5 +1,26 @@
 ArrayList<Platform> platforms = new ArrayList();
 
+void setupTerrain() {
+  // setup terrain values
+  terrain_values[0] = 0;
+  terrain_values[1] = height-50;
+  terrain_values[2] = width;
+  terrain_values[3] = 100;
+}
+
+void showTerrain() {
+  noStroke();
+  fill(GAME_COLOR);
+
+  rectMode(CORNER);
+  // Simple small rectangle at the bottom of the screen
+  rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
+
+  strokeWeight(5);
+  stroke(0);
+  //line(ppmouseX, ppmouseY, mouseX, mouseY);
+}
+
 public class Platform {
   // coordinates and used var
   int x, y, used, w;

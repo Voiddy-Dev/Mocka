@@ -48,15 +48,27 @@ public class Rocket {
   }
 
   void makeBody(Vec2 center) {
-
     // Define a polygon (this is what we use for a rectangle)
     PolygonShape sd = new PolygonShape();
 
-    Vec2[] vertices = new Vec2[4];
-    vertices[0] = box2d.vectorPixelsToWorld(new Vec2(-15, 25));
-    vertices[1] = box2d.vectorPixelsToWorld(new Vec2(15, 0));
-    vertices[2] = box2d.vectorPixelsToWorld(new Vec2(20, -15));
-    vertices[3] = box2d.vectorPixelsToWorld(new Vec2(-10, -10));
+    // Geometry of rocket body, imported from talky.io JS
+    float rocketBodyMult = 30.0 * (10.0 / 36);
+    PVector[] rocketBodyPoints = {
+      new PVector(0, -1.8).mult(rocketBodyMult), // TIP
+      //new PVector(.5, -1.5).mult(rocketBodyMult), //
+      new PVector(.6, -1.3).mult(rocketBodyMult), // 
+      new PVector(1.2, .7).mult(rocketBodyMult), // HIP
+      new PVector(.9, 1.8).mult(rocketBodyMult), // RIGHT CORNER
+      new PVector(-.9, 1.8).mult(rocketBodyMult), // LEFT  CORNER
+      new PVector(-1.2, .7).mult(rocketBodyMult), // HIP
+      new PVector(-.6, -1.3).mult(rocketBodyMult), //
+      //new PVector(-.5, -1.5).mult(rocketBodyMult)  //
+    };
+
+    Vec2[] vertices = new Vec2[rocketBodyPoints.length];
+    for (int i = 0; i < vertices.length; i++) {
+      vertices[i] = box2d.vectorPixelsToWorld(new Vec2(rocketBodyPoints[i].x, rocketBodyPoints[i].y));
+    }
 
     sd.set(vertices, vertices.length);
 
@@ -70,15 +82,41 @@ public class Rocket {
 
 
     // Give it some initial random velocity
-    body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
-    body.setAngularVelocity(random(-5, 5));
+    //body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
+    //body.setAngularVelocity(random(-5, 5));
   }
 
   // method to display the rocket 
   public void show() {
+    // We look at each body and get its screen position
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    // Get its angle of rotation
+    float a = body.getAngle();
+
+    Fixture f = body.getFixtureList();
+    PolygonShape ps = (PolygonShape) f.getShape();
+
+
+    rectMode(CENTER);
+    pushMatrix();
+    translate(pos.x, pos.y);
+    rotate(-a);
     stroke(GAME_COLOR);
     strokeWeight(1);
     noFill();    
+    beginShape();
+    //println(vertices.length);
+    // For every vertex, convert to pixel vector
+    for (int i = 0; i < ps.getVertexCount(); i++) {
+      Vec2 v = box2d.vectorWorldToPixels(ps.getVertex(i));
+      vertex(v.x, v.y);
+    }
+    endShape(CLOSE);
+    shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
+    popMatrix();
+
+    ///////////////
+
 
     //if (up) {// If applying force update the exhaust
     //  PVector part_Pos = new PVector(pos.x - ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(posRot), 
@@ -86,13 +124,6 @@ public class Rocket {
     //  exhaust.turnOn(part_Pos, acc, vel);
     //}
     exhaust.update(GAME_COLOR);
-
-    pushMatrix();
-    translate(x, y);
-    rotate(angle);
-    //shape(rocketBody);
-    shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
-    popMatrix();
   }
 
   // User interactions

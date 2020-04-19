@@ -9,11 +9,7 @@ void setup() {
   // create random color that could be used from here on out
   GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
 
-  // setup terrain values
-  terrain_values[0] = 0;
-  terrain_values[1] = height-50;
-  terrain_values[2] = width;
-  terrain_values[3] = 100;
+  setupTerrain();
 
   setupBox2D();
   setupRocketBody();
@@ -22,7 +18,7 @@ void setup() {
 
 void draw() {
   background(255); // white background
-  terrain(); // terrain
+  showTerrain(); // terrain
 
   // user interactions
   rock.interactions();
@@ -37,21 +33,4 @@ void draw() {
   for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
     if (entry.getKey() != UUID) entry.getValue().update();
   }
-}
-
-/**
- * Method to create the terrain.
- * Box at the bottom of the screen.
- */
-void terrain() {
-  noStroke();
-  fill(GAME_COLOR);
-
-  rectMode(CORNER);
-  // Simple small rectangle at the bottom of the screen
-  rect(terrain_values[0], terrain_values[1], terrain_values[2], terrain_values[3]);
-
-  strokeWeight(5);
-  stroke(0);
-  //line(ppmouseX, ppmouseY, mouseX, mouseY);
 }

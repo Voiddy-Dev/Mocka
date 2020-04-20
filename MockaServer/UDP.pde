@@ -1,6 +1,7 @@
 import java.nio.ByteBuffer;
+import hypermedia.net.*;
 
-UDP udp;
+UDP serverUDP;
 
 int UDP_CLIENT_PORT = 16441;
 
@@ -22,7 +23,7 @@ void receive( byte[] data, String ip, int port ) {  // <-- extended handler
   float vel_x = convertToFloat(subset(data, 22, 4));
   float vel_y = convertToFloat(subset(data, 26, 4));
 
-  udp.send(createPongMessage(rocket_x, rocket_y, rocket_ang, senderUUID, up, acc_x, acc_y, vel_x, vel_y), ip, port);
+  serverUDP.send(createPongMessage(rocket_x, rocket_y, rocket_ang, senderUUID, up, acc_x, acc_y, vel_x, vel_y), ip, port);
 }
 
 byte[] createPongMessage(float rX, float rY, float rAng, int sUUID, int sup, float acc_x, float acc_y, float vel_x, float vel_y) {
@@ -48,32 +49,6 @@ byte[] createPongMessage(float rX, float rY, float rAng, int sUUID, int sup, flo
 public static float convertToFloat(byte[] array) {
   ByteBuffer buffer = ByteBuffer.wrap(array);
   return buffer.getFloat();
-}
-
-
-// TESTING STUFF
-PShape rocketBody;
-
-void setupRocketBody() {
-  rocketBody = createShape();
-  rocketBody.beginShape();
-  rocketBody.noFill();
-  rocketBody.strokeWeight(0.1);
-  rocketBody.stroke(0);
-  //rocketBody.vertex(0, POINT_HEIGHT);
-  //rocketBody.vertex(LEGS_WIDTH, LEGS_HEIGHT);
-  //rocketBody.vertex(-LEGS_WIDTH, LEGS_HEIGHT);
-  rocketBody.vertex(-.6, -1.3);
-  rocketBody.vertex(-.5, -1.5);
-  rocketBody.vertex(0, -1.8);
-  rocketBody.vertex(.5, -1.5);
-  rocketBody.vertex(.6, -1.3);
-  rocketBody.vertex(1.2, .7);
-  rocketBody.vertex(.9, 1.8);
-  rocketBody.vertex(-.9, 1.8);
-  rocketBody.vertex(-1.2, .7);
-  rocketBody.endShape(CLOSE);
-  rocketBody.scale(10);
 }
 
 // I <3 StackOverflow

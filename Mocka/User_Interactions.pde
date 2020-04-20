@@ -30,14 +30,3 @@ void keyReleased() {
     right = false;
   }
 }
-
-float ppmouseX = 0, ppmouseY = 0;
-
-void mousePressed() {
-  ppmouseX = mouseX;
-  ppmouseY = mouseY;
-}
-
-void mouseMoved() {
-  if (ppmouseX == 0 && ppmouseY == 0)mousePressed();
-}

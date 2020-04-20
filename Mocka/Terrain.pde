@@ -1,8 +1,11 @@
 ArrayList<Platform> platforms = new ArrayList();
 
 void setupTerrain() {
-  // setup terrain values
   platforms.add(new Platform(width/2, height - 50, width, 100));
+
+  for (int i = 0; i < 8; i++) {
+    platforms.add(new Platform(random(width), random(height), random(40, 200), random(40, 100)));
+  }
 }
 
 void showTerrain() {
@@ -19,7 +22,7 @@ void showTerrain() {
 
 public class Platform {
   // coordinates and used var
-  int x, y, w, h;
+  float x, y, w, h;
   int used;
 
   Body body;
@@ -30,7 +33,7 @@ public class Platform {
   int HEIGHT = 20;
 
   // constructor and initialize the platform
-  public Platform(int x, int y, int w, int h) {
+  public Platform(float x, float y, float w, float h) {
     this.x = x;
     this.y = y;
     this.w = w;

@@ -1,6 +1,6 @@
 color GAME_COLOR; // Random color that can be used throughout the code
 
-Rocket rock;
+MyRocket myRocket;
 
 void setup() {
   size(120, 80);
@@ -15,7 +15,7 @@ void setup() {
   setupTerrain();
 
   setupRocketBody();
-  rock = new Rocket(width/2, height-80);
+  myRocket = new MyRocket(width/2, height-80);
 }
 
 void draw() {
@@ -25,14 +25,14 @@ void draw() {
   showTerrain(); // terrain
 
   // user interactions
-  rock.interactions();
+  myRocket.interactions();
   box2d.step();
 
   // updating and displaying the rocket
   //rock.update();
-  rock.show();
+  myRocket.show();
 
-  for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
-    if (entry.getKey() != UUID) entry.getValue().update();
-  }
+  //for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
+  //  if (entry.getKey() != UUID) entry.getValue().update();
+  //}
 }

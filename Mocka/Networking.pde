@@ -3,10 +3,8 @@ import java.nio.ByteBuffer;
 
 int UUID = -1;
 
-String SERVER_TCP_IP = "localhost"; //"lmhleetmcgang.ddns.net";
+String SERVER_TCP_IP = "192.168.1.4"; //"localhost"; //"lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25567;
-
-HashMap<Integer, Enemy> enemies = new HashMap();
 
 Client client;
 
@@ -24,7 +22,7 @@ void updateNetwork() {
 void interpretNetwork() {
   if (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
-    println("PACKET: "+PACKET_ID);
+    println("client: PACKET: "+PACKET_ID);
     if (PACKET_ID == 0) NOTIFY_NEW_PLAYER();
   }
 }
@@ -46,9 +44,9 @@ void readNetwork() {
     byte[] data_from_network = new byte[client.available()];
     client.readBytes(data_from_network);
     byte[] data_from_buffer = network_data.array();
-    byte[] data_combined = new byte[data_from_network.length + network_data.remaining()];
-    System.arraycopy(data_from_buffer, 0, data_combined, 0, data_from_buffer.length);
-    System.arraycopy(data_from_network, 0, data_combined, data_from_buffer.length, data_from_network.length);
+    byte[] data_combined = new byte[data_from_network.length + data_from_buffer.length - network_data.position()];
+    System.arraycopy(data_from_buffer, network_data.position(), data_combined, 0, data_from_buffer.length - network_data.position());
+    System.arraycopy(data_from_network, 0, data_combined, data_from_buffer.length - network_data.position(), data_from_network.length);
     network_data = ByteBuffer.wrap(data_combined);
   }
 }

@@ -42,5 +42,5 @@ void serverEvent(Server serv, Client myClient) {
   int UUID = getFreeUUID();
   Player myPlayer = new Player(myClient, UUID);
   players.put(UUID, myPlayer);
-  NOTIFY_NEW_PLAYER(UUID);
+  TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_NEW_PLAYER(UUID), UUID);
 }

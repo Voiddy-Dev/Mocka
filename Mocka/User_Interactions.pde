@@ -1,32 +1,24 @@
-boolean up = false, left = false, right = false;
+class MyRocket extends Rocket {
+  MyRocket(float x, float y) {
+    super(x, y);
+  }
+}
 
 void keyPressed() {
-  if (keyCode == UP) {
-    up = true;
-  }
-  if (keyCode == LEFT) {
-    left = true;
-  }
-  if (keyCode == RIGHT) {
-    right = true;
-  }
+  if (keyCode == UP) myRocket.INPUT_up = true;
+  if (keyCode == LEFT)myRocket.INPUT_left = true;
+  if (keyCode == RIGHT)myRocket.INPUT_right = true;
 }
 
 void keyTyped() {
   if (key == 'r') {
-    rock.killBody();
-    rock = new Rocket(width/2, 400);
+    myRocket.killBody();
+    myRocket = new MyRocket(width/2, 400);
   }
 }
 
 void keyReleased() {
-  if (keyCode == UP) {
-    up = false;
-  }
-  if (keyCode == LEFT) {
-    left = false;
-  }
-  if (keyCode == RIGHT) {
-    right = false;
-  }
+  if (keyCode == UP) myRocket.INPUT_up = false;
+  if (keyCode == LEFT) myRocket.INPUT_left = false;
+  if (keyCode == RIGHT) myRocket.INPUT_right = false;
 }

@@ -31,11 +31,11 @@ void setupRocketBody() {
 }
 
 public class Rocket {
+  boolean INPUT_up, INPUT_right, INPUT_left;
+
   Body body; // Box2d body
-  int size = 20;
   ParticleSystem exhaust;
 
-  // Constructor of the Rocket.
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();
     makeBody(new Vec2(x, y));
@@ -73,11 +73,6 @@ public class Rocket {
     body = box2d.createBody(bd);
 
     body.createFixture(sd, 1.0);
-
-
-    // Give it some initial random velocity
-    //body.setLinearVelocity(new Vec2(random(-5, 5), random(2, 5)));
-    //body.setAngularVelocity(random(-5, 5));
   }
 
   void killBody() {
@@ -113,9 +108,7 @@ public class Rocket {
     //shape(rocket_icon, - ((rocket_icon.width * ROCKET_ICON_SCALE)/2), -((rocket_icon.height * ROCKET_ICON_SCALE)/2));
     popMatrix();
 
-    ///////////////
-
-    if (up) {// If applying force update the exhaust
+    if (INPUT_up) {// If applying force update the exhaust
       float angle = body.getAngle();
       PVector part_Pos = new PVector(pos.x + ((rocket_icon.width * ROCKET_ICON_SCALE)/2) * sin(angle), 
         pos.y + ((rocket_icon.height * ROCKET_ICON_SCALE)/2) * cos(angle));
@@ -128,18 +121,17 @@ public class Rocket {
     exhaust.update(GAME_COLOR);
   }
 
-  // User interactions
-  // Arrow keys
+  // User interactions / arrow keys
   public void interactions() {
-    if (up) {
+    if (INPUT_up) {
       float angle = body.getAngle();
       float mag = - box2d.world.getGravity().y * 10;
       Vec2 force = new Vec2(-mag * sin(angle), mag * cos(angle));
       body.applyForceToCenter(force);
     } 
-    if (left) {
+    if (INPUT_left) {
       body.applyTorque(30);
-    } else if (right) {
+    } else if (INPUT_right) {
       body.applyTorque(-30);
     }
   }

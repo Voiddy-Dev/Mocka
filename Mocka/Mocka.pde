@@ -1,3 +1,5 @@
+import java.util.Map;
+
 color GAME_COLOR; // Random color that can be used throughout the code
 
 MyRocket myRocket;
@@ -31,6 +33,7 @@ void draw() {
   // updating and displaying the rocket
   //rock.update();
   myRocket.show();
+  showEnemies();
 
   //for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
   //  if (entry.getKey() != UUID) entry.getValue().update();

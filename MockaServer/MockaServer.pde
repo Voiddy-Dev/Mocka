@@ -4,24 +4,25 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Iterator;
+
 DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
 final int SERVER_TCP_PORT = 25567;
-final int SERVER_UDP_PORT = 16440;
+//final int SERVER_TCP_PORT = 25577;
+final int SERVER_UDP_PORT_A_LAN = 16440;
+final int SERVER_UDP_PORT_A_WAN = 16440; // should be same, unless fancy router port-forwarding
+final int SERVER_UDP_PORT_B_LAN = 16441;
+final int SERVER_UDP_PORT_B_WAN = 16441; // (which I'm doing as kind of a work around actually)
 
 void setup() {
   size(0, 0); 
 
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
-  try {
-    SERVER_UDP_SOCKET = new DatagramSocket(SERVER_UDP_PORT);
-  } 
-  catch(Exception e) {
-    println("SERVER: ERROR: server could not open UDP socket on port "+SERVER_UDP_PORT);
-    exit();
-  }
-
   println("SERVER: Starting server");
 }
 
@@ -35,6 +36,7 @@ void draw() {
   }
   removeInactivePlayers();
   updatePlayers();
+  updateHoles();
 }
 
 // (TCP) run when a new client connects to a server

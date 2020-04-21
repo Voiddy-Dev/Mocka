@@ -1,6 +1,3 @@
-import java.util.Map;
-import java.util.Iterator;
-
 HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
 int getFreeUUID() {
@@ -19,16 +16,10 @@ void removeInactivePlayers() {
     Player p = entry.getValue();
     if (!p.TCP_CLIENT.active()) {
       iter.remove();
+      TCP_SEND_ALL_CLIENTS(NOTIFY_DED_PLAYER(p.UUID));
       println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
     }
   }
-  //for (Map.Entry entry : players.entrySet()) {
-  //  Player p = (Player)entry.getValue();
-  //  if (!p.TCP_CLIENT.active()) {
-  //    println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
-  //    players.remove(entry.getKey());
-  //  }
-  //}
 }
 
 void updatePlayers() {
@@ -49,7 +40,10 @@ class Player {
     // Notify this new player about all existing players
     for (Map.Entry entry : players.entrySet()) {
       Player p = (Player)entry.getValue();
-      if (p.UUID != UUID) TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
+      if (p.UUID != UUID) {
+        TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
+        note_missing_hole(UUID, p.UUID);
+      }
     }
   }
 

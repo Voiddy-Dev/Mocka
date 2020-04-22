@@ -63,8 +63,9 @@ void PLEASE_OPEN_UDP() {
 }
 
 void punch_hole() {
+  DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
   try {
-    DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket();
+    CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket();
     InetAddress CLIENT_UDP_PRIVATE_IP = GET_PRIVATE_IP();
     int CLIENT_UDP_PRIVATE_PORT = CLIENT_UDP_PRIVATE_SOCKET.getLocalPort();
 
@@ -86,30 +87,103 @@ void punch_hole() {
     println("client: Enemy private at "+ENEMY_PRIVATE_IP+" / "+ENEMY_PRIVATE_PORT);
 
     CLIENT_UDP_PRIVATE_SOCKET.close();
-    CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket(CLIENT_UDP_PRIVATE_PORT);
 
-    CLIENT_UDP_PRIVATE_SOCKET.setSoTimeout(1000);
 
-    for (int i = 0; i < 10; i++) {
-      sendData = ("Datapacket(" + i + ")").getBytes();
-      //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
-      SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT);
-      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
 
-      try {
-        receivePacket.setData(new byte[1024]);
-        CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
-        System.out.println("REC: "
-          + new String(receivePacket.getData()));
-      } 
-      catch (Exception e) {
-        System.out.println("SERVER TIMED OUT");
-      }
-    }
 
-    CLIENT_UDP_PRIVATE_SOCKET.close();
+
+    // Try a connection over LAN first
+    attempUDPconnection("LAN", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 1000);
+
+
+
+    //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
+    //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
   } 
   catch(Exception e) {
+  } 
+  finally {
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.close();
+    } 
+    catch(Exception e) {
+    }
+  }
+}
+
+void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int REMOTE_PORT, int TIMEOUT) {
+  DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
+  try {
+    println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IP+" / "+REMOTE_PORT);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket(LOCAL_PORT);
+      CLIENT_UDP_PRIVATE_SOCKET.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
+    } 
+    catch(Exception e) {
+      println("client: failed to open local port "+LOCAL_PORT);
+      throw new Exception();
+    }
+
+    // wait for a bit, to make sure the other party has had time to set up their socket...
+    Thread.sleep(100);
+
+    byte[] sendData = new byte[1];
+    sendData[0] = (byte)0;
+    DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, REMOTE_IP, REMOTE_PORT);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    }
+    catch (Exception e) {
+      println("client: "+CONNECTION_NAME+" failed to send packet");
+      throw new Exception();
+    }
+
+    DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
+    receivePacket.setData(new byte[1]);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+    } 
+    catch(Exception e) {
+      println("client: "+CONNECTION_NAME+" timed out...");
+      throw new Exception();
+    }
+    if (receivePacket.getData()[0] != (byte)0) {
+      println("client: "+CONNECTION_NAME+" Received data from enemy, but not what was expected...");
+      println(receivePacket.getData()[0]);
+      throw new Exception();
+    }
+
+    println("client: "+CONNECTION_NAME+" reached by enemy! Acknoledging...");
+    sendData[0] = (byte)1;
+    SEND_PACKET = new DatagramPacket(sendData, sendData.length, REMOTE_IP, REMOTE_PORT);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    }
+    catch (Exception e) {
+      println("client: "+CONNECTION_NAME+" failed to send packet");
+      throw new Exception();
+    }
+
+    receivePacket.setData(new byte[1]);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+    } 
+    catch(Exception e) {
+      println("client: "+CONNECTION_NAME+" timed out...");
+      throw new Exception();
+    }
+    if (receivePacket.getData()[0] != ((byte)1)) {
+      println("Received data from enemy on LAN, but not what was expected...");
+      println(receivePacket.getData()[0]);
+      throw new Exception();
+    }
+    println("client: (LAN) Enemy reached us and we reached enemy! Success!!!!!!!!!!!!!!");
+    return; // do seomthing??
+  } 
+  catch(Exception e) {
+    println("client: Failed to connect over "+CONNECTION_NAME);
+    CLIENT_UDP_PRIVATE_SOCKET.close();
+    return;
   }
 }
 
@@ -132,7 +206,8 @@ void readNetwork() {
   }
 }
 
-
+// copy pasted off stack overflow. THX!
+// https://stackoverflow.com/questions/9481865/getting-the-ip-address-of-the-current-machine-using-java
 InetAddress GET_PRIVATE_IP() {
   ArrayList<InetAddress> validAddresses = new ArrayList<InetAddress>();
   try {

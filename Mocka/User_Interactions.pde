@@ -15,6 +15,10 @@ void keyTyped() {
     myRocket.killBody();
     myRocket = new MyRocket(width/2, 400);
   }
+  if (key == 't') {
+    killTerrain();
+    setupTerrain();
+  }
 }
 
 void keyReleased() {

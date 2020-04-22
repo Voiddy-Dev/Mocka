@@ -1,10 +1,17 @@
-ArrayList<Platform> platforms = new ArrayList();
+ArrayList<Platform> platforms;
 
 void setupTerrain() {
+  platforms = new ArrayList();
   platforms.add(new Platform(width/2, height - 50, width, 100));
 
   for (int i = 0; i < 8; i++) {
     platforms.add(new Platform(random(width), random(height), random(40, 200), random(40, 100)));
+  }
+}
+
+void killTerrain() {
+  for (Platform p : platforms) {
+    box2d.destroyBody(p.body);
   }
 }
 

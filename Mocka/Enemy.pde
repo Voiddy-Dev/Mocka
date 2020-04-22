@@ -12,5 +12,6 @@ class Enemy extends Rocket {
 
   Enemy(int UUID, float x, float y) {
     super(x, y);
+    this.UUID = UUID;
   }
 }

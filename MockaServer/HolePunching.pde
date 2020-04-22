@@ -92,22 +92,15 @@ void punch_hole() {
 
     try {
       UDP_SOCKET_A.send(new DatagramPacket(locdataB.getBytes(), locdataB.getBytes().length, A_PUBLIC_IP, A_PUBLIC_PORT));
+      UDP_SOCKET_B.send(new DatagramPacket(locdataA.getBytes(), locdataA.getBytes().length, B_PUBLIC_IP, B_PUBLIC_PORT));
       UDP_SOCKET_A.close();
+      UDP_SOCKET_B.close();
     } 
     catch (Exception e) {
       println("SERVER: error: could not send data thru UDP when punching holes...");
       throw new Exception();
     }
-    println("SERVER: punched A, closing");
-    try {
-      UDP_SOCKET_B.send(new DatagramPacket(locdataA.getBytes(), locdataA.getBytes().length, B_PUBLIC_IP, B_PUBLIC_PORT));
-      UDP_SOCKET_B.close();
-    } 
-    catch (Exception e) {
-      println("SERVER: error: could not send data thru UDP when punching holes...");
-      return;
-    }
-    println("SERVER: punched B, closing");
+    println("SERVER: punched A & B, socket closing");
   } 
   catch(Exception e) {
     println("Server: Failed to punch hole :(");

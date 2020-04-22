@@ -82,20 +82,23 @@ void punch_hole() {
     InetAddress ENEMY_PRIVATE_IP = InetAddress.getByName(splitResponse[2].substring(1));
     int ENEMY_PUBLIC_PORT = int(splitResponse[1]);
     int ENEMY_PRIVATE_PORT = int(splitResponse[3]);
+    boolean CLIENT_IS_LOCAL = int(splitResponse[4]) == 1;
+    boolean ENEMY_IS_LOCAL = int(splitResponse[5]) == 1;
+    println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
 
     println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
-    println("client: Enemy private at "+ENEMY_PRIVATE_IP+" / "+ENEMY_PRIVATE_PORT);
+    println("client: Enemy private at "+ENEMY_PRIVATE_IP+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
 
     CLIENT_UDP_PRIVATE_SOCKET.close();
 
-
-
-
-
-    // Try a connection over LAN first
-    attempUDPconnection("LAN", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 1000);
-
-
+    if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {   
+      attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 1000, 100);
+      attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT, 5000, 1000);
+    } else {
+      //if (CLIENT_IS_LOCAL) attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT, 5000, 1000);
+      //else attemptAsymmetricUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, 5000, 1000);
+      attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT, 5000, 1000);
+    }
 
     //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
     //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
@@ -111,7 +114,7 @@ void punch_hole() {
   }
 }
 
-void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int REMOTE_PORT, int TIMEOUT) {
+void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int REMOTE_PORT, int TIMEOUT, int SLEEPTIME) {
   DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
   try {
     println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IP+" / "+REMOTE_PORT);
@@ -123,10 +126,12 @@ void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REM
       println("client: failed to open local port "+LOCAL_PORT);
       throw new Exception();
     }
+    println("client: socket open on local port "+LOCAL_PORT);
 
     // wait for a bit, to make sure the other party has had time to set up their socket...
-    Thread.sleep(100);
+    Thread.sleep(SLEEPTIME);
 
+    println("client: waking up, sending packet to "+REMOTE_IP+" / "+REMOTE_PORT);
     byte[] sendData = new byte[1];
     sendData[0] = (byte)0;
     DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, REMOTE_IP, REMOTE_PORT);
@@ -177,7 +182,7 @@ void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REM
       println(receivePacket.getData()[0]);
       throw new Exception();
     }
-    println("client: (LAN) Enemy reached us and we reached enemy! Success!!!!!!!!!!!!!!");
+    println("client: "+CONNECTION_NAME+" LAN Enemy reached us and we reached enemy! Success!!!!!!!!!!!!!!");
     return; // do seomthing??
   } 
   catch(Exception e) {
@@ -186,6 +191,92 @@ void attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REM
     return;
   }
 }
+
+
+
+void attemptAsymmetricUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int TIMEOUT, int SLEEPTIME) {
+  DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
+  try {
+    println("client: performing asymmetric connection to "+CONNECTION_NAME+" "+REMOTE_IP);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket(LOCAL_PORT);
+      CLIENT_UDP_PRIVATE_SOCKET.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
+    } 
+    catch(Exception e) {
+      println("client: failed to open local port "+LOCAL_PORT);
+      throw new Exception();
+    }
+    println("client: socket open on local port "+LOCAL_PORT);
+
+    // wait for a bit, to make sure the other party has had time to set up their socket...
+    Thread.sleep(SLEEPTIME);
+
+    println("client: waking up, trying to read packets");
+    DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
+    receivePacket.setData(new byte[1]);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+    } 
+    catch(Exception e) {
+      println("client: "+CONNECTION_NAME+" timed out...");
+      throw new Exception();
+    }
+    if (receivePacket.getData()[0] != (byte)0) {
+      println("client: "+CONNECTION_NAME+" Received data from enemy, but not what was expected...");
+      println(receivePacket.getData()[0]);
+      throw new Exception();
+    }
+    int REMOTE_PORT = receivePacket.getPort();
+    println("client: REMOTE_PORT: "+REMOTE_PORT);
+
+
+    byte[] sendData = new byte[1];
+    sendData[0] = (byte)0;
+    DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, REMOTE_IP, REMOTE_PORT);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    }
+    catch (Exception e) {
+      println("client: "+CONNECTION_NAME+" failed to send packet");
+      throw new Exception();
+    }
+
+
+    println("client: "+CONNECTION_NAME+" reached by enemy! Acknoledging...");
+    sendData[0] = (byte)1;
+    SEND_PACKET = new DatagramPacket(sendData, sendData.length, REMOTE_IP, REMOTE_PORT);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    }
+    catch (Exception e) {
+      println("client: "+CONNECTION_NAME+" failed to send packet");
+      throw new Exception();
+    }
+
+    receivePacket.setData(new byte[1]);
+    try {
+      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+    } 
+    catch(Exception e) {
+      println("client: "+CONNECTION_NAME+" timed out...");
+      throw new Exception();
+    }
+    if (receivePacket.getData()[0] != ((byte)1)) {
+      println("Received data from enemy on LAN, but not what was expected...");
+      println(receivePacket.getData()[0]);
+      throw new Exception();
+    }
+    println("client: "+CONNECTION_NAME+" LAN Enemy reached us and we reached enemy! Success!!!!!!!!!!!!!!");
+    return; // do seomthing??
+  } 
+  catch(Exception e) {
+    println("client: Failed to connect over "+CONNECTION_NAME);
+    CLIENT_UDP_PRIVATE_SOCKET.close();
+    return;
+  }
+}
+
+
 
 void readNetwork() {
   if (client.available()>0) {

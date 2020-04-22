@@ -19,6 +19,9 @@ final int SERVER_UDP_PORT_A_WAN = 16440; // should be same, unless fancy router 
 final int SERVER_UDP_PORT_B_LAN = 16451;
 final int SERVER_UDP_PORT_B_WAN = 16441; // (which I'm doing as kind of a work around actually)
 
+final InetAddress GATEWAY = InetAddressByName("192.168.0.1");
+final InetAddress WAN = InetAddressByName("91.160.183.12");
+
 void setup() {
   size(0, 0); 
 
@@ -45,4 +48,13 @@ void serverEvent(Server serv, Client myClient) {
   Player myPlayer = new Player(myClient, UUID);
   players.put(UUID, myPlayer);
   TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_NEW_PLAYER(UUID), UUID);
+}
+
+InetAddress InetAddressByName(String ip) {
+  try {
+    return InetAddress.getByName(ip);
+  } 
+  catch(Exception e) {
+    return null;
+  }
 }

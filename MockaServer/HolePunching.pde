@@ -78,6 +78,8 @@ void punch_hole() {
       println("SERVER: ERROR: could not convert private IP of player to InetAddress");
       throw new Exception();
     }
+    boolean A_IS_LOCAL = A_PUBLIC_IP.equals(GATEWAY);
+    boolean B_IS_LOCAL = B_PUBLIC_IP.equals(GATEWAY);
 
     println();
     println("SERVER: A private: "+A_PRIVATE_IP+":"+A_PRIVATE_PORT);
@@ -87,8 +89,8 @@ void punch_hole() {
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
     println();
 
-    String locdataA = A_PUBLIC_IP + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IP + "-" + A_PRIVATE_PORT + "-";
-    String locdataB = B_PUBLIC_IP + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IP + "-" + B_PRIVATE_PORT + "-";
+    String locdataA = A_PUBLIC_IP + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IP + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
+    String locdataB = B_PUBLIC_IP + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IP + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
 
     try {
       UDP_SOCKET_A.send(new DatagramPacket(locdataB.getBytes(), locdataB.getBytes().length, A_PUBLIC_IP, A_PUBLIC_PORT));

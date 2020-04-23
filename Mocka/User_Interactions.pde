@@ -13,7 +13,7 @@ void keyPressed() {
 void keyTyped() {
   if (key == 'r') {
     myRocket.killBody();
-    myRocket = new MyRocket(width/2, 400);
+    myRocket = new MyRocket(width/2, height/2);
   }
   if (key == 't') {
     killTerrain();

@@ -32,9 +32,10 @@ ByteBuffer NOTIFY_DED_PLAYER(int UUID) {
   return data;
 }
 
-ByteBuffer PLEASE_OPEN_UDP(int port) {
-  ByteBuffer data = ByteBuffer.allocate(5);
+ByteBuffer PLEASE_OPEN_UDP(int port, int enemy_UUID) {
+  ByteBuffer data = ByteBuffer.allocate(9);
   data.put((byte)2);
   data.putInt(port);
+  data.putInt(enemy_UUID);
   return data;
 }

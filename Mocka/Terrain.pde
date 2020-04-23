@@ -4,7 +4,7 @@ void setupTerrain() {
   platforms = new ArrayList();
   platforms.add(new Platform(width/2, height - 50, width, 100));
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 0; i++) {
     platforms.add(new Platform(random(width), random(height), random(40, 200), random(40, 100)));
   }
 }

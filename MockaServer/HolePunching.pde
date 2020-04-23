@@ -45,8 +45,8 @@ void punch_hole() {
       println("SERVER: ERROR: failed to open port "+SERVER_UDP_PORT_A_LAN+" / "+SERVER_UDP_PORT_B_LAN);
       throw new Exception();
     } 
-    H_player_a.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_A_WAN));
-    H_player_b.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_B_WAN));
+    H_player_a.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_A_WAN, H_player_b.UUID));
+    H_player_b.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_B_WAN, H_player_a.UUID));
 
     DatagramPacket receivePacketA = new DatagramPacket(new byte[1024], 1024);
     DatagramPacket receivePacketB = new DatagramPacket(new byte[1024], 1024);
@@ -80,6 +80,8 @@ void punch_hole() {
     }
     boolean A_IS_LOCAL = A_PUBLIC_IP.equals(GATEWAY);
     boolean B_IS_LOCAL = B_PUBLIC_IP.equals(GATEWAY);
+    InetAddress A_PUBLIC_IP_ = A_IS_LOCAL ? WAN : A_PUBLIC_IP;
+    InetAddress B_PUBLIC_IP_ = B_IS_LOCAL ? WAN : B_PUBLIC_IP;
 
     println();
     println("SERVER: A private: "+A_PRIVATE_IP+":"+A_PRIVATE_PORT);
@@ -89,17 +91,19 @@ void punch_hole() {
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
     println();
 
-    String locdataA = A_PUBLIC_IP + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IP + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
-    String locdataB = B_PUBLIC_IP + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IP + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
+    String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IP + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
+    String locdataB = B_PUBLIC_IP_ + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IP + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
 
     try {
       UDP_SOCKET_A.send(new DatagramPacket(locdataB.getBytes(), locdataB.getBytes().length, A_PUBLIC_IP, A_PUBLIC_PORT));
       UDP_SOCKET_B.send(new DatagramPacket(locdataA.getBytes(), locdataA.getBytes().length, B_PUBLIC_IP, B_PUBLIC_PORT));
+
       UDP_SOCKET_A.close();
       UDP_SOCKET_B.close();
     } 
     catch (Exception e) {
       println("SERVER: error: could not send data thru UDP when punching holes...");
+      println(e);
       throw new Exception();
     }
     println("SERVER: punched A & B, socket closing");

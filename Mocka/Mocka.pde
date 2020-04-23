@@ -5,8 +5,9 @@ color GAME_COLOR; // Random color that can be used throughout the code
 MyRocket myRocket;
 
 void setup() {
-  size(120, 80, FX2D);
+  //size(120, 80, FX2D);
   //size(1200, 800, FX2D);
+  size(480, 320, FX2D);
 
   setupBox2D();
 
@@ -27,9 +28,10 @@ void draw() {
   background(255); // white background
   showTerrain(); // terrain
 
-  // user interactions
   myRocket.interactions();
+  updateEnemies();
   box2d.step();
+  informEnemies();
 
   // updating and displaying the rocket
   //rock.update();

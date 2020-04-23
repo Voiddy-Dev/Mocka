@@ -13,7 +13,6 @@ DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
 final int SERVER_TCP_PORT = 25577;
-//final int SERVER_TCP_PORT = 25577;
 final int SERVER_UDP_PORT_A_LAN = 16450;
 final int SERVER_UDP_PORT_A_WAN = 16440; // should be same, unless fancy router port-forwarding
 final int SERVER_UDP_PORT_B_LAN = 16451;

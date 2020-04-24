@@ -70,11 +70,14 @@ void punch_hole() {
   DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
   try {
     CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket();
-    InetAddress CLIENT_UDP_PRIVATE_IP = GET_PRIVATE_IP();
+    Object[] CLIENT_UDP_PRIVATE_IPS = GET_PRIVATE_IP();
+    String[] CLIENT_UDP_PRIVATE_IPS_ = new String[CLIENT_UDP_PRIVATE_IPS.length];
+    for (int i = 0; i < CLIENT_UDP_PRIVATE_IPS.length; i++) CLIENT_UDP_PRIVATE_IPS_[i] = CLIENT_UDP_PRIVATE_IPS[i].toString();
+    String CLIENT_UDP_PRIVATE_IPS_STRING = join(CLIENT_UDP_PRIVATE_IPS_, ";");
     int CLIENT_UDP_PRIVATE_PORT = CLIENT_UDP_PRIVATE_SOCKET.getLocalPort();
 
-    println("client: local UDP socket open IP / port: "+CLIENT_UDP_PRIVATE_IP+" / "+CLIENT_UDP_PRIVATE_PORT);
-    byte[] sendData = (CLIENT_UDP_PRIVATE_IP+"-"+CLIENT_UDP_PRIVATE_PORT+"-").getBytes();
+    println("client: local UDP socket open IP / port: "+CLIENT_UDP_PRIVATE_IPS_STRING+" / "+CLIENT_UDP_PRIVATE_PORT);
+    byte[] sendData = (CLIENT_UDP_PRIVATE_IPS_STRING+"-"+CLIENT_UDP_PRIVATE_PORT+"-").getBytes();
     DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(SERVER_IP), SERVER_UDP_PORT);
     CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
 
@@ -83,7 +86,10 @@ void punch_hole() {
 
     String[] splitResponse = new String(receivePacket.getData()).split("-");
     InetAddress ENEMY_PUBLIC_IP = InetAddress.getByName(splitResponse[0].substring(1));
-    InetAddress ENEMY_PRIVATE_IP = InetAddress.getByName(splitResponse[2].substring(1));
+    String ENEMY_PRIVATE_IPS_STRING = splitResponse[2];
+    String[] ENEMY_PRIVATE_IPS_STRING_SPLIT = ENEMY_PRIVATE_IPS_STRING.split(";");
+    InetAddress[] ENEMY_PRIVATE_IPS = new InetAddress[ENEMY_PRIVATE_IPS_STRING_SPLIT.length];
+    for (int i = 0; i < ENEMY_PRIVATE_IPS.length; i++) ENEMY_PRIVATE_IPS[i] = InetAddress.getByName(ENEMY_PRIVATE_IPS_STRING_SPLIT[i].substring(1));
     int ENEMY_PUBLIC_PORT = int(splitResponse[1]);
     int ENEMY_PRIVATE_PORT = int(splitResponse[3]);
     boolean CLIENT_IS_LOCAL = int(splitResponse[4]) == 1;
@@ -91,13 +97,13 @@ void punch_hole() {
     println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
 
     println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
-    println("client: Enemy private at "+ENEMY_PRIVATE_IP+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
+    println("client: Enemy private at "+ENEMY_PRIVATE_IPS_STRING+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
 
     CLIENT_UDP_PRIVATE_SOCKET.close();
 
     Enemy enemy = enemies.get(INCOMING_ENEMY_UUID);
     DatagramSocket socket;
-    socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 30, 100);
+    socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IPS_STRING, ENEMY_PRIVATE_IPS, ENEMY_PRIVATE_PORT, 30, 100);
     if (socket != null)enemy.setSocket(socket);
     return;
 
@@ -114,6 +120,8 @@ void punch_hole() {
     //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
   } 
   catch(Exception e) {
+    println("client: failed to punch hole");
+    println(e);
   } 
   finally {
     try {
@@ -124,15 +132,16 @@ void punch_hole() {
   }
 }
 
-DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int REMOTE_PORT, int TIMEOUT, int SLEEPTIME) {
-  DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
+DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, String REMOTE_IPS_STRING, InetAddress[] REMOTE_IPS, int REMOTE_PORT, int TIMEOUT, int SLEEPTIME) {
+  DatagramSocket socket = null;
   try {
     println();
-    println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IP+" / "+REMOTE_PORT);
+    println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
+    printArray(REMOTE_IPS);
     try {
-      CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket(LOCAL_PORT);
-      CLIENT_UDP_PRIVATE_SOCKET.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
-      CLIENT_UDP_PRIVATE_SOCKET.connect(REMOTE_IP, REMOTE_PORT);
+      socket = new DatagramSocket(LOCAL_PORT);
+      socket.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
+      //CLIENT_UDP_PRIVATE_SOCKET.connect(REMOTE_IP, REMOTE_PORT);
     } 
     catch(Exception e) {
       println("client: failed to open local port "+LOCAL_PORT);
@@ -143,27 +152,42 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetA
     // wait for a bit, to make sure the other party has had time to set up their socket...
     Thread.sleep(SLEEPTIME);
 
-    println("client: waking up, sending packet to "+REMOTE_IP+" / "+REMOTE_PORT);
+    println("client: waking up, sending packet to "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
     int RECEPTION_LEVEL = -1;
+    InetAddress REMOTE_IP_CONFIRMED = null;
     while (RECEPTION_LEVEL < 1) {
       byte[] sendData = new byte[1];
       sendData[0] = (byte)(RECEPTION_LEVEL+1);
-      println("sending:");
-      printArray(sendData);
       DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length);
       DatagramPacket receivePacket = new DatagramPacket(new byte[1], 1);
       boolean received = false;
       for (int i = 0; i < 10; i++) {
         try {
-          CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+          if (REMOTE_IP_CONFIRMED != null) {
+            println("client: pinging to confirmed: "+REMOTE_IP_CONFIRMED);
+            socket.send(SEND_PACKET);
+          } else {
+            for (int ip = 0; ip < REMOTE_IPS.length; ip++) {
+              println("client: pinging to "+REMOTE_IPS[ip]);
+              SEND_PACKET.setAddress(REMOTE_IPS[ip]);
+              SEND_PACKET.setPort(REMOTE_PORT);
+              socket.send(SEND_PACKET);
+            }
+          }
         }
         catch (Exception e) {
           println("client: "+CONNECTION_NAME+" failed to send packet");
           throw new Exception();
         }
         try {
-          CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+          socket.receive(receivePacket);
+          if (REMOTE_IP_CONFIRMED == null) {
+            REMOTE_IP_CONFIRMED = receivePacket.getAddress();
+            println("client: Enemy responded! from ip :"+REMOTE_IP_CONFIRMED);
+            socket.connect(REMOTE_IP_CONFIRMED, REMOTE_PORT);
+          }
           received = true;
+          break;
         } 
         catch(Exception e) {
           print("-");
@@ -173,19 +197,17 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetA
         println("client: Enemy timed out");
         throw new Exception();
       }
-      println("received:");
-      printArray(receivePacket.getData());
       RECEPTION_LEVEL = receivePacket.getData()[0];
       println("client: RECEPTION_LEVEL: "+RECEPTION_LEVEL);
       if (RECEPTION_LEVEL != 0) RECEPTION_LEVEL = 1;
     }
 
     println("client: "+CONNECTION_NAME+" Hole successfully punched!");
-    return CLIENT_UDP_PRIVATE_SOCKET;
+    return socket;
   } 
   catch(Exception e) {
     println("client: Failed to connect over "+CONNECTION_NAME);
-    CLIENT_UDP_PRIVATE_SOCKET.close();
+    socket.close();
     return null;
   }
 }
@@ -297,10 +319,10 @@ void readNetwork() {
 
 // copy pasted off stack overflow. THX!
 // https://stackoverflow.com/questions/9481865/getting-the-ip-address-of-the-current-machine-using-java
-InetAddress GET_PRIVATE_IP() {
-  ArrayList<InetAddress> validAddresses = new ArrayList<InetAddress>();
+Object[] GET_PRIVATE_IP() {
   try {
-    InetAddress candidateAddress = null;
+    ArrayList<InetAddress> validAddresses = new ArrayList<InetAddress>();
+    ArrayList<InetAddress> candidateAddress = new ArrayList<InetAddress>();
     // Iterate all NICs (network interface cards)...
     for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
       NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
@@ -311,10 +333,10 @@ InetAddress GET_PRIVATE_IP() {
           if (inetAddr.isSiteLocalAddress()) {
             // Found non-loopback site-local address. (Return it immediately...?)
             validAddresses.add(inetAddr);
-          } else if (candidateAddress == null) {
+          } else {
             // Found non-loopback address, but not necessarily site-local.
             // Store it as a candidate to be returned if site-local address is not subsequently found...
-            candidateAddress = inetAddr;
+            candidateAddress.add(inetAddr);
             // Note that we don't repeatedly assign non-loopback non-site-local addresses as candidates,
             // only the first. For subsequent iterations, candidate will be non-null.
           }
@@ -322,14 +344,14 @@ InetAddress GET_PRIVATE_IP() {
       }
     }
     if (!validAddresses.isEmpty()) {
-      return validAddresses.get(validAddresses.size()-1); // arbitrary return the last address (fixed things for one of my machines / big bodge, oops)
+      return validAddresses.toArray();
     }
-    if (candidateAddress != null) {
+    if (candidateAddress.isEmpty()) {
       // We did not find a site-local address, but we found some other non-loopback address.
       // Server might have a non-site-local address assigned to its NIC (or it might be running
       // IPv6 which deprecates the "site-local" concept).
       // Return this non-loopback candidate address...
-      return candidateAddress;
+      return candidateAddress.toArray();
     }
     // At this point, we did not find a non-loopback address.
     // Fall back to returning whatever InetAddress.getLocalHost() returns...
@@ -337,7 +359,7 @@ InetAddress GET_PRIVATE_IP() {
     if (jdkSuppliedAddress == null) {
       throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
     }
-    return jdkSuppliedAddress;
+    return new InetAddress[]{jdkSuppliedAddress};
   } 
   catch(Exception e) {
     return null;

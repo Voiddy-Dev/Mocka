@@ -66,17 +66,31 @@ void punch_hole() {
     int B_PUBLIC_PORT = receivePacketB.getPort();
 
     int A_PRIVATE_PORT, B_PRIVATE_PORT;
-    InetAddress A_PRIVATE_IP, B_PRIVATE_IP;
+    InetAddress[] A_PRIVATE_IPS, B_PRIVATE_IPS;
+    String A_PRIVATE_IPS_STRING, B_PRIVATE_IPS_STRING;
     try {
       String[] splitResponseA = new String(receivePacketA.getData()).split("-");
       String[] splitResponseB = new String(receivePacketB.getData()).split("-");
-      A_PRIVATE_IP = InetAddress.getByName(splitResponseA[0].substring(1));
-      B_PRIVATE_IP = InetAddress.getByName(splitResponseB[0].substring(1));
+      A_PRIVATE_IPS_STRING = splitResponseA[0];
+      B_PRIVATE_IPS_STRING = splitResponseB[0];
+      printArray(splitResponseA);
+      printArray(splitResponseB);
+      String[] A_PRIVATE_IPS_SPLIT = A_PRIVATE_IPS_STRING.split(";");
+      String[] B_PRIVATE_IPS_SPLIT = B_PRIVATE_IPS_STRING.split(";");
+      printArray(A_PRIVATE_IPS_SPLIT);
+      printArray(B_PRIVATE_IPS_SPLIT);
+      A_PRIVATE_IPS = new InetAddress[A_PRIVATE_IPS_SPLIT.length];
+      B_PRIVATE_IPS = new InetAddress[B_PRIVATE_IPS_SPLIT.length];
+      for (int i = 0; i < A_PRIVATE_IPS.length; i++) A_PRIVATE_IPS[i] = InetAddress.getByName(A_PRIVATE_IPS_SPLIT[i].substring(1));
+      for (int i = 0; i < B_PRIVATE_IPS.length; i++) B_PRIVATE_IPS[i] = InetAddress.getByName(B_PRIVATE_IPS_SPLIT[i].substring(1));
+      printArray(A_PRIVATE_IPS);
+      printArray(B_PRIVATE_IPS);
       A_PRIVATE_PORT = Integer.parseInt(splitResponseA[1]);
       B_PRIVATE_PORT = Integer.parseInt(splitResponseB[1]);
     } 
     catch(Exception e) {
       println("SERVER: ERROR: could not convert private IP of player to InetAddress");
+      println(e);
       throw new Exception();
     }
     boolean A_IS_LOCAL = A_PUBLIC_IP.equals(GATEWAY);
@@ -85,15 +99,15 @@ void punch_hole() {
     InetAddress B_PUBLIC_IP_ = B_IS_LOCAL ? WAN : B_PUBLIC_IP;
 
     println();
-    println("SERVER: A private: "+A_PRIVATE_IP+":"+A_PRIVATE_PORT);
+    println("SERVER: A private: "+A_PRIVATE_IPS_STRING+":"+A_PRIVATE_PORT);
     println("SERVER: A public:  "+A_PUBLIC_IP+":"+A_PUBLIC_PORT);
     println();
-    println("SERVER: B private: "+B_PRIVATE_IP+":"+B_PRIVATE_PORT);
+    println("SERVER: B private: "+B_PRIVATE_IPS_STRING+":"+B_PRIVATE_PORT);
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
     println();
 
-    String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IP + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
-    String locdataB = B_PUBLIC_IP_ + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IP + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
+    String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IPS_STRING + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
+    String locdataB = B_PUBLIC_IP_ + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IPS_STRING + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
 
     try {
       UDP_SOCKET_A.send(new DatagramPacket(locdataB.getBytes(), locdataB.getBytes().length, A_PUBLIC_IP, A_PUBLIC_PORT));
@@ -123,6 +137,7 @@ void punch_hole() {
     } 
     catch (Exception e) {
     }
-    still_punching = false;
   }
+  still_punching = false;
+  println("Server: no longer punching");
 }

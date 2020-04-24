@@ -35,6 +35,7 @@ Player H_player_a, H_player_b;
  */
 
 void punch_hole() {
+  still_punching = true;
   DatagramSocket UDP_SOCKET_A = null, UDP_SOCKET_B = null;
   try {
     try {
@@ -122,5 +123,6 @@ void punch_hole() {
     } 
     catch (Exception e) {
     }
+    still_punching = false;
   }
 }

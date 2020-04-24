@@ -35,7 +35,7 @@ void updateNetwork() {
 void interpretNetwork() {
   if (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
-    println("client: PACKET: "+PACKET_ID);
+    //println("client: received from tcp server PACKET_ID: "+PACKET_ID);
     if (PACKET_ID == 0) NOTIFY_NEW_PLAYER();
     if (PACKET_ID == 1) NOTIFY_DED_PLAYER();
     if (PACKET_ID == 2) PLEASE_OPEN_UDP();
@@ -46,13 +46,13 @@ void NOTIFY_NEW_PLAYER() {
   int new_UUID = network_data.getInt();
   Enemy enemy = new Enemy(width/2, height/2, new_UUID);
   enemies.put(new_UUID, enemy);
-  println("client: new player notification, UUID: "+new_UUID);
+  println("client: new player, UUID: "+new_UUID);
 }
 
 void NOTIFY_DED_PLAYER() {
   int ded_UUID = network_data.getInt();
-  enemies.remove(ded_UUID);
-  println("client: player ded notification, UUID: "+ded_UUID);
+  removeEnemy(ded_UUID);
+  println("client: player ded, UUID: "+ded_UUID);
 }
 
 int SERVER_UDP_PORT;
@@ -62,7 +62,7 @@ void PLEASE_OPEN_UDP() {
   SERVER_UDP_PORT = network_data.getInt();
   INCOMING_ENEMY_UUID = network_data.getInt();
 
-  println("client: server asking for UDP hole-punching on server-port "+SERVER_UDP_PORT);
+  println("client: initiating hole punching for player "+INCOMING_ENEMY_UUID+" port "+SERVER_UDP_PORT);
   thread("punch_hole");
 }
 
@@ -73,15 +73,13 @@ void punch_hole() {
     InetAddress CLIENT_UDP_PRIVATE_IP = GET_PRIVATE_IP();
     int CLIENT_UDP_PRIVATE_PORT = CLIENT_UDP_PRIVATE_SOCKET.getLocalPort();
 
-    println("client: UDP socket open on local IP/port: "+CLIENT_UDP_PRIVATE_IP+" / "+CLIENT_UDP_PRIVATE_PORT);
+    println("client: local UDP socket open IP / port: "+CLIENT_UDP_PRIVATE_IP+" / "+CLIENT_UDP_PRIVATE_PORT);
     byte[] sendData = (CLIENT_UDP_PRIVATE_IP+"-"+CLIENT_UDP_PRIVATE_PORT+"-").getBytes();
     DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(SERVER_IP), SERVER_UDP_PORT);
     CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
 
     DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
-    println("waiting");
     CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
-    println("waited");
 
     String[] splitResponse = new String(receivePacket.getData()).split("-");
     InetAddress ENEMY_PUBLIC_IP = InetAddress.getByName(splitResponse[0].substring(1));
@@ -98,7 +96,9 @@ void punch_hole() {
     CLIENT_UDP_PRIVATE_SOCKET.close();
 
     Enemy enemy = enemies.get(INCOMING_ENEMY_UUID);
-    enemy.setSocket(attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 1000, 100));
+    DatagramSocket socket;
+    socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IP, ENEMY_PRIVATE_PORT, 30, 100);
+    if (socket != null)enemy.setSocket(socket);
     return;
 
     //if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {   
@@ -127,6 +127,7 @@ void punch_hole() {
 DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetAddress REMOTE_IP, int REMOTE_PORT, int TIMEOUT, int SLEEPTIME) {
   DatagramSocket CLIENT_UDP_PRIVATE_SOCKET = null;
   try {
+    println();
     println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IP+" / "+REMOTE_PORT);
     try {
       CLIENT_UDP_PRIVATE_SOCKET = new DatagramSocket(LOCAL_PORT);
@@ -143,59 +144,44 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, InetA
     Thread.sleep(SLEEPTIME);
 
     println("client: waking up, sending packet to "+REMOTE_IP+" / "+REMOTE_PORT);
-    byte[] sendData = new byte[1];
-    sendData[0] = (byte)0;
-    DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length);
-    try {
-      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
-    }
-    catch (Exception e) {
-      println("client: "+CONNECTION_NAME+" failed to send packet");
-      throw new Exception();
-    }
-
-    DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
-    receivePacket.setData(new byte[1]);
-    try {
-      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
-    } 
-    catch(Exception e) {
-      println("client: "+CONNECTION_NAME+" timed out...");
-      throw new Exception();
-    }
-    if (receivePacket.getData()[0] != (byte)0) {
-      println("client: "+CONNECTION_NAME+" Received data from enemy, but not what was expected...");
-      println(receivePacket.getData()[0]);
-      //throw new Exception();
-    }
-    Thread.sleep(TIMEOUT/3);
-
-    println("client: "+CONNECTION_NAME+" reached by enemy! Acknoledging...");
-    sendData[0] = (byte)1;
-    SEND_PACKET = new DatagramPacket(sendData, sendData.length);
-    try {
-      CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
-    }
-    catch (Exception e) {
-      println("client: "+CONNECTION_NAME+" failed to send packet");
-      throw new Exception();
+    int RECEPTION_LEVEL = -1;
+    while (RECEPTION_LEVEL < 1) {
+      byte[] sendData = new byte[1];
+      sendData[0] = (byte)(RECEPTION_LEVEL+1);
+      println("sending:");
+      printArray(sendData);
+      DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length);
+      DatagramPacket receivePacket = new DatagramPacket(new byte[1], 1);
+      boolean received = false;
+      for (int i = 0; i < 10; i++) {
+        try {
+          CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+        }
+        catch (Exception e) {
+          println("client: "+CONNECTION_NAME+" failed to send packet");
+          throw new Exception();
+        }
+        try {
+          CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+          received = true;
+        } 
+        catch(Exception e) {
+          print("-");
+        }
+      }
+      if (!received) {
+        println("client: Enemy timed out");
+        throw new Exception();
+      }
+      println("received:");
+      printArray(receivePacket.getData());
+      RECEPTION_LEVEL = receivePacket.getData()[0];
+      println("client: RECEPTION_LEVEL: "+RECEPTION_LEVEL);
+      if (RECEPTION_LEVEL != 0) RECEPTION_LEVEL = 1;
     }
 
-    receivePacket.setData(new byte[1]);
-    try {
-      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
-    } 
-    catch(Exception e) {
-      println("client: "+CONNECTION_NAME+" timed out...");
-      //throw new Exception();
-    }
-    if (receivePacket.getData()[0] != ((byte)1)) {
-      println("Received data from enemy on LAN, but not what was expected...");
-      println(receivePacket.getData()[0]);
-      //throw new Exception();
-    }
-    println("client: "+CONNECTION_NAME+" LAN Enemy reached us and we reached enemy! Success!!!!!!!!!!!!!!");
-    return CLIENT_UDP_PRIVATE_SOCKET; // do seomthing??
+    println("client: "+CONNECTION_NAME+" Hole successfully punched!");
+    return CLIENT_UDP_PRIVATE_SOCKET;
   } 
   catch(Exception e) {
     println("client: Failed to connect over "+CONNECTION_NAME);

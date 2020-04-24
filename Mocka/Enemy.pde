@@ -14,6 +14,13 @@ void updateEnemies() {
   }
 }
 
+void removeEnemy(int ded_UUID) {
+  Enemy ded = enemies.get(ded_UUID);
+  if (ded == null) return;
+  ded.kill();
+  enemies.remove(ded_UUID);
+}
+
 byte packet_send_count;
 DatagramPacket packet_send = new DatagramPacket(new byte[25], 25);
 void informEnemies() {
@@ -38,10 +45,17 @@ void informEnemies() {
 class Enemy extends Rocket {
   int UUID;
   DatagramSocket socket;
+  SocketListenThread p;
 
   Enemy(int UUID, float x, float y) {
     super(x, y);
     this.UUID = UUID;
+  }
+
+  void kill() {
+    if (socket != null) socket.close();
+    if (p != null) p.interrupt();
+    killBody();
   }
 
   void updatePosition() {
@@ -64,7 +78,7 @@ class Enemy extends Rocket {
     this.socket = socket;
     println("Client: listening to "+UUID);
     println(socket);
-    SocketListen p = new SocketListen();
+    p = new SocketListenThread();
     p.start();
   }
 
@@ -81,23 +95,22 @@ class Enemy extends Rocket {
   byte latest_time;
   DatagramPacket latest_packet;
 
-  class SocketListen extends Thread {
+  class SocketListenThread extends Thread {
     long minPrime;
-    SocketListen() {
+    SocketListenThread() {
     }
 
     void run() {
-      while (true) {
+      while (!socket.isClosed()) {
         try {
           DatagramPacket receive = new DatagramPacket(new byte[25], 25);
           socket.receive(receive);
           latest_packet = receive;
-          println("r");
-        } 
+        }
         catch (Exception e) {
-          println(e);
+          println(latest_time+" "+e);
           try {
-            Thread.sleep(1000);
+            Thread.sleep(1);
           } 
           catch(Exception e1) {
           }

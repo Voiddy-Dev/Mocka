@@ -22,9 +22,9 @@ void removeEnemy(int ded_UUID) {
 }
 
 byte packet_send_count;
-DatagramPacket packet_send = new DatagramPacket(new byte[25], 25);
+byte[] packet_send_data = new byte[25];
 void informEnemies() {
-  ByteBuffer buf = ByteBuffer.wrap(packet_send.getData());
+  ByteBuffer buf = ByteBuffer.wrap(packet_send_data);
   buf.put(packet_send_count++);
   Vec2 pos = box2d.getBodyPixelCoord(myRocket.body);
   buf.putFloat(pos.x);
@@ -38,7 +38,7 @@ void informEnemies() {
   buf.putFloat(angular_velocity);
   for (Map.Entry entry : enemies.entrySet()) {
     Enemy enemy = (Enemy)entry.getValue();
-    enemy.notify(packet_send);
+    enemy.notify(packet_send_data);
   }
 }
 
@@ -82,12 +82,14 @@ class Enemy extends Rocket {
     p.start();
   }
 
-  void notify(DatagramPacket packet) {
+  void notify(byte[] packet_data) {
     if (socket != null) {
       try {
+        DatagramPacket packet = new DatagramPacket(packet_data, packet_data.length);
         socket.send(packet);
       }
       catch(Exception e) {
+        println("Could not notify enemy "+this.UUID+" of my position! "+e);
       }
     }
   }

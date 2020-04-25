@@ -37,6 +37,7 @@ class Player {
     UUID = UUID_;
     println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
 
+    TCP_SEND(NOTIFY_YOUR_UUID(UUID));
     //note_missing_hole(UUID, UUID);
     // Notify this new player about all existing players
     for (Map.Entry entry : players.entrySet()) {

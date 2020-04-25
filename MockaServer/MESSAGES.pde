@@ -39,3 +39,10 @@ ByteBuffer PLEASE_OPEN_UDP(int port, int enemy_UUID) {
   data.putInt(enemy_UUID);
   return data;
 }
+
+ByteBuffer NOTIFY_YOUR_UUID(int UUID) {
+  ByteBuffer data = ByteBuffer.allocate(5);
+  data.put((byte)3);
+  data.putInt(UUID);
+  return data;
+}

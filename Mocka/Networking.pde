@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-int UUID = -1;
+int MY_UUID = -1;
 
 //String SERVER_IP = "127.0.0.1";
 //String SERVER_IP = "192.168.0.17";
@@ -39,6 +39,7 @@ void interpretNetwork() {
     if (PACKET_ID == 0) NOTIFY_NEW_PLAYER();
     if (PACKET_ID == 1) NOTIFY_DED_PLAYER();
     if (PACKET_ID == 2) PLEASE_OPEN_UDP();
+    if (PACKET_ID == 3) NOTIFY_YOUR_UUID();
   }
 }
 
@@ -53,6 +54,10 @@ void NOTIFY_DED_PLAYER() {
   int ded_UUID = network_data.getInt();
   removeEnemy(ded_UUID);
   println("client: player ded, UUID: "+ded_UUID);
+}
+
+void NOTIFY_YOUR_UUID() {
+  MY_UUID = network_data.getInt();
 }
 
 int SERVER_UDP_PORT;

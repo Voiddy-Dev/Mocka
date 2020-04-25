@@ -184,6 +184,10 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
           if (REMOTE_IP_CONFIRMED == null) {
             REMOTE_IP_CONFIRMED = receivePacket.getAddress();
             println("client: Enemy responded! from ip :"+REMOTE_IP_CONFIRMED);
+            if (receivePacket.getPort() != REMOTE_PORT) {
+              REMOTE_PORT = receivePacket.getPort();
+              println("client: Response comes from an unexpected port! ("+REMOTE_PORT+") Possible second NAT on network? Attempting to continue.");
+            }
             socket.connect(REMOTE_IP_CONFIRMED, REMOTE_PORT);
           }
           received = true;

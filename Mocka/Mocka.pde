@@ -7,7 +7,8 @@ MyRocket myRocket;
 void setup() {
   //size(120, 80, FX2D);
   //size(1200, 800, FX2D);
-  size(480, 320, FX2D);
+  //size(480, 320, FX2D);
+  size(960, 640, FX2D);
 
   setupBox2D();
 

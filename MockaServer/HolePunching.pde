@@ -66,6 +66,7 @@ void punch_hole() {
     int B_PUBLIC_PORT = receivePacketB.getPort();
 
     int A_PRIVATE_PORT, B_PRIVATE_PORT;
+    int A_PUBLIC_PORT_STUN, B_PUBLIC_PORT_STUN;
     InetAddress[] A_PRIVATE_IPS, B_PRIVATE_IPS;
     String A_PRIVATE_IPS_STRING, B_PRIVATE_IPS_STRING;
     try {
@@ -87,6 +88,8 @@ void punch_hole() {
       printArray(B_PRIVATE_IPS);
       A_PRIVATE_PORT = Integer.parseInt(splitResponseA[1]);
       B_PRIVATE_PORT = Integer.parseInt(splitResponseB[1]);
+      A_PUBLIC_PORT_STUN = Integer.parseInt(splitResponseA[2]);
+      B_PUBLIC_PORT_STUN = Integer.parseInt(splitResponseB[2]);
     } 
     catch(Exception e) {
       println("SERVER: ERROR: could not convert private IP of player to InetAddress");
@@ -97,6 +100,10 @@ void punch_hole() {
     boolean B_IS_LOCAL = B_PUBLIC_IP.equals(GATEWAY);
     InetAddress A_PUBLIC_IP_ = A_IS_LOCAL ? WAN : A_PUBLIC_IP;
     InetAddress B_PUBLIC_IP_ = B_IS_LOCAL ? WAN : B_PUBLIC_IP;
+    if (!A_IS_LOCAL && A_PUBLIC_PORT != A_PUBLIC_PORT_STUN) println("SERVER: A's public and STUN ports don't match up! I don't know which port to use for remote so yikes. (public/STUN: "+A_PUBLIC_PORT+" / "+A_PUBLIC_PORT_STUN+")");
+    if (!B_IS_LOCAL && B_PUBLIC_PORT != B_PUBLIC_PORT_STUN) println("SERVER: B's public and STUN ports don't match up! I don't know which port to use for remote so yikes. (public/STUN: "+B_PUBLIC_PORT+" / "+B_PUBLIC_PORT_STUN+")");
+    int A_PUBLIC_PORT_ADVERTISED = A_IS_LOCAL ? A_PUBLIC_PORT_STUN : A_PUBLIC_PORT;
+    int B_PUBLIC_PORT_ADVERTISED = B_IS_LOCAL ? B_PUBLIC_PORT_STUN : B_PUBLIC_PORT;
 
     println();
     println("SERVER: A private: "+A_PRIVATE_IPS_STRING+":"+A_PRIVATE_PORT);
@@ -106,8 +113,8 @@ void punch_hole() {
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
     println();
 
-    String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT + "-" + A_PRIVATE_IPS_STRING + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
-    String locdataB = B_PUBLIC_IP_ + "-" + B_PUBLIC_PORT + "-" + B_PRIVATE_IPS_STRING + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
+    String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT_ADVERTISED + "-" + A_PRIVATE_IPS_STRING + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
+    String locdataB = B_PUBLIC_IP_ + "-" + B_PUBLIC_PORT_ADVERTISED + "-" + B_PRIVATE_IPS_STRING + "-" + B_PRIVATE_PORT + "-" + (A_IS_LOCAL ? 1 : 0) + "-" + (B_IS_LOCAL ? 1 : 0) + "-";
 
     try {
       UDP_SOCKET_A.send(new DatagramPacket(locdataB.getBytes(), locdataB.getBytes().length, A_PUBLIC_IP, A_PUBLIC_PORT));
@@ -139,5 +146,5 @@ void punch_hole() {
     }
   }
   still_punching = false;
-  println("Server: no longer punching");
+  println("SERVER: no longer punching");
 }

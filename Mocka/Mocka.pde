@@ -24,10 +24,10 @@ void setup() {
 }
 
 void draw() {
-  if (frameCount % 60 == 0) {
-    myRocket.killBody();
-    myRocket = new MyRocket(width * MY_UUID / 256., height/2);
-  }
+  //if (frameCount % 60 == 0) {
+  //  myRocket.killBody();
+  //  myRocket = new MyRocket(width * MY_UUID / 256., height/2);
+  //}
   updateNetwork();
 
   background(255); // white background

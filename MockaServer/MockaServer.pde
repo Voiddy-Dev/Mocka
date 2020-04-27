@@ -13,10 +13,10 @@ DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
 final int SERVER_TCP_PORT = 25577;
-final int SERVER_UDP_PORT_A_LAN = 16450;
-final int SERVER_UDP_PORT_A_WAN = 16440; // should be same, unless fancy router port-forwarding
-final int SERVER_UDP_PORT_B_LAN = 16451;
-final int SERVER_UDP_PORT_B_WAN = 16441; // (which I'm doing as kind of a work around actually)
+final int SERVER_UDP_PORT_A_LAN = 16440;
+final int SERVER_UDP_PORT_A_WAN = 16440;
+final int SERVER_UDP_PORT_B_LAN = 16441;
+final int SERVER_UDP_PORT_B_WAN = 16441;
 
 final InetAddress GATEWAY = InetAddressByName("192.168.0.1");
 final InetAddress WAN = InetAddressByName("91.160.183.12");

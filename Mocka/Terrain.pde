@@ -4,7 +4,7 @@ void setupTerrain() {
   platforms = new ArrayList();
   platforms.add(new Platform(width/2, height - 50, width, 100));
 
-  for (int i = 0; i < 0; i++) {
+  for (int i = 0; i < 10; i++) {
     platforms.add(new Platform(random(width), random(height), random(40, 200), random(40, 100)));
   }
 }
@@ -17,14 +17,11 @@ void killTerrain() {
 
 void showTerrain() {
   noStroke();
-  fill(GAME_COLOR);
+  fill(0);
 
   rectMode(CORNER);
   // Simple small rectangle at the bottom of the screen
   for (Platform p : platforms) p.show();
-
-  strokeWeight(5);
-  stroke(0);
 }
 
 public class Platform {
@@ -84,15 +81,13 @@ public class Platform {
   // display the platform
   public void show() {
     rectMode(CENTER);
-    noStroke();
-    fill(GAME_COLOR);
     rect(x, y, w, h);
 
     // display units
-    fill(255);
-    strokeWeight(2);
-    textAlign(CENTER, CENTER);
-    textSize(18);
-    text(String.valueOf(used), x, y-3);
+    //fill(255);
+    //strokeWeight(2);
+    //textAlign(CENTER, CENTER);
+    //textSize(18);
+    //text(String.valueOf(used), x, y-3);
   }
 }

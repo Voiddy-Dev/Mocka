@@ -12,8 +12,11 @@ void keyPressed() {
 
 void keyTyped() {
   if (key == 'r') {
-    myRocket.killBody();
-    myRocket = new MyRocket(width/2, height/2);
+    Vec2 new_pos = box2d.coordPixelsToWorld(width/2, height/2);
+    myRocket.body.setTransform(new_pos, 0);
+    Vec2 new_vel = new Vec2(0, 0);
+    myRocket.body.setLinearVelocity(new_vel);
+    myRocket.body.setAngularVelocity(0);
   }
   if (key == 't') {
     killTerrain();

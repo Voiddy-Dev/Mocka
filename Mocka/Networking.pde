@@ -11,13 +11,9 @@ import java.util.Enumeration;
 
 int MY_UUID = -1;
 
-//String SERVER_IP = "127.0.0.1";
-//String SERVER_IP = "192.168.0.17";
-//String SERVER_IP = "192.168.0.1";
 String SERVER_IP = "91.160.183.12";
 //String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25567;
-//int SERVER_TCP_PORT = 25577;
 
 Client client;
 
@@ -36,34 +32,34 @@ void interpretNetwork() {
   if (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
     //println("client: received from tcp server PACKET_ID: "+PACKET_ID);
-    if (PACKET_ID == 0) NOTIFY_NEW_PLAYER();
-    if (PACKET_ID == 1) NOTIFY_DED_PLAYER();
-    if (PACKET_ID == 2) PLEASE_OPEN_UDP();
-    if (PACKET_ID == 3) NOTIFY_YOUR_UUID();
+    if (PACKET_ID == 0) INTERPRET_NEW_PLAYER();
+    if (PACKET_ID == 1) INTERPRET_DED_PLAYER();
+    if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
+    if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
   }
 }
 
-void NOTIFY_NEW_PLAYER() {
+void INTERPRET_NEW_PLAYER() {
   int new_UUID = network_data.getInt();
-  Enemy enemy = new Enemy(width/2, height/2, new_UUID);
+  EnemyRocket enemy = new EnemyRocket(new_UUID);
   enemies.put(new_UUID, enemy);
   println("client: new player, UUID: "+new_UUID);
 }
 
-void NOTIFY_DED_PLAYER() {
+void INTERPRET_DED_PLAYER() {
   int ded_UUID = network_data.getInt();
   removeEnemy(ded_UUID);
   println("client: player ded, UUID: "+ded_UUID);
 }
 
-void NOTIFY_YOUR_UUID() {
+void INTERPRET_YOUR_UUID() {
   MY_UUID = network_data.getInt();
 }
 
 int SERVER_UDP_PORT;
 int INCOMING_ENEMY_UUID;
 
-void PLEASE_OPEN_UDP() {
+void INTERPRET_OPEN_UDP() {
   SERVER_UDP_PORT = network_data.getInt();
   INCOMING_ENEMY_UUID = network_data.getInt();
 
@@ -107,7 +103,7 @@ void punch_hole() {
 
     CLIENT_UDP_PRIVATE_SOCKET.close();
 
-    Enemy enemy = enemies.get(INCOMING_ENEMY_UUID);
+    EnemyRocket enemy = enemies.get(INCOMING_ENEMY_UUID);
     DatagramSocket socket;
 
     if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {   
@@ -122,9 +118,6 @@ void punch_hole() {
         return;
       }
     } else {
-      //if (CLIENT_IS_LOCAL) attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT, 5000, 1000);
-      //else attemptAsymmetricUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, 5000, 1000);
-      //attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT, 100, 100);
       socket = attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP.toString(), new InetAddress[]{ENEMY_PUBLIC_IP}, ENEMY_PUBLIC_PORT, 1000, 100);
       if (socket != null) {
         enemy.setSocket(socket);

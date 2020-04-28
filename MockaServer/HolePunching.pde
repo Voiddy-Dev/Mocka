@@ -46,8 +46,8 @@ void punch_hole() {
       println("SERVER: ERROR: failed to open port "+SERVER_UDP_PORT_A_LAN+" / "+SERVER_UDP_PORT_B_LAN);
       throw new Exception();
     } 
-    H_player_a.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_A_WAN, H_player_b.UUID));
-    H_player_b.TCP_SEND(PLEASE_OPEN_UDP(SERVER_UDP_PORT_B_WAN, H_player_a.UUID));
+    H_player_a.TCP_SEND(NOTIFY_OPEN_UDP(SERVER_UDP_PORT_A_WAN, H_player_b.UUID));
+    H_player_b.TCP_SEND(NOTIFY_OPEN_UDP(SERVER_UDP_PORT_B_WAN, H_player_a.UUID));
 
     DatagramPacket receivePacketA = new DatagramPacket(new byte[1024], 1024);
     DatagramPacket receivePacketB = new DatagramPacket(new byte[1024], 1024);

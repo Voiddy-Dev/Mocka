@@ -10,6 +10,8 @@ void setup() {
   //size(480, 320, FX2D);
   size(960, 640, FX2D);
 
+  rocketShape = createRocketShape();
+
   setupBox2D();
 
   setupNetworking();
@@ -19,8 +21,8 @@ void setup() {
 
   setupTerrain();
 
-  setupRocketBody();
   myRocket = new MyRocket(width/2, height-80);
+  myRocket.setColor(GAME_COLOR);
 }
 
 void draw() {
@@ -30,18 +32,18 @@ void draw() {
   //}
   updateNetwork();
 
-  background(255); // white background
-  showTerrain(); // terrain
-
   myRocket.interactions();
   updateEnemies();
   box2d.step();
   informEnemies();
 
+  background(255); // white background
   // updating and displaying the rocket
   //rock.update();
   myRocket.show();
   showEnemies();
+
+  showTerrain(); // terrain
 
   //for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
   //  if (entry.getKey() != UUID) entry.getValue().update();

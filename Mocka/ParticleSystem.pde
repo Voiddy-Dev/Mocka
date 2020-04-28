@@ -3,7 +3,7 @@ public class ParticleSystem {
   // list of particles
   ArrayList<Particle> particles;
 
-  // constructor with only the positino and the direction the particles
+  // constructor with only the position and the direction the particles
   // should go towards
   public ParticleSystem() {
     particles = new ArrayList();
@@ -17,7 +17,7 @@ public class ParticleSystem {
   }
 
   //called everytime to update everything
-  public void update(color c) {
+  public void show(color c) {
     // go through every particle
     for (int i = particles.size()-1; i >= 0; i--) {
       Particle p = particles.get(i);
@@ -28,7 +28,7 @@ public class ParticleSystem {
       } else {
         p.reduceLife(); // otherwise reduce its lifespan
 
-        p.update(c);
+        p.show(c);
       }
     }
   }
@@ -83,7 +83,7 @@ public class Particle {
 
   // method to update the particle 
   // will change the size
-  public void update(color c) {
+  public void show(color c) {
     // physics stuff
     vel.add(acc);
     pos.add(vel);

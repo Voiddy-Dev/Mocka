@@ -1,21 +1,21 @@
-HashMap<Integer, Enemy> enemies = new HashMap();
+HashMap<Integer, EnemyRocket> enemies = new HashMap();
 
 void showEnemies() {
   for (Map.Entry entry : enemies.entrySet()) {
-    Enemy enemy = (Enemy)entry.getValue();
+    EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.show();
   }
 }
 
 void updateEnemies() {
   for (Map.Entry entry : enemies.entrySet()) {
-    Enemy enemy = (Enemy)entry.getValue();
+    EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.updatePosition();
   }
 }
 
 void removeEnemy(int ded_UUID) {
-  Enemy ded = enemies.get(ded_UUID);
+  EnemyRocket ded = enemies.get(ded_UUID);
   if (ded == null) return;
   ded.kill();
   enemies.remove(ded_UUID);
@@ -37,18 +37,18 @@ void informEnemies() {
   float angular_velocity = myRocket.body.getAngularVelocity();
   buf.putFloat(angular_velocity);
   for (Map.Entry entry : enemies.entrySet()) {
-    Enemy enemy = (Enemy)entry.getValue();
+    EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.notify(packet_send_data);
   }
 }
 
-class Enemy extends Rocket {
+class EnemyRocket extends Rocket {
   int UUID;
   DatagramSocket socket;
   SocketListenThread p;
 
-  Enemy(int UUID, float x, float y) {
-    super(x, y);
+  EnemyRocket(int UUID) {
+    super(0, 0);
     this.UUID = UUID;
   }
 

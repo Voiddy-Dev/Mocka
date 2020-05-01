@@ -22,9 +22,15 @@ void setupNetworking() {
   client = new Client(this, SERVER_IP, SERVER_TCP_PORT);
 }
 
+void NOTIFY_MY_COLOR(color col) {
+  ByteBuffer data = ByteBuffer.allocate(5);
+  data.put((byte)0);
+  data.putInt(col);
+  client.write(data.array());
+}
 
 void NOTIFY_NEW_TERRAIN() {
-  client.write(new byte[]{(byte)0});
+  client.write(new byte[]{(byte)1});
 }
 
 
@@ -44,6 +50,7 @@ void interpretNetwork() {
     if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
     if (PACKET_ID == 4) INTERPRET_TERRAIN();
+    if (PACKET_ID == 5) INTERPRET_PLAYER_COLOR();
   }
 }
 
@@ -70,6 +77,12 @@ void INTERPRET_TERRAIN() {
   println("client: Received terrain of size "+infos.length);
   platforms = new Platform[infos.length];
   for (int i = 0; i < infos.length; i++) platforms[i] = new Platform(infos[i]);
+}
+
+void INTERPRET_PLAYER_COLOR() {
+  int player_UUID = network_data.getInt();
+  color col = network_data.getInt();
+  enemies.get(player_UUID).setColor(col);
 }
 
 int SERVER_UDP_PORT;

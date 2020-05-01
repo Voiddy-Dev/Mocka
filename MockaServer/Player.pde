@@ -31,7 +31,8 @@ void updatePlayers() {
 
 class Player {
   Client TCP_CLIENT;
-  int UUID; 
+  int UUID;
+  color col = color(0);
 
   Player(Client client_, int UUID_) {
     TCP_CLIENT = client_;
@@ -46,9 +47,15 @@ class Player {
       Player p = (Player)entry.getValue();
       if (p.UUID != UUID) {
         TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
+        TCP_SEND(NOTIFY_PLAYER_COLOR(p.UUID, p.col));
         note_missing_hole(UUID, p.UUID);
       }
     }
+  }
+
+  void setColor(color col) {
+    this.col = col;
+    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_COLOR(UUID, col), UUID);
   }
 
   void TCP_SEND(ByteBuffer buf) {
@@ -66,7 +73,8 @@ class Player {
     if (network_data.remaining()>0) {
       byte PACKET_ID = network_data.get();
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
-      if (PACKET_ID == 0) randomizeTerrain();
+      if (PACKET_ID == 0) setColor(network_data.getInt());
+      if (PACKET_ID == 1) randomizeTerrain();
     }
   }
 

@@ -18,9 +18,8 @@ void keyTyped() {
     myRocket.body.setLinearVelocity(new_vel);
     myRocket.body.setAngularVelocity(0);
   }
-  if (key == 't') {
-    NOTIFY_NEW_TERRAIN();
-  }
+  if (key == 't') NOTIFY_NEW_TERRAIN();
+  if (key == 'y') randomRocketColor();
 }
 
 void keyReleased() {

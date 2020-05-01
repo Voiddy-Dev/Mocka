@@ -17,6 +17,7 @@ void keyTyped() {
     Vec2 new_vel = new Vec2(0, 0);
     myRocket.body.setLinearVelocity(new_vel);
     myRocket.body.setAngularVelocity(0);
+    if (myRocket.state != STATE_IS_IT) NOTIFY_CAPITULATE();
   }
   if (key == 't') NOTIFY_NEW_TERRAIN();
   if (key == 'y') randomRocketColor();
@@ -25,7 +26,7 @@ void keyTyped() {
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
     println(angle);
-    if (abs(angle) > radians(45) || true) {
+    if (abs(angle) > radians(45)) {
       if (angle < 0) myRocket.body.applyAngularImpulse(45);
       else myRocket.body.applyAngularImpulse(-45);
     }

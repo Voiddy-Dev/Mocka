@@ -99,6 +99,7 @@ class Player {
       if (PACKET_ID == 0) setColor(network_data.getInt());
       if (PACKET_ID == 1) randomizeTerrain();
       if (PACKET_ID == 2) INTERPRET_TAGGED_OTHER(network_data.getInt());
+      if (PACKET_ID == 3) INTERPRET_CAPITULATE();
     }
   }
 
@@ -108,6 +109,16 @@ class Player {
       setState(STATE_NORMAL);
       other.setState(STATE_IS_IT);
     }
+  }
+
+  void INTERPRET_CAPITULATE() {
+    if (state == STATE_IS_IT) return;
+    for (Map.Entry entry : players.entrySet()) {
+      Player p = (Player)entry.getValue();
+      if (p == this) continue;
+      if (p.state == STATE_IS_IT) p.setState(STATE_NORMAL);
+    }
+    setState(STATE_IS_IT);
   }
 
   void readNetwork() {

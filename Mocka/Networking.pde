@@ -38,6 +38,10 @@ void NOTIFY_TAGGED_OTHER(int UUID) {
   client.write(data.array());
 }
 
+void NOTIFY_CAPITULATE() {
+  client.write(new byte[]{(byte)3});
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 

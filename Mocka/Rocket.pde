@@ -98,15 +98,18 @@ public class Rocket {
 
   // User interactions / arrow keys
   public void interactions() {
+    Vec2 pos = box2d.getBodyPixelCoord(body);
+    float angle = body.getAngle();
+
+    if (pos.x > width) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-width, pos.y)), angle);
+    if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+width, pos.y)), angle);
+
     if (INPUT_up) {
-      float angle = body.getAngle();
       float mag = - box2d.world.getGravity().y * 10;
       Vec2 force = new Vec2(-mag * sin(angle), mag * cos(angle));
       body.applyForceToCenter(force);
 
       // createExhaust
-      Vec2 pos = box2d.getBodyPixelCoord(body);
-
       float DIST_FROM_CENTER = 17;
       PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle), 
         pos.y + DIST_FROM_CENTER * cos(angle));

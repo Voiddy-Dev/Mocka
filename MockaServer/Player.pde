@@ -15,10 +15,18 @@ void removeInactivePlayers() {
     Map.Entry<Integer, Player> entry = iter.next();
     Player p = entry.getValue();
     if (!p.TCP_CLIENT.active()) {
+      if (p.state == STATE_IS_IT) SOMEONES_IT = false;
       iter.remove();
       TCP_SEND_ALL_CLIENTS(NOTIFY_DED_PLAYER(p.UUID));
       println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
     }
+  }
+  if (!SOMEONES_IT && !players.isEmpty()) {
+    iter = players.entrySet().iterator();
+    Map.Entry<Integer, Player> entry = iter.next();
+    Player p = entry.getValue();
+    p.setState(STATE_IS_IT);
+    SOMEONES_IT = true;
   }
 }
 
@@ -29,10 +37,15 @@ void updatePlayers() {
   }
 }
 
+final byte STATE_NORMAL = 0;
+final byte STATE_IS_IT = 1;
+
 class Player {
   Client TCP_CLIENT;
   int UUID;
   color col = color(0);
+
+  byte state = STATE_NORMAL;
 
   Player(Client client_, int UUID_) {
     TCP_CLIENT = client_;
@@ -48,6 +61,7 @@ class Player {
       if (p.UUID != UUID) {
         TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
         TCP_SEND(NOTIFY_PLAYER_COLOR(p.UUID, p.col));
+        TCP_SEND(NOTIFY_PLAYER_STATE(p.UUID, p.state));
         note_missing_hole(UUID, p.UUID);
       }
     }
@@ -56,6 +70,12 @@ class Player {
   void setColor(color col) {
     this.col = col;
     TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_COLOR(UUID, col), UUID);
+  }
+
+  void setState(byte state) {
+    println("SERVER: setting state of player "+UUID+" to "+state);
+    this.state = state;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(UUID, state));
   }
 
   void TCP_SEND(ByteBuffer buf) {
@@ -75,6 +95,15 @@ class Player {
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
       if (PACKET_ID == 0) setColor(network_data.getInt());
       if (PACKET_ID == 1) randomizeTerrain();
+      if (PACKET_ID == 2) INTERPRET_TAGGED_OTHER(network_data.getInt());
+    }
+  }
+
+  void INTERPRET_TAGGED_OTHER(int other_UUID) {
+    Player other =  players.get(other_UUID);
+    if (state == STATE_IS_IT && other.state != STATE_IS_IT) {
+      setState(STATE_NORMAL);
+      other.setState(STATE_IS_IT);
     }
   }
 

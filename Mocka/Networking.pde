@@ -9,8 +9,6 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-int MY_UUID = -1;
-
 //String SERVER_IP = "localhost";
 //String SERVER_IP = "91.160.183.12";
 String SERVER_IP = "lmhleetmcgang.ddns.net";
@@ -33,6 +31,13 @@ void NOTIFY_NEW_TERRAIN() {
   client.write(new byte[]{(byte)1});
 }
 
+void NOTIFY_TAGGED_OTHER(int UUID) {
+  ByteBuffer data = ByteBuffer.allocate(5);
+  data.put((byte)2);
+  data.putInt(UUID);
+  client.write(data.array());
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -44,13 +49,14 @@ void updateNetwork() {
 void interpretNetwork() {
   if (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
-    //println("client: received from tcp server PACKET_ID: "+PACKET_ID);
+    println("client: received from tcp server PACKET_ID: "+PACKET_ID);
     if (PACKET_ID == 0) INTERPRET_NEW_PLAYER();
     if (PACKET_ID == 1) INTERPRET_DED_PLAYER();
     if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
     if (PACKET_ID == 4) INTERPRET_TERRAIN();
     if (PACKET_ID == 5) INTERPRET_PLAYER_COLOR();
+    if (PACKET_ID == 6) INTERPRET_PLAYER_STATE();
   }
 }
 
@@ -68,7 +74,7 @@ void INTERPRET_DED_PLAYER() {
 }
 
 void INTERPRET_YOUR_UUID() {
-  MY_UUID = network_data.getInt();
+  myRocket.UUID = network_data.getInt();
 }
 
 void INTERPRET_TERRAIN() {
@@ -83,6 +89,13 @@ void INTERPRET_PLAYER_COLOR() {
   int player_UUID = network_data.getInt();
   color col = network_data.getInt();
   enemies.get(player_UUID).setColor(col);
+}
+
+void INTERPRET_PLAYER_STATE() {
+  int player_UUID = network_data.getInt();
+  byte state = network_data.get();
+  if (player_UUID == myRocket.UUID)myRocket.setState(state);
+  else enemies.get(player_UUID).setState(state);
 }
 
 int SERVER_UDP_PORT;

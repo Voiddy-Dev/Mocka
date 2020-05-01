@@ -102,6 +102,7 @@ class Platform extends PlatformInfo {
 
     // Attached the shape to the body using a Fixture
     body.createFixture(sd, 1);
+    body.setUserData(this);
   }
 
   // reduce the used variable if possible otherwise return false

@@ -11,7 +11,7 @@ void updateEnemies() {
   for (Map.Entry entry : enemies.entrySet()) {
     EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.updatePosition();
-    
+
     enemy.interactions();
   }
 }
@@ -49,7 +49,6 @@ void informEnemies() {
 }
 
 class EnemyRocket extends Rocket {
-  int UUID;
   DatagramSocket socket;
   SocketListenThread p;
 

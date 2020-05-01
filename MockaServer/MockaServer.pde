@@ -43,12 +43,18 @@ void draw() {
   updateHoles();
 }
 
+boolean SOMEONES_IT = false;
+
 // (TCP) run when a new client connects to a server
 void serverEvent(Server serv, Client myClient) {
   int UUID = getFreeUUID();
+  TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_NEW_PLAYER(UUID), UUID);
   Player myPlayer = new Player(myClient, UUID);
   players.put(UUID, myPlayer);
-  TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_NEW_PLAYER(UUID), UUID);
+  if (!SOMEONES_IT) {
+    myPlayer.setState(STATE_IS_IT);
+    SOMEONES_IT = true;
+  }
 }
 
 InetAddress InetAddressByName(String ip) {

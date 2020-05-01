@@ -65,3 +65,11 @@ ByteBuffer NOTIFY_PLAYER_COLOR(int UUID, color col) {
   data.putInt(col);
   return data;
 }
+
+ByteBuffer NOTIFY_PLAYER_STATE(int UUID, byte state) {
+  ByteBuffer data = ByteBuffer.allocate(6);
+  data.put((byte)6);
+  data.putInt(UUID);
+  data.put(state);
+  return data;
+}

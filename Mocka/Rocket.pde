@@ -34,11 +34,17 @@ PShape createRocketShape() {
   return shape;
 }
 
+final byte STATE_NORMAL = 0;
+final byte STATE_IS_IT = 1;
+
 public class Rocket {
   Body body; // Box2d body
   ParticleSystem exhaust;
   boolean INPUT_up, INPUT_right, INPUT_left;
   color col;
+  int UUID = -1;
+
+  byte state = STATE_NORMAL;
 
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();
@@ -49,6 +55,10 @@ public class Rocket {
 
   void setColor(color col) {
     this.col = col;
+  }
+
+  void setState(byte state) {
+    this.state = state;
   }
 
   private void makeBody(Vec2 center) {
@@ -66,6 +76,7 @@ public class Rocket {
     body = box2d.createBody(bd);
 
     body.createFixture(sd, 1.0);
+    body.setUserData(this);
   }
 
   protected void killBody() {
@@ -87,10 +98,15 @@ public class Rocket {
     //rocketShape.setStroke(col);
     //rocketShape.setFill(false);
     //shape(rocketShape);
-    pushMatrix();
+    //pushMatrix();
+    if (state == STATE_IS_IT) {
+      noStroke();
+      fill(255, 0, 0, 32);
+      ellipse(0, 0, 320, 320);
+    }
     translate(-rocketIcon.width/2, -rocketIcon.height/2);
     shape(rocketIcon);
-    popMatrix();
+    //popMatrix();
     popMatrix();
 
     exhaust.show(col);

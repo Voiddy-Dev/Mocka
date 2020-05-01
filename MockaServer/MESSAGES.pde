@@ -57,3 +57,11 @@ ByteBuffer NOTIFY_TERRAIN(PlatformInfo[] platforms) {
   writeTerrain(data, platforms);
   return data;
 }
+
+ByteBuffer NOTIFY_PLAYER_COLOR(int UUID, color col) {
+  ByteBuffer data = ByteBuffer.allocate(9);
+  data.put((byte)5);
+  data.putInt(UUID);
+  data.putInt(col);
+  return data;
+}

@@ -80,7 +80,6 @@ class Platform extends PlatformInfo {
   // constructor and initialize the platform
   public Platform(PlatformInfo info) {
     super(info);
-    println(info.x, info.y);
 
     this.used = NECESSARY_FRAMES;
 

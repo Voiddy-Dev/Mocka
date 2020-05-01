@@ -1,7 +1,7 @@
 PlatformInfo[] platforms;
 
 void randomizeTerrain() {
-  platforms = randomTerrain(10);
+  platforms = randomTerrain(20);
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
 }
 

@@ -20,6 +20,16 @@ void keyTyped() {
   }
   if (key == 't') NOTIFY_NEW_TERRAIN();
   if (key == 'y') randomRocketColor();
+  if (key == ' ') {
+    float angle = myRocket.body.getAngle();
+    angle = ((angle % TAU) + TAU) % TAU;
+    if (angle > PI) angle -= TAU;
+    println(angle);
+    if (abs(angle) > radians(45) || true) {
+      if (angle < 0) myRocket.body.applyAngularImpulse(45);
+      else myRocket.body.applyAngularImpulse(-45);
+    }
+  }
 }
 
 void keyReleased() {

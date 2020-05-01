@@ -38,8 +38,8 @@ public class ParticleSystem {
 public class Particle {
   private int lifespan;
   // MIN AND MAX LIFESPAN
-  int MIN_LIFESPAN = 35;
-  int MAX_LIFESPAN = 85;
+  int MIN_LIFESPAN = 25;
+  int MAX_LIFESPAN = 55;
 
   //size of the particles for some interesting modifiers
   int size_of_particle, max_size;
@@ -47,7 +47,7 @@ public class Particle {
   PVector pos, vel, acc;
 
   // spread for randomness of new particles
-  float around_value = QUARTER_PI;
+  float around_value = PI;
 
   //constructor of Particle
   public Particle(PVector start, PVector init, PVector velocity) {

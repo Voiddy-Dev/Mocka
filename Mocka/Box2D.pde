@@ -16,7 +16,6 @@ void setupBox2D() {
 }
 
 void beginContact(Contact cp) {
-  println("collision");
   if (myRocket.state != STATE_IS_IT) return;
   // Get both fixtures
   Fixture f1 = cp.getFixtureA();
@@ -28,7 +27,6 @@ void beginContact(Contact cp) {
   // Get our objects that reference these bodies
   Object o1 = b1.getUserData();
   Object o2 = b2.getUserData();
-  println(o1, o2);
   if (o1 instanceof Rocket && o2 instanceof Rocket) {
     Rocket r1 = (Rocket) o1;
     Rocket r2 = (Rocket) o2;

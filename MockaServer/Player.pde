@@ -46,6 +46,7 @@ class Player {
   color col = color(0);
 
   byte state = STATE_NORMAL;
+  int imunity_counter = 0;
 
   Player(Client client_, int UUID_) {
     TCP_CLIENT = client_;
@@ -76,6 +77,7 @@ class Player {
     println("SERVER: setting state of player "+UUID+" to "+state);
     this.state = state;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(UUID, state));
+    if (state == STATE_IS_IT) imunity_counter = 30;
   }
 
   void TCP_SEND(ByteBuffer buf) {
@@ -85,6 +87,7 @@ class Player {
   ByteBuffer network_data = ByteBuffer.allocate(0);
 
   void updateNetwork() {
+    if (imunity_counter > 0) imunity_counter--;
     readNetwork();
     interpretNetwork();
   }
@@ -101,7 +104,7 @@ class Player {
 
   void INTERPRET_TAGGED_OTHER(int other_UUID) {
     Player other =  players.get(other_UUID);
-    if (state == STATE_IS_IT && other.state != STATE_IS_IT) {
+    if (state == STATE_IS_IT && other.state != STATE_IS_IT && imunity_counter == 0) {
       setState(STATE_NORMAL);
       other.setState(STATE_IS_IT);
     }

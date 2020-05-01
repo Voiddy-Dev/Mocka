@@ -19,8 +19,7 @@ void keyTyped() {
     myRocket.body.setAngularVelocity(0);
   }
   if (key == 't') {
-    killTerrain();
-    setupTerrain();
+    NOTIFY_NEW_TERRAIN();
   }
 }
 

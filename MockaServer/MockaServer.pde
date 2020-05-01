@@ -24,6 +24,8 @@ final InetAddress WAN = InetAddressByName("91.160.183.12");
 void setup() {
   size(0, 0); 
 
+  randomizeTerrain();
+
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
   println("SERVER: Starting server");
 }

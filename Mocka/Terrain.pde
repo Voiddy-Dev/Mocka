@@ -1,18 +1,10 @@
-ArrayList<Platform> platforms;
-
-void setupTerrain() {
-  platforms = new ArrayList();
-  platforms.add(new Platform(width/2, height - 50, width, 100));
-
-  for (int i = 0; i < 10; i++) {
-    platforms.add(new Platform(random(width), random(height), random(40, 200), random(40, 100)));
-  }
-}
+Platform[] platforms = new Platform[0];
 
 void killTerrain() {
   for (Platform p : platforms) {
     box2d.destroyBody(p.body);
   }
+  platforms = new Platform[0];
 }
 
 void showTerrain() {
@@ -24,9 +16,58 @@ void showTerrain() {
   for (Platform p : platforms) p.show();
 }
 
-public class Platform {
-  // coordinates and used var
+// ###@@@### sync client / server sync
+
+PlatformInfo[] randomTerrain(int num_platforms) {
+  PlatformInfo[] platforms = new PlatformInfo[num_platforms];
+  platforms[0] = new PlatformInfo(width/2, height - 50, width, 100);
+  for (int i = 1; i < num_platforms; i++) {
+    platforms[i] = new PlatformInfo(random(width), random(height), random(40, 200), random(40, 100));
+  }
+  return platforms;
+}
+
+void writeTerrain(ByteBuffer data, PlatformInfo[] platforms) {
+  data.putInt(platforms.length);
+  for (PlatformInfo p : platforms) p.putData(data);
+}
+
+PlatformInfo[] dataToTerrain(ByteBuffer data) {
+  PlatformInfo[] platforms = new PlatformInfo[data.getInt()];
+  for (int i = 0; i < platforms.length; i++) platforms[i] = new PlatformInfo(data);
+  return platforms;
+}
+
+class PlatformInfo {
   float x, y, w, h;
+
+  PlatformInfo(float x, float y, float w, float h) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+  }
+
+  PlatformInfo(PlatformInfo info) {
+    this(info.x, info.y, info.w, info.h);
+  }
+
+  PlatformInfo(ByteBuffer data) {
+    this(data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat());
+  }
+
+  void putData(ByteBuffer data) {
+    data.putFloat(x);
+    data.putFloat(y);
+    data.putFloat(w);
+    data.putFloat(h);
+  }
+}
+
+// ###@@@### end client / server sync
+
+class Platform extends PlatformInfo {
+  // coordinates and used var
   int used;
 
   Body body;
@@ -37,11 +78,9 @@ public class Platform {
   int HEIGHT = 20;
 
   // constructor and initialize the platform
-  public Platform(float x, float y, float w, float h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
+  public Platform(PlatformInfo info) {
+    super(info);
+    println(info.x, info.y);
 
     this.used = NECESSARY_FRAMES;
 

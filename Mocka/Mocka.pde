@@ -19,8 +19,6 @@ void setup() {
   // create random color that could be used from here on out
   GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
 
-  setupTerrain();
-
   myRocket = new MyRocket(width/2, height-80);
   myRocket.setColor(GAME_COLOR);
 }

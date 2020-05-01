@@ -25,6 +25,7 @@ void removeInactivePlayers() {
 void updatePlayers() {
   for (Map.Entry entry : players.entrySet()) {
     Player p = (Player)entry.getValue();
+    p.updateNetwork();
   }
 }
 
@@ -38,6 +39,7 @@ class Player {
     println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
 
     TCP_SEND(NOTIFY_YOUR_UUID(UUID));
+    TCP_SEND(NOTIFY_TERRAIN(platforms));
     //note_missing_hole(UUID, UUID);
     // Notify this new player about all existing players
     for (Map.Entry entry : players.entrySet()) {
@@ -64,12 +66,13 @@ class Player {
     if (network_data.remaining()>0) {
       byte PACKET_ID = network_data.get();
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
+      if (PACKET_ID == 0) randomizeTerrain();
     }
   }
 
   void readNetwork() {
     if (TCP_CLIENT.available()>0) {
-      println("client: Reading "+TCP_CLIENT.available()+" bytes from TCP server");
+      println("SEVER: Reading "+TCP_CLIENT.available()+" bytes from TCP server");
       // Processing's methods for reading from server is not great
       // I'm using nio.ByteBuffer instead.
       // My concern is that in one 'client.available' session, there could
@@ -79,9 +82,9 @@ class Player {
       byte[] data_from_network = new byte[TCP_CLIENT.available()];
       TCP_CLIENT.readBytes(data_from_network);
       byte[] data_from_buffer = network_data.array();
-      byte[] data_combined = new byte[data_from_network.length + network_data.remaining()];
-      System.arraycopy(data_from_buffer, 0, data_combined, 0, data_from_buffer.length);
-      System.arraycopy(data_from_network, 0, data_combined, data_from_buffer.length, data_from_network.length);
+      byte[] data_combined = new byte[data_from_network.length + data_from_buffer.length - network_data.position()];
+      System.arraycopy(data_from_buffer, network_data.position(), data_combined, 0, data_from_buffer.length - network_data.position());
+      System.arraycopy(data_from_network, 0, data_combined, data_from_buffer.length - network_data.position(), data_from_network.length);
       network_data = ByteBuffer.wrap(data_combined);
     }
   }

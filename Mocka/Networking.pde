@@ -11,15 +11,22 @@ import java.util.Enumeration;
 
 int MY_UUID = -1;
 
-String SERVER_IP = "91.160.183.12";
-//String SERVER_IP = "lmhleetmcgang.ddns.net";
-int SERVER_TCP_PORT = 25567;
+//String SERVER_IP = "localhost";
+//String SERVER_IP = "91.160.183.12";
+String SERVER_IP = "lmhleetmcgang.ddns.net";
+int SERVER_TCP_PORT = 25577;
 
 Client client;
 
 void setupNetworking() {
   client = new Client(this, SERVER_IP, SERVER_TCP_PORT);
 }
+
+
+void NOTIFY_NEW_TERRAIN() {
+  client.write(new byte[]{(byte)0});
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -36,6 +43,7 @@ void interpretNetwork() {
     if (PACKET_ID == 1) INTERPRET_DED_PLAYER();
     if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
+    if (PACKET_ID == 4) INTERPRET_TERRAIN();
   }
 }
 
@@ -54,6 +62,14 @@ void INTERPRET_DED_PLAYER() {
 
 void INTERPRET_YOUR_UUID() {
   MY_UUID = network_data.getInt();
+}
+
+void INTERPRET_TERRAIN() {
+  killTerrain();
+  PlatformInfo[] infos = dataToTerrain(network_data);
+  println("client: Received terrain of size "+infos.length);
+  platforms = new Platform[infos.length];
+  for (int i = 0; i < infos.length; i++) platforms[i] = new Platform(infos[i]);
 }
 
 int SERVER_UDP_PORT;

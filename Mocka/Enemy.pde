@@ -22,7 +22,7 @@ void removeEnemy(int ded_UUID) {
 }
 
 byte packet_send_count;
-byte[] packet_send_data = new byte[25];
+byte[] packet_send_data = new byte[26];
 void informEnemies() {
   ByteBuffer buf = ByteBuffer.wrap(packet_send_data);
   buf.put(packet_send_count++);
@@ -36,6 +36,10 @@ void informEnemies() {
   buf.putFloat(vel.y);
   float angular_velocity = myRocket.body.getAngularVelocity();
   buf.putFloat(angular_velocity);
+
+  if (myRocket.INPUT_up) buf.put((byte)1);
+  else buf.put((byte)0);
+
   for (Map.Entry entry : enemies.entrySet()) {
     EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.notify(packet_send_data);
@@ -71,6 +75,12 @@ class EnemyRocket extends Rocket {
     this.body.setLinearVelocity(new_vel);
     this.body.setAngularVelocity(data.getFloat());
 
+    if (data.get() == 1) {
+      this.INPUT_up = true;
+    } else {
+      this.INPUT_up = false;
+    }
+
     latest_packet = null;
   }
 
@@ -105,7 +115,7 @@ class EnemyRocket extends Rocket {
     void run() {
       while (!socket.isClosed()) {
         try {
-          DatagramPacket receive = new DatagramPacket(new byte[25], 25);
+          DatagramPacket receive = new DatagramPacket(new byte[26], 26);
           socket.receive(receive);
           latest_packet = receive;
         }

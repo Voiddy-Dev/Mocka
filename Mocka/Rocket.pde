@@ -7,10 +7,10 @@ import processing.svg.*;
 
 float ROCKET_ICON_SCALE = 0.15;
 PShape rocketShape;
-//PShape rocketIcon = 
+PShape rocketIcon;// = loadShape("rocket.svg");
 
 PShape createRocketShape() {
-  // Geometry of rocket body imported from talky.io JS
+  //Geometry of rocket body imported from talky.io JS
   float mult = 30.0 * (10.0 / 36);
   PShape shape = createShape();
   shape.beginShape();
@@ -37,6 +37,8 @@ public class Rocket {
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();
     makeBody(new Vec2(x, y));
+
+    rocketIcon = loadShape("rocket.svg");
   }
 
   void setColor(color col) {
@@ -78,7 +80,11 @@ public class Rocket {
     rocketShape.setStroke(false);
     //rocketShape.setStroke(col);
     //rocketShape.setFill(false);
-    shape(rocketShape);
+    //shape(rocketShape);
+    pushMatrix();
+    translate(-rocketIcon.width/2, -rocketIcon.height/2);
+    shape(rocketIcon);
+    popMatrix();
     popMatrix();
 
     exhaust.show(col);
@@ -94,6 +100,7 @@ public class Rocket {
 
       // createExhaust
       Vec2 pos = box2d.getBodyPixelCoord(body);
+
       float DIST_FROM_CENTER = 17;
       PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle), 
         pos.y + DIST_FROM_CENTER * cos(angle));

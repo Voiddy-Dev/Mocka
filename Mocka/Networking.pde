@@ -11,9 +11,9 @@ import java.util.Enumeration;
 
 int MY_UUID = -1;
 
-String SERVER_IP = "localhost";
+//String SERVER_IP = "localhost";
 //String SERVER_IP = "91.160.183.12";
-//String SERVER_IP = "lmhleetmcgang.ddns.net";
+String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;

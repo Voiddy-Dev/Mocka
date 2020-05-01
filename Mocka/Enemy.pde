@@ -11,6 +11,8 @@ void updateEnemies() {
   for (Map.Entry entry : enemies.entrySet()) {
     EnemyRocket enemy = (EnemyRocket)entry.getValue();
     enemy.updatePosition();
+    
+    enemy.interactions();
   }
 }
 

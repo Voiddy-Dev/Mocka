@@ -16,7 +16,9 @@ void setupBox2D() {
 }
 
 void beginContact(Contact cp) {
-  if (myRocket.state != STATE_IS_IT) return;
+  println();
+  print("BOX2D: contact ");
+  //if (myRocket.state != STATE_IS_IT) return;
   // Get both fixtures
   Fixture f1 = cp.getFixtureA();
   Fixture f2 = cp.getFixtureB();
@@ -27,11 +29,16 @@ void beginContact(Contact cp) {
   // Get our objects that reference these bodies
   Object o1 = b1.getUserData();
   Object o2 = b2.getUserData();
-  if (o1 instanceof Rocket && o2 instanceof Rocket) {
-    Rocket r1 = (Rocket) o1;
-    Rocket r2 = (Rocket) o2;
-    Rocket other = (r1 == myRocket) ? r2 : r1;
-    println("touched : "+other.UUID);
-    NOTIFY_TAGGED_OTHER(other.UUID);
-  }
+  print(o1);
+  print(" ");
+  print(o2);
+  print(" ");
+  if (o1 != myRocket && o2 != myRocket) return;
+  EnemyRocket enemy;
+  if (o1 instanceof EnemyRocket) enemy = (EnemyRocket) o1;
+  else if (o2 instanceof EnemyRocket) enemy = (EnemyRocket) o2;
+  else return;
+  println(enemy.UUID);
+  if (myRocket.state == STATE_IS_IT) NOTIFY_TAGGED_OTHER(enemy.UUID); 
+  else if (enemy.state == STATE_IS_IT) NOTIFY_CAPITULATE();
 }

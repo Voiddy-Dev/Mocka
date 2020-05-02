@@ -27,8 +27,8 @@ void keyTyped() {
     if (angle > PI) angle -= TAU;
     println(angle);
     if (abs(angle) > radians(45)) {
-      if (angle < 0) myRocket.body.applyAngularImpulse(45);
-      else myRocket.body.applyAngularImpulse(-45);
+      if (angle < 0) myRocket.body.applyAngularImpulse(37);
+      else myRocket.body.applyAngularImpulse(-37);
     }
   }
 }

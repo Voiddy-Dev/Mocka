@@ -77,7 +77,8 @@ class Player {
     println("SERVER: setting state of player "+UUID+" to "+state);
     this.state = state;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(UUID, state));
-    if (state == STATE_IS_IT) imunity_counter = 30;
+    if (state == STATE_IS_IT) imunity_counter = 90;
+    else imunity_counter = 0;
   }
 
   void TCP_SEND(ByteBuffer buf) {
@@ -105,7 +106,7 @@ class Player {
 
   void INTERPRET_TAGGED_OTHER(int other_UUID) {
     Player other =  players.get(other_UUID);
-    if (state == STATE_IS_IT && other.state != STATE_IS_IT && imunity_counter == 0) {
+    if (state == STATE_IS_IT && imunity_counter == 0 && other.state != STATE_IS_IT) {
       setState(STATE_NORMAL);
       other.setState(STATE_IS_IT);
     }
@@ -116,9 +117,13 @@ class Player {
     for (Map.Entry entry : players.entrySet()) {
       Player p = (Player)entry.getValue();
       if (p == this) continue;
-      if (p.state == STATE_IS_IT) p.setState(STATE_NORMAL);
+      if (p.state == STATE_IS_IT) {
+        if (p.imunity_counter != 0) return;
+        setState(STATE_IS_IT);
+        p.setState(STATE_NORMAL);
+        return;
+      }
     }
-    setState(STATE_IS_IT);
   }
 
   void readNetwork() {

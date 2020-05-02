@@ -53,7 +53,7 @@ void updateNetwork() {
 void interpretNetwork() {
   if (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
-    println("client: received from tcp server PACKET_ID: "+PACKET_ID);
+    if (DEBUG_PACKETS) println("client: received from tcp server PACKET_ID: "+PACKET_ID);
     if (PACKET_ID == 0) INTERPRET_NEW_PLAYER();
     if (PACKET_ID == 1) INTERPRET_DED_PLAYER();
     if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
@@ -68,13 +68,13 @@ void INTERPRET_NEW_PLAYER() {
   int new_UUID = network_data.getInt();
   EnemyRocket enemy = new EnemyRocket(new_UUID);
   enemies.put(new_UUID, enemy);
-  println("client: new player, UUID: "+new_UUID);
+  if (DEBUG_PACKETS) println("client: new player, UUID: "+new_UUID);
 }
 
 void INTERPRET_DED_PLAYER() {
   int ded_UUID = network_data.getInt();
   removeEnemy(ded_UUID);
-  println("client: player ded, UUID: "+ded_UUID);
+  if (DEBUG_PACKETS) println("client: player ded, UUID: "+ded_UUID);
 }
 
 void INTERPRET_YOUR_UUID() {
@@ -84,7 +84,7 @@ void INTERPRET_YOUR_UUID() {
 void INTERPRET_TERRAIN() {
   killTerrain();
   PlatformInfo[] infos = dataToTerrain(network_data);
-  println("client: Received terrain of size "+infos.length);
+  if (DEBUG_PACKETS) println("client: Received terrain of size "+infos.length);
   platforms = new Platform[infos.length];
   for (int i = 0; i < infos.length; i++) platforms[i] = new Platform(infos[i]);
 }
@@ -109,7 +109,7 @@ void INTERPRET_OPEN_UDP() {
   SERVER_UDP_PORT = network_data.getInt();
   INCOMING_ENEMY_UUID = network_data.getInt();
 
-  println("client: initiating hole punching for player "+INCOMING_ENEMY_UUID+" port "+SERVER_UDP_PORT);
+  if (DEBUG_PUNCHING) println("client: initiating hole punching for player "+INCOMING_ENEMY_UUID+" port "+SERVER_UDP_PORT);
   thread("punch_hole");
 }
 
@@ -124,7 +124,7 @@ void punch_hole() {
     int CLIENT_UDP_PRIVATE_PORT = CLIENT_UDP_PRIVATE_SOCKET.getLocalPort();
     int CLIENT_UDP_PUBLIC_PORT = getExternalPort(CLIENT_UDP_PRIVATE_SOCKET);
 
-    println("client: local UDP socket open IP / port: "+CLIENT_UDP_PRIVATE_IPS_STRING+" / "+CLIENT_UDP_PRIVATE_PORT+" / (STUN) "+CLIENT_UDP_PUBLIC_PORT);
+    if (DEBUG_PUNCHING) println("client: local UDP socket open IP / port: "+CLIENT_UDP_PRIVATE_IPS_STRING+" / "+CLIENT_UDP_PRIVATE_PORT+" / (STUN) "+CLIENT_UDP_PUBLIC_PORT);
     byte[] sendData = (CLIENT_UDP_PRIVATE_IPS_STRING+"-"+CLIENT_UDP_PRIVATE_PORT+"-"+CLIENT_UDP_PUBLIC_PORT+"-").getBytes();
     DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(SERVER_IP), SERVER_UDP_PORT);
     CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
@@ -142,10 +142,10 @@ void punch_hole() {
     int ENEMY_PRIVATE_PORT = int(splitResponse[3]);
     boolean CLIENT_IS_LOCAL = int(splitResponse[4]) == 1;
     boolean ENEMY_IS_LOCAL = int(splitResponse[5]) == 1;
-    println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
+    if (DEBUG_PUNCHING) println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
 
-    println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
-    println("client: Enemy private at "+ENEMY_PRIVATE_IPS_STRING+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
+    if (DEBUG_PUNCHING) println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
+    if (DEBUG_PUNCHING) println("client: Enemy private at "+ENEMY_PRIVATE_IPS_STRING+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
 
     CLIENT_UDP_PRIVATE_SOCKET.close();
 
@@ -175,7 +175,7 @@ void punch_hole() {
     //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
   } 
   catch(Exception e) {
-    println("client: failed to punch hole");
+    println("client: failed to punch hole! (yikes)");
     println(e);
   } 
   finally {
@@ -190,9 +190,9 @@ void punch_hole() {
 DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, String REMOTE_IPS_STRING, InetAddress[] REMOTE_IPS, int REMOTE_PORT, int TIMEOUT, int SLEEPTIME) {
   DatagramSocket socket = null;
   try {
-    println();
-    println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
-    printArray(REMOTE_IPS);
+    if (DEBUG_PUNCHING) println();
+    if (DEBUG_PUNCHING) println("client: attempting to connnect over "+CONNECTION_NAME+" "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
+    if (DEBUG_PUNCHING) printArray(REMOTE_IPS);
     try {
       socket = new DatagramSocket(LOCAL_PORT);
       socket.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
@@ -202,12 +202,12 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
       println("client: failed to open local port "+LOCAL_PORT);
       throw new Exception();
     }
-    println("client: socket open on local port "+LOCAL_PORT);
+    if (DEBUG_PUNCHING)  println("client: socket open on local port "+LOCAL_PORT);
 
     // wait for a bit, to make sure the other party has had time to set up their socket...
     Thread.sleep(SLEEPTIME);
 
-    println("client: waking up, sending packet to "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
+    if (DEBUG_PUNCHING) println("client: waking up, sending packet to "+REMOTE_IPS_STRING+" / "+REMOTE_PORT);
     int RECEPTION_LEVEL = -1;
     InetAddress REMOTE_IP_CONFIRMED = null;
     while (RECEPTION_LEVEL < 1) {
@@ -219,11 +219,11 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
       for (int i = 0; i < 10; i++) {
         try {
           if (REMOTE_IP_CONFIRMED != null) {
-            println("client: pinging to confirmed: "+REMOTE_IP_CONFIRMED);
+            if (DEBUG_PUNCHING) println("client: pinging to confirmed: "+REMOTE_IP_CONFIRMED);
             socket.send(SEND_PACKET);
           } else {
             for (int ip = 0; ip < REMOTE_IPS.length; ip++) {
-              println("client: pinging to "+REMOTE_IPS[ip]);
+              if (DEBUG_PUNCHING) println("client: pinging to "+REMOTE_IPS[ip]);
               SEND_PACKET.setAddress(REMOTE_IPS[ip]);
               SEND_PACKET.setPort(REMOTE_PORT);
               socket.send(SEND_PACKET);
@@ -238,10 +238,10 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
           socket.receive(receivePacket);
           if (REMOTE_IP_CONFIRMED == null) {
             REMOTE_IP_CONFIRMED = receivePacket.getAddress();
-            println("client: Enemy responded! from ip :"+REMOTE_IP_CONFIRMED);
+            if (DEBUG_PUNCHING) println("client: Enemy responded! from ip :"+REMOTE_IP_CONFIRMED);
             if (receivePacket.getPort() != REMOTE_PORT) {
               REMOTE_PORT = receivePacket.getPort();
-              println("client: Response comes from an unexpected port! ("+REMOTE_PORT+") Possible second NAT on network? Attempting to continue.");
+              if (DEBUG_PUNCHING) println("client: Response comes from an unexpected port! ("+REMOTE_PORT+") Possible second NAT on network? Attempting to continue.");
             }
             socket.connect(REMOTE_IP_CONFIRMED, REMOTE_PORT);
           }
@@ -249,7 +249,7 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
           break;
         } 
         catch(Exception e) {
-          print("-");
+          if (DEBUG_PUNCHING) print("-");
         }
       }
       if (!received) {
@@ -257,11 +257,11 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
         throw new Exception();
       }
       RECEPTION_LEVEL = receivePacket.getData()[0];
-      println("client: RECEPTION_LEVEL: "+RECEPTION_LEVEL);
+      if (DEBUG_PUNCHING) println("client: RECEPTION_LEVEL: "+RECEPTION_LEVEL);
       if (RECEPTION_LEVEL != 0) RECEPTION_LEVEL = 1;
     }
 
-    println("client: "+CONNECTION_NAME+" Hole successfully punched!");
+    if (DEBUG_PUNCHING) println("client: "+CONNECTION_NAME+" Hole successfully punched!");
     return socket;
   } 
   catch(Exception e) {
@@ -274,7 +274,7 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
 
 void readNetwork() {
   if (client.available()>0) {
-    println("client: Reading "+client.available()+" bytes from TCP server");
+    if (DEBUG_PACKETS) println("client: Reading "+client.available()+" bytes from TCP server");
     // Processing's methods for reading from server is not great
     // I'm using nio.ByteBuffer instead.
     // My concern is that in one 'client.available' session, there could
@@ -311,7 +311,7 @@ int getExternalPort(DatagramSocket socket) {
     return port;
   } 
   catch(Exception e) {
-    println(e);
+    println("client: Could not find external port using stun.l.google.com: "+e);
     return 0;
   }
 }

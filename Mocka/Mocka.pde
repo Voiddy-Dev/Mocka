@@ -4,6 +4,9 @@ color GAME_COLOR; // Random color that can be used throughout the code
 
 MyRocket myRocket;
 
+final boolean DEBUG_PUNCHING = false;
+final boolean DEBUG_PACKETS  = false;
+
 void setup() {
   //size(120, 80, FX2D);
   //size(1200, 800, FX2D);

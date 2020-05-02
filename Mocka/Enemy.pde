@@ -87,8 +87,7 @@ class EnemyRocket extends Rocket {
 
   void setSocket(DatagramSocket socket) {
     this.socket = socket;
-    println("Client: listening to "+UUID);
-    println(socket);
+    if (DEBUG_PUNCHING) println("Client: listening to "+UUID);
     p = new SocketListenThread();
     p.start();
   }
@@ -100,7 +99,7 @@ class EnemyRocket extends Rocket {
         socket.send(packet);
       }
       catch(Exception e) {
-        println("Could not notify enemy "+this.UUID+" of my position! "+e);
+        println("client: Could not notify enemy "+this.UUID+" of my position! "+e);
       }
     }
   }

@@ -25,10 +25,17 @@ void setup() {
 }
 
 void draw() {
-  //if (frameCount % 60 == 0) {
-  //  myRocket.killBody();
-  //  myRocket = new MyRocket(width * MY_UUID / 256., height/2);
-  //}
+  if (current_scene == Scene.GAME_SCENE) drawGame();
+  if (current_scene == Scene.COLOR_SCENE) drawColors();
+}
+
+enum Scene {
+  GAME_SCENE, COLOR_SCENE
+}
+
+Scene current_scene = Scene.GAME_SCENE;
+
+void drawGame() {
   updateNetwork();
 
   myRocket.interactions();
@@ -43,8 +50,4 @@ void draw() {
   showEnemies();
 
   showTerrain(); // terrain
-
-  //for (HashMap.Entry<Integer, Enemy> entry : enemies.entrySet()) {
-  //  if (entry.getKey() != UUID) entry.getValue().update();
-  //}
 }

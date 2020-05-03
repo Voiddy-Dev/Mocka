@@ -4,6 +4,13 @@ class MyRocket extends Rocket {
   }
 }
 
+void mousePressed() {
+  if (current_scene == Scene.COLOR_SCENE) {
+    NOTIFY_MY_COLOR(GAME_COLOR);
+    current_scene = Scene.GAME_SCENE;
+  }
+}
+
 void keyPressed() {
   if (keyCode == UP) myRocket.INPUT_up = true;
   if (keyCode == LEFT)myRocket.INPUT_left = true;
@@ -20,7 +27,7 @@ void keyTyped() {
     if (myRocket.state != STATE_IS_IT) NOTIFY_CAPITULATE();
   }
   if (key == 't') NOTIFY_NEW_TERRAIN();
-  if (key == 'y') randomRocketColor();
+  if (key == 'y') current_scene = Scene.COLOR_SCENE;
   if (key == ' ') {
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;

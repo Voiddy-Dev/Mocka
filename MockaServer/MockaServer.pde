@@ -21,6 +21,10 @@ final int SERVER_UDP_PORT_B_WAN = 16441;
 final InetAddress GATEWAY = InetAddressByName("192.168.0.1");
 final InetAddress WAN = InetAddressByName("91.160.183.12");
 
+void keyPressed() {
+  randomizeTerrain();
+}
+
 void setup() {
   size(0, 0); 
 

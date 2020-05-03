@@ -44,6 +44,8 @@ public class Rocket {
   color col;
   int UUID = -1;
 
+  String name;
+
   byte state = STATE_NORMAL;
 
   public Rocket(float x, float y) {
@@ -51,6 +53,14 @@ public class Rocket {
     makeBody(new Vec2(x, y));
 
     rocketIcon = loadShape("rocket.svg");
+  }
+  
+  void setRocketName(String name) {
+    this.name = name;
+    if (this.name.length() > 3) {
+      this.name = this.name.substring(0, 3);
+    }
+    this.name = this.name.toUpperCase();
   }
 
   void setColor(color col) {
@@ -88,8 +98,19 @@ public class Rocket {
     Vec2 pos = box2d.getBodyPixelCoord(body);
     float a = body.getAngle();
 
+    fill(col);
+    triangle(pos.x-7, pos.y-30, pos.x+7, pos.y-30, pos.x, pos.y-22);
+
     pushMatrix();
     translate(pos.x, pos.y);
+
+    if (this.name != null) {
+      fill(0);
+      textSize(18);
+      textAlign(CENTER, CENTER);
+      text(name, 0, -50, 100, 30);
+    }
+
     rotate(-a);
     noStroke();
     scale(1.0/10);

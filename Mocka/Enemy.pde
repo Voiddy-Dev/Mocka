@@ -39,8 +39,18 @@ void informEnemies() {
   float angular_velocity = myRocket.body.getAngularVelocity();
   buf.putFloat(angular_velocity);
 
-  if (myRocket.INPUT_up) buf.put((byte)1);
-  else buf.put((byte)0);
+  byte input_mask = 0;
+
+  input_mask <<= 2;
+  if (myRocket.INPUT_left) input_mask |= 2;
+
+  input_mask <<= 2;
+  if (myRocket.INPUT_up) input_mask |= 2;
+
+  input_mask <<= 2;
+  if (myRocket.INPUT_right) input_mask |= 2;
+
+  buf.put(input_mask);
 
   for (Map.Entry entry : enemies.entrySet()) {
     EnemyRocket enemy = (EnemyRocket)entry.getValue();
@@ -76,11 +86,11 @@ class EnemyRocket extends Rocket {
     this.body.setLinearVelocity(new_vel);
     this.body.setAngularVelocity(data.getFloat());
 
-    if (data.get() == 1) {
-      this.INPUT_up = true;
-    } else {
-      this.INPUT_up = false;
-    }
+    byte sticky = data.get();
+
+    this.INPUT_right = ((sticky & 1) != 0);
+    this.INPUT_up = ((sticky & 4) != 0);
+    this.INPUT_left = ((sticky & 16) != 0);
 
     latest_packet = null;
   }

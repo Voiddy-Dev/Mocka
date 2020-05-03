@@ -54,7 +54,7 @@ public class Rocket {
 
     rocketIcon = loadShape("rocket.svg");
   }
-  
+
   void setRocketName(String name) {
     this.name = name;
     if (this.name.length() > 3) {
@@ -93,6 +93,8 @@ public class Rocket {
     box2d.destroyBody(body);
   }
 
+  int JET_OFFSET=5;
+
   // method to display the rocket 
   public void show() {
     Vec2 pos = box2d.getBodyPixelCoord(body);
@@ -113,6 +115,15 @@ public class Rocket {
 
     rotate(-a);
     noStroke();
+
+    fill(col);
+    if (INPUT_right) {
+      triangle(-5, -5-JET_OFFSET, -5, 5-JET_OFFSET, -random(10, 18), -JET_OFFSET);
+    }
+    if (INPUT_left) {
+      triangle(5, -5-JET_OFFSET, 5, 5-JET_OFFSET, random(10, 18), -JET_OFFSET);
+    }
+
     scale(1.0/10);
     rocketShape.setFill(col);
     rocketShape.setStroke(false);
@@ -141,24 +152,26 @@ public class Rocket {
     if (pos.x > width) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-width, pos.y)), angle);
     if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+width, pos.y)), angle);
 
+    // createExhaust
+    float DIST_FROM_CENTER = 17;
+    PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle), 
+      pos.y + DIST_FROM_CENTER * cos(angle));
+    Vec2 bodyvel = body.getLinearVelocity();
+    PVector acc = new PVector(0, 0.1).rotate(-angle);
+    PVector vel = new PVector(bodyvel.x, bodyvel.y).mult(0.01);
+    vel.add(PVector.mult(acc, 35));
+
     if (INPUT_up) {
       float mag = - box2d.world.getGravity().y * 10;
       Vec2 force = new Vec2(-mag * sin(angle), mag * cos(angle));
       body.applyForceToCenter(force);
 
-      // createExhaust
-      float DIST_FROM_CENTER = 17;
-      PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle), 
-        pos.y + DIST_FROM_CENTER * cos(angle));
-      Vec2 bodyvel = body.getLinearVelocity();
-      PVector acc = new PVector(0, 0.1).rotate(-angle);
-      PVector vel = new PVector(bodyvel.x, bodyvel.y).mult(0.01);
-      vel.add(PVector.mult(acc, 35));
       exhaust.turnOn(part_Pos, acc, vel);
     } 
     if (INPUT_left) {
       body.applyTorque(35);
-    } else if (INPUT_right) {
+    } 
+    if (INPUT_right) {
       body.applyTorque(-35);
     }
   }

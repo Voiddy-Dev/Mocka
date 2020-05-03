@@ -56,7 +56,7 @@ void serverEvent(Server serv, Client myClient) {
   Player myPlayer = new Player(myClient, UUID);
   players.put(UUID, myPlayer);
   if (!SOMEONES_IT) {
-    myPlayer.setState(STATE_IS_IT);
+    myPlayer.setState(State.it);
     SOMEONES_IT = true;
   }
 }

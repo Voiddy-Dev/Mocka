@@ -58,7 +58,7 @@ ByteBuffer NOTIFY_TERRAIN(PlatformInfo[] platforms) {
   return data;
 }
 
-ByteBuffer NOTIFY_PLAYER_COLOR(int UUID, color col) {
+ByteBuffer NOTIFY_PLAYER_INFO(int UUID, color col) {
   ByteBuffer data = ByteBuffer.allocate(9);
   data.put((byte)5);
   data.putInt(UUID);
@@ -66,10 +66,10 @@ ByteBuffer NOTIFY_PLAYER_COLOR(int UUID, color col) {
   return data;
 }
 
-ByteBuffer NOTIFY_PLAYER_STATE(int UUID, byte state) {
+ByteBuffer NOTIFY_PLAYER_STATE(int UUID, State state) {
   ByteBuffer data = ByteBuffer.allocate(6);
   data.put((byte)6);
   data.putInt(UUID);
-  data.put(state);
+  data.put(State.getValue(state));
   return data;
 }

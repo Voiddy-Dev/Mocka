@@ -16,8 +16,8 @@ void setupBox2D() {
 }
 
 void beginContact(Contact cp) {
-  println();
-  print("BOX2D: contact ");
+  //println();
+  //print("BOX2D: contact ");
   //if (myRocket.state != STATE_IS_IT) return;
   // Get both fixtures
   Fixture f1 = cp.getFixtureA();
@@ -29,16 +29,16 @@ void beginContact(Contact cp) {
   // Get our objects that reference these bodies
   Object o1 = b1.getUserData();
   Object o2 = b2.getUserData();
-  print(o1);
-  print(" ");
-  print(o2);
-  print(" ");
+  //print(o1);
+  //print(" ");
+  //print(o2);
+  //print(" ");
   if (o1 != myRocket && o2 != myRocket) return;
   EnemyRocket enemy;
   if (o1 instanceof EnemyRocket) enemy = (EnemyRocket) o1;
   else if (o2 instanceof EnemyRocket) enemy = (EnemyRocket) o2;
   else return;
-  println(enemy.UUID);
+  //println(enemy.UUID);
   if (myRocket.state == STATE_IS_IT) NOTIFY_TAGGED_OTHER(enemy.UUID); 
   else if (enemy.state == STATE_IS_IT) NOTIFY_CAPITULATE();
 }

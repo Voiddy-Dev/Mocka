@@ -1,51 +1,21 @@
 HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
-int getFreeUUID() {
-  int MAX_UUID = 256;
-  int UUID;
-  do {
-    UUID = (int)random(MAX_UUID);
-  } while (players.containsKey(UUID));
-  return UUID;
-}
-
-void removeInactivePlayers() {
-  Iterator<Map.Entry<Integer, Player>> iter = players.entrySet().iterator();
-  while (iter.hasNext()) {
-    Map.Entry<Integer, Player> entry = iter.next();
-    Player p = entry.getValue();
-    if (!p.TCP_CLIENT.active()) {
-      if (p.state == STATE_IS_IT) SOMEONES_IT = false;
-      iter.remove();
-      TCP_SEND_ALL_CLIENTS(NOTIFY_DED_PLAYER(p.UUID));
-      println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
-    }
-  }
-  if (!SOMEONES_IT && !players.isEmpty()) {
-    iter = players.entrySet().iterator();
-    Map.Entry<Integer, Player> entry = iter.next();
-    Player p = entry.getValue();
-    p.setState(STATE_IS_IT);
-    SOMEONES_IT = true;
+enum State {
+  normal, it;
+  static byte getValue(State state) {
+    if (state == normal) return (byte)0;
+    if (state == it) return (byte)1;
+    return (byte)(-1);
   }
 }
-
-void updatePlayers() {
-  for (Map.Entry entry : players.entrySet()) {
-    Player p = (Player)entry.getValue();
-    p.updateNetwork();
-  }
-}
-
-final byte STATE_NORMAL = 0;
-final byte STATE_IS_IT = 1;
 
 class Player {
   Client TCP_CLIENT;
   int UUID;
   color col = color(0);
+  String name;
 
-  byte state = STATE_NORMAL;
+  State state = State.normal;
   int imunity_counter = 0;
 
   Player(Client client_, int UUID_) {
@@ -61,7 +31,7 @@ class Player {
       Player p = (Player)entry.getValue();
       if (p.UUID != UUID) {
         TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
-        TCP_SEND(NOTIFY_PLAYER_COLOR(p.UUID, p.col));
+        TCP_SEND(NOTIFY_PLAYER_INFO(p.UUID, p.col));
         TCP_SEND(NOTIFY_PLAYER_STATE(p.UUID, p.state));
         note_missing_hole(UUID, p.UUID);
       }
@@ -70,14 +40,14 @@ class Player {
 
   void setColor(color col) {
     this.col = col;
-    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_COLOR(UUID, col), UUID);
+    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(UUID, col), UUID);
   }
 
-  void setState(byte state) {
+  void setState(State state) {
     //println("SERVER: setting state of player "+UUID+" to "+state);
     this.state = state;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(UUID, state));
-    if (state == STATE_IS_IT) imunity_counter = 60;
+    if (state == State.it) imunity_counter = 60;
     else imunity_counter = 0;
   }
 
@@ -106,21 +76,21 @@ class Player {
 
   void INTERPRET_TAGGED_OTHER(int other_UUID) {
     Player other =  players.get(other_UUID);
-    if (state == STATE_IS_IT && imunity_counter == 0 && other.state != STATE_IS_IT) {
-      setState(STATE_NORMAL);
-      other.setState(STATE_IS_IT);
+    if (state == State.it && imunity_counter == 0 && other.state != State.it) {
+      setState(State.normal);
+      other.setState(State.it);
     }
   }
 
   void INTERPRET_CAPITULATE() {
-    if (state == STATE_IS_IT) return;
+    if (state == State.it) return;
     for (Map.Entry entry : players.entrySet()) {
       Player p = (Player)entry.getValue();
       if (p == this) continue;
-      if (p.state == STATE_IS_IT) {
+      if (p.state == State.it) {
         if (p.imunity_counter != 0) return;
-        setState(STATE_IS_IT);
-        p.setState(STATE_NORMAL);
+        setState(State.it);
+        p.setState(State.normal);
         return;
       }
     }
@@ -144,4 +114,42 @@ class Player {
       network_data = ByteBuffer.wrap(data_combined);
     }
   }
+}
+
+void removeInactivePlayers() {
+  Iterator<Map.Entry<Integer, Player>> iter = players.entrySet().iterator();
+  while (iter.hasNext()) {
+    Map.Entry<Integer, Player> entry = iter.next();
+    Player p = entry.getValue();
+    if (!p.TCP_CLIENT.active()) {
+      if (p.state == State.it) SOMEONES_IT = false;
+      iter.remove();
+      TCP_SEND_ALL_CLIENTS(NOTIFY_DED_PLAYER(p.UUID));
+      println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
+    }
+  }
+  if (!SOMEONES_IT && !players.isEmpty()) {
+    iter = players.entrySet().iterator();
+    Map.Entry<Integer, Player> entry = iter.next();
+    Player p = entry.getValue();
+    p.setState(State.it);
+    SOMEONES_IT = true;
+  }
+}
+
+void updatePlayers() {
+  for (Map.Entry entry : players.entrySet()) {
+    Player p = (Player)entry.getValue();
+    p.updateNetwork();
+  }
+}
+
+int getFreeUUID() {
+  int MAX_UUID = 256;
+  int UUID;
+
+  do {
+    UUID = (int)random(MAX_UUID);
+  } while (players.containsKey(UUID));
+  return UUID;
 }

@@ -42,13 +42,13 @@ void informEnemies() {
   byte input_mask = 0;
 
   input_mask <<= 2;
-  if (myRocket.INPUT_left) input_mask |= 2;
+  if (myRocket.INPUT_left) input_mask |= 1;
 
   input_mask <<= 2;
-  if (myRocket.INPUT_up) input_mask |= 2;
+  if (myRocket.INPUT_up) input_mask |= 1;
 
   input_mask <<= 2;
-  if (myRocket.INPUT_right) input_mask |= 2;
+  if (myRocket.INPUT_right) input_mask |= 1;
 
   buf.put(input_mask);
 

@@ -12,8 +12,8 @@ enum State {
 class Player {
   Client TCP_CLIENT;
   int UUID;
-  color col = color(0);
-  String name;
+  color col = color(random(0, 255), random(0, 255), random(0, 255));
+  String name = randomName();
 
   State state = State.normal;
   int imunity_counter = 0;
@@ -24,6 +24,7 @@ class Player {
     println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
 
     TCP_SEND(NOTIFY_YOUR_UUID(UUID));
+    TCP_SEND(NOTIFY_PLAYER_INFO(this));
     TCP_SEND(NOTIFY_TERRAIN(platforms));
     //note_missing_hole(UUID, UUID);
     // Notify this new player about all existing players
@@ -31,7 +32,7 @@ class Player {
       Player p = (Player)entry.getValue();
       if (p.UUID != UUID) {
         TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
-        TCP_SEND(NOTIFY_PLAYER_INFO(p.UUID, p.col));
+        TCP_SEND(NOTIFY_PLAYER_INFO(p));
         TCP_SEND(NOTIFY_PLAYER_STATE(p.UUID, p.state));
         note_missing_hole(UUID, p.UUID);
       }
@@ -40,7 +41,14 @@ class Player {
 
   void setColor(color col) {
     this.col = col;
-    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(UUID, col), UUID);
+    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
+  }
+
+  void setName(String name) {
+    println("setting name");
+    println(name);
+    this.name = name;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
   }
 
   void setState(State state) {
@@ -71,6 +79,7 @@ class Player {
       //if (PACKET_ID == 1) randomizeTerrain();
       if (PACKET_ID == 2) INTERPRET_TAGGED_OTHER(network_data.getInt());
       if (PACKET_ID == 3) INTERPRET_CAPITULATE();
+      if (PACKET_ID == 4) INTERPRET_CHAT();
     }
   }
 
@@ -94,6 +103,39 @@ class Player {
         return;
       }
     }
+  }
+
+  void INTERPRET_CHAT() {
+    try {
+      String msg = getString(network_data);
+      println("SERVER: CHAT "+msg);
+      INTERPRET_msg(msg);
+    } 
+    catch(Exception e) {
+      println("Error while parsing input from chat (danger danger danger)");
+      println(e);
+    }
+  }
+
+  void INTERPRET_msg(String msg) {
+    if (msg.length() == 0) return;
+    boolean command = msg.charAt(0) == '/';
+    if (!command) TCP_SEND_ALL_CLIENTS(NOTIFY_CHAT(msg));
+    else {
+      println("SERVER: Interpreting a command");
+      String[] split = msg.split(" ");
+      printArray(split);
+      try {
+        if (split[0].equals("/name")) setName(NAMIFY(split[1]));
+      } 
+      catch (Exception e) {
+        println("SERVER: failed to interpret command from client");
+      }
+    }
+  }
+
+  String NAMIFY(String name) {
+    return name.toUpperCase().substring(0, 3);
   }
 
   void readNetwork() {
@@ -152,4 +194,12 @@ int getFreeUUID() {
     UUID = (int)random(MAX_UUID);
   } while (players.containsKey(UUID));
   return UUID;
+}
+
+String randomName() {
+  return "" + randomChar() + randomChar() + randomChar();
+}
+
+char randomChar() {
+  return char(int(random(int('A'), int('Z'))));
 }

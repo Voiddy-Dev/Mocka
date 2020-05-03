@@ -58,11 +58,12 @@ ByteBuffer NOTIFY_TERRAIN(PlatformInfo[] platforms) {
   return data;
 }
 
-ByteBuffer NOTIFY_PLAYER_INFO(int UUID, color col) {
-  ByteBuffer data = ByteBuffer.allocate(9);
+ByteBuffer NOTIFY_PLAYER_INFO(Player p) {
+  ByteBuffer data = ByteBuffer.allocate(1 + 4 + 4 + 4+2*p.name.length());
   data.put((byte)5);
-  data.putInt(UUID);
-  data.putInt(col);
+  data.putInt(p.UUID);
+  data.putInt(p.col);
+  putString(data, p.name);
   return data;
 }
 
@@ -72,4 +73,23 @@ ByteBuffer NOTIFY_PLAYER_STATE(int UUID, State state) {
   data.putInt(UUID);
   data.put(State.getValue(state));
   return data;
+}
+
+ByteBuffer NOTIFY_CHAT(String msg) {
+  ByteBuffer data = ByteBuffer.allocate(1+4+2*msg.length());
+  data.put((byte)7);
+  putString(data, msg);
+  return data;
+}
+
+void putString(ByteBuffer data, String str) {
+  data.putInt(str.length());
+  for (int i = 0; i < str.length(); i++) data.putChar(str.charAt(i));
+}
+
+String getString(ByteBuffer data) {
+  int len = data.getInt();
+  String msg = "";
+  for (int i = 0; i < len; i++) msg += data.getChar();
+  return msg;
 }

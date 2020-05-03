@@ -1,3 +1,6 @@
+color GAME_COLOR; // Random color that can be used throughout the code
+color GAME_COLOR_; //old
+
 void drawColors() {
   drawGame();
 

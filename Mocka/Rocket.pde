@@ -10,7 +10,7 @@ PShape rocketShape;
 PShape rocketIcon;// = loadShape("rocket.svg");
 
 void randomRocketColor() {
-  GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
+  GAME_COLOR_ = GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
   myRocket.setColor(GAME_COLOR);
   NOTIFY_MY_COLOR(GAME_COLOR);
 }
@@ -55,12 +55,8 @@ public class Rocket {
     rocketIcon = loadShape("rocket.svg");
   }
 
-  void setRocketName(String name) {
-    this.name = name;
-    if (this.name.length() > 3) {
-      this.name = this.name.substring(0, 3);
-    }
-    this.name = this.name.toUpperCase();
+  void setName(String name) {
+    this.name = name; // all checks should be done server side
   }
 
   void setColor(color col) {
@@ -110,7 +106,7 @@ public class Rocket {
       fill(0);
       textSize(18);
       textAlign(CENTER, CENTER);
-      text(name, 0, -50, 100, 30);
+      text(name, 0, -43, 100, 30);
     }
 
     rotate(-a);

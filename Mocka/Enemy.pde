@@ -1,5 +1,9 @@
 HashMap<Integer, EnemyRocket> enemies = new HashMap();
 
+Rocket getRocket(int UUID) {
+  return (UUID == myRocket.UUID) ? myRocket : enemies.get(UUID);
+}
+
 void showEnemies() {
   for (Map.Entry entry : enemies.entrySet()) {
     EnemyRocket enemy = (EnemyRocket)entry.getValue();

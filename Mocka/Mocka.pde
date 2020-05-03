@@ -1,7 +1,5 @@
 import java.util.Map;
 
-color GAME_COLOR; // Random color that can be used throughout the code
-
 MyRocket myRocket;
 
 final boolean DEBUG_PUNCHING = false;
@@ -25,15 +23,35 @@ void setup() {
 }
 
 void draw() {
-  if (current_scene == Scene.GAME_SCENE) drawGame();
-  if (current_scene == Scene.COLOR_SCENE) drawColors();
+  if (current_scene == Scene.game) drawGame();
+  if (current_scene == Scene.color_palette) drawColors();
+  if (current_scene == Scene.chat) drawChat();
 }
 
 enum Scene {
-  GAME_SCENE, COLOR_SCENE
+  game, color_palette, chat;
 }
 
-Scene current_scene = Scene.GAME_SCENE;
+Scene current_scene = Scene.game;
+
+void setScene(Scene scene) {
+  if (scene == current_scene) return;
+  if (current_scene == Scene.game) {
+    myRocket.INPUT_up = false;
+    myRocket.INPUT_left = false;
+    myRocket.INPUT_right = false;
+  } else if (current_scene == Scene.chat) {
+    chat_txt_entry = "";
+  } else if (current_scene == Scene.color_palette) {
+    GAME_COLOR = GAME_COLOR_;
+    myRocket.setColor(GAME_COLOR);
+    NOTIFY_MY_COLOR(GAME_COLOR);
+  }
+  current_scene = scene;
+  if (scene == Scene.color_palette) {
+    GAME_COLOR_ = GAME_COLOR;
+  }
+}
 
 void drawGame() {
   updateNetwork();

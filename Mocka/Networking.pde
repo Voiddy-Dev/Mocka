@@ -42,6 +42,13 @@ void NOTIFY_CAPITULATE() {
   client.write(new byte[]{(byte)3});
 }
 
+void NOTIFY_CHAT(String msg) {
+  ByteBuffer data = ByteBuffer.allocate(1+4+2*msg.length());
+  data.put((byte)4);
+  putString(data, msg);
+  client.write(data.array());
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -59,8 +66,9 @@ void interpretNetwork() {
     if (PACKET_ID == 2) INTERPRET_OPEN_UDP();
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
     if (PACKET_ID == 4) INTERPRET_TERRAIN();
-    if (PACKET_ID == 5) INTERPRET_PLAYER_COLOR();
+    if (PACKET_ID == 5) INTERPRET_PLAYER_INFO();
     if (PACKET_ID == 6) INTERPRET_PLAYER_STATE();
+    if (PACKET_ID == 7) INTERPRET_CHAT();
   }
 }
 
@@ -89,10 +97,13 @@ void INTERPRET_TERRAIN() {
   for (int i = 0; i < infos.length; i++) platforms[i] = new Platform(infos[i]);
 }
 
-void INTERPRET_PLAYER_COLOR() {
-  int player_UUID = network_data.getInt();
+void INTERPRET_PLAYER_INFO() {
+  int UUID = network_data.getInt();
   color col = network_data.getInt();
-  enemies.get(player_UUID).setColor(col);
+  String name = getString(network_data);
+  Rocket r = getRocket(UUID);
+  r.setColor(col);
+  r.setName(name);
 }
 
 void INTERPRET_PLAYER_STATE() {
@@ -100,6 +111,11 @@ void INTERPRET_PLAYER_STATE() {
   byte state = network_data.get();
   if (player_UUID == myRocket.UUID)myRocket.setState(state);
   else enemies.get(player_UUID).setState(state);
+}
+
+void INTERPRET_CHAT() {
+  String msg = getString(network_data);
+  addToChatHistory(msg);
 }
 
 int SERVER_UDP_PORT;
@@ -363,4 +379,16 @@ Object[] GET_PRIVATE_IP() {
   catch(Exception e) {
     return null;
   }
+}
+
+void putString(ByteBuffer data, String str) {
+  data.putInt(str.length());
+  for (int i = 0; i < str.length(); i++) data.putChar(str.charAt(i));
+}
+
+String getString(ByteBuffer data) {
+  int len = data.getInt();
+  String msg = "";
+  for (int i = 0; i < len; i++) msg += data.getChar();
+  return msg;
 }

@@ -4,6 +4,9 @@ String[] chat_lines;
 
 String chat_txt_entry = "";
 
+int X_CHAT_OFFSET = 5;
+int Y_CHAT_OFFSET = 5;
+
 void drawChat() {
   drawGame();
 
@@ -14,14 +17,14 @@ void drawChat() {
   textAlign(LEFT, BOTTOM);
   rectMode(CORNER);
 
-  final float LINE_HEIGHT = 20;
+  final float LINE_HEIGHT = 30;
   textSize(20);
 
   float w = max(100, textWidth(chat_txt_entry));
-  fill(128, 180);
-  rect(0, -LINE_HEIGHT, w+6, LINE_HEIGHT);
+  fill(128, 130);
+  rect(X_CHAT_OFFSET, -Y_CHAT_OFFSET-LINE_HEIGHT, w+6, LINE_HEIGHT);
   fill(0);
-  text(chat_txt_entry, 3, 0);
+  text(chat_txt_entry, X_CHAT_OFFSET+3, -Y_CHAT_OFFSET-3);
 
   popStyle();
   popMatrix();

@@ -99,6 +99,7 @@ void INTERPRET_TERRAIN() {
 
 void INTERPRET_PLAYER_INFO() {
   int UUID = network_data.getInt();
+  println("PLYZER INGO "+UUID);
   color col = network_data.getInt();
   String name = getString(network_data);
   Rocket r = getRocket(UUID);

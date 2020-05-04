@@ -66,7 +66,6 @@ void keyTyped_GAME() {
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
-    println(angle);
     if (abs(angle) > radians(45)) {
       standupDirection = angle < 0;
       if (standupDirection) myRocket.body.applyAngularImpulse(37);

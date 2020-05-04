@@ -38,7 +38,7 @@ public class Rocket {
   color col;
   int UUID = -1;
 
-  String name;
+  String name = "";
 
   byte state = STATE_NORMAL;
 

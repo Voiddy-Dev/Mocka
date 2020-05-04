@@ -63,8 +63,11 @@ void drawGame() {
   background(255); // white background
   // updating and displaying the rocket
   //rock.update();
+  noStroke();
+  rectMode(CENTER);
   myRocket.show();
   showEnemies();
 
   showTerrain(); // terrain
+  showTag();
 }

@@ -12,18 +12,22 @@ enum State {
 class Player {
   Client TCP_CLIENT;
   int UUID;
-  color col = color(random(0, 255), random(0, 255), random(0, 255));
-  String name = randomName();
+  color col;
+  String name;
 
   State state = State.normal;
   int imunity_counter = 0;
 
   Player(Client client_, int UUID_) {
+    name = randomName();
+    col = color(random(0, 255), random(0, 255), random(0, 255));
+
     TCP_CLIENT = client_;
     UUID = UUID_;
     println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
 
     TCP_SEND(NOTIFY_YOUR_UUID(UUID));
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
     TCP_SEND(NOTIFY_PLAYER_INFO(this));
     TCP_SEND(NOTIFY_TERRAIN(platforms));
     //note_missing_hole(UUID, UUID);
@@ -127,7 +131,7 @@ class Player {
       printArray(split);
       try {
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
-        if (split[0].equals("/terrain")) randomizeTerrain(1+int(split[1]));
+        if (split[0].equals("/terrain")) randomizeTerrain(int(split[1])+1);
       } 
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");

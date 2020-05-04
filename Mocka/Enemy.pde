@@ -1,4 +1,23 @@
+import java.util.Iterator;
+
 HashMap<Integer, EnemyRocket> enemies = new HashMap();
+
+Iterator<Rocket> allRockets() {
+  return new Iterator() {
+    Iterator<EnemyRocket> it_en = enemies.values().iterator();
+    boolean used = false;
+    public Rocket next() {
+      if (used) return it_en.next();
+      else {
+        used = true;
+        return myRocket;
+      }
+    }
+    public boolean hasNext() {
+      return (!used) || it_en.hasNext();
+    }
+  };
+}
 
 Rocket getRocket(int UUID) {
   return (UUID == myRocket.UUID) ? myRocket : enemies.get(UUID);

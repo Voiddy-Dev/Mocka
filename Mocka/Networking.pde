@@ -108,10 +108,12 @@ void INTERPRET_PLAYER_INFO() {
 }
 
 void INTERPRET_PLAYER_STATE() {
-  int player_UUID = network_data.getInt();
-  byte state = network_data.get();
-  if (player_UUID == myRocket.UUID)myRocket.setState(state);
-  else enemies.get(player_UUID).setState(state);
+  int UUID = network_data.getInt();
+  Rocket r = getRocket(UUID);
+  r.life_counter = network_data.getInt();
+  r.imunity_counter = network_data.getInt();
+  r.setState(network_data.get());
+  println("got player state: life: "+r.life_counter);
 }
 
 void INTERPRET_CHAT() {

@@ -17,6 +17,7 @@ class Player {
 
   State state = State.normal;
   int imunity_counter = 0;
+  int life_counter = 120 * 60;
 
   Player(Client client_, int UUID_) {
     name = randomName();
@@ -37,7 +38,7 @@ class Player {
       if (p.UUID != UUID) {
         TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
         TCP_SEND(NOTIFY_PLAYER_INFO(p));
-        TCP_SEND(NOTIFY_PLAYER_STATE(p.UUID, p.state));
+        TCP_SEND(NOTIFY_PLAYER_STATE(p));
         note_missing_hole(UUID, p.UUID);
       }
     }
@@ -58,7 +59,7 @@ class Player {
   void setState(State state) {
     //println("SERVER: setting state of player "+UUID+" to "+state);
     this.state = state;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(UUID, state));
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(this));
     if (state == State.it) imunity_counter = 60;
     else imunity_counter = 0;
   }
@@ -71,6 +72,7 @@ class Player {
 
   void updateNetwork() {
     if (imunity_counter > 0) imunity_counter--;
+    if (state == State.it) if (life_counter > 0) life_counter--;
     readNetwork();
     interpretNetwork();
   }
@@ -130,6 +132,7 @@ class Player {
       String[] split = msg.split(" ");
       printArray(split);
       try {
+        if (split[0].equals("/newgame")) newGame();
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1])+1);
       } 

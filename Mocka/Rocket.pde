@@ -41,6 +41,8 @@ public class Rocket {
   String name = "";
 
   byte state = STATE_NORMAL;
+  int imunity_counter = 0;
+  int life_counter = 0; 
 
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();
@@ -136,6 +138,8 @@ public class Rocket {
 
   // User interactions / arrow keys
   public void interactions() {
+    if (state == STATE_IS_IT) if (life_counter > 0) life_counter--;
+
     Vec2 pos = box2d.getBodyPixelCoord(body);
     float angle = body.getAngle();
 

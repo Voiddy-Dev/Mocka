@@ -22,13 +22,13 @@ final InetAddress GATEWAY = InetAddressByName("192.168.0.1");
 final InetAddress WAN = InetAddressByName("91.160.183.12");
 
 void keyPressed() {
-  randomizeTerrain();
+  randomizeTerrain(8);
 }
 
 void setup() {
   size(0, 0); 
 
-  randomizeTerrain();
+  randomizeTerrain(8);
 
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
   println("SERVER: Starting server");

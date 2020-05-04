@@ -11,7 +11,7 @@ void showTerrain() {
   noStroke();
   fill(0);
 
-  rectMode(CORNER);
+  rectMode(CENTER);
   // Simple small rectangle at the bottom of the screen
   for (Platform p : platforms) p.show();
 }
@@ -119,14 +119,6 @@ class Platform extends PlatformInfo {
 
   // display the platform
   public void show() {
-    rectMode(CENTER);
     rect(x, y, w, h);
-
-    // display units
-    //fill(255);
-    //strokeWeight(2);
-    //textAlign(CENTER, CENTER);
-    //textSize(18);
-    //text(String.valueOf(used), x, y-3);
   }
 }

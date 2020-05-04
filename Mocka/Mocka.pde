@@ -19,7 +19,6 @@ void setup() {
   setupNetworking();
 
   myRocket = new MyRocket(width/2, height-80);
-  randomRocketColor();
 }
 
 void draw() {
@@ -44,13 +43,12 @@ void setScene(Scene scene) {
   } else if (current_scene == Scene.chat) {
     chat_txt_entry = "";
   } else if (current_scene == Scene.color_palette) {
-    GAME_COLOR = GAME_COLOR_;
-    myRocket.setColor(GAME_COLOR);
-    NOTIFY_MY_COLOR(GAME_COLOR);
+    myRocket.col = GAME_COLOR_;
+    NOTIFY_MY_COLOR(myRocket.col);
   }
   current_scene = scene;
   if (scene == Scene.color_palette) {
-    GAME_COLOR_ = GAME_COLOR;
+    GAME_COLOR_ = myRocket.col;
   }
 }
 

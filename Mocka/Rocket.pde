@@ -9,12 +9,6 @@ float ROCKET_ICON_SCALE = 0.15;
 PShape rocketShape;
 PShape rocketIcon;// = loadShape("rocket.svg");
 
-void randomRocketColor() {
-  GAME_COLOR_ = GAME_COLOR = color(random(0, 255), random(0, 255), random(0, 255));
-  myRocket.setColor(GAME_COLOR);
-  NOTIFY_MY_COLOR(GAME_COLOR);
-}
-
 PShape createRocketShape() {
   //Geometry of rocket body imported from talky.io JS
   float mult = 30.0 * (10.0 / 36);
@@ -176,5 +170,9 @@ public class Rocket {
 class MyRocket extends Rocket {
   MyRocket(float x, float y) {
     super(x, y);
+  }
+  void setColor(color col) {
+    GAME_COLOR_ = col;
+    super.setColor(col);
   }
 }

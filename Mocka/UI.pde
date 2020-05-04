@@ -2,7 +2,7 @@ boolean INPUT_up, INPUT_left, INPUT_right;
 
 void mousePressed() {
   if (current_scene == Scene.color_palette) {
-    GAME_COLOR_ = GAME_COLOR;
+    GAME_COLOR_ = myRocket.col;
     setScene(Scene.game);
   }
 }

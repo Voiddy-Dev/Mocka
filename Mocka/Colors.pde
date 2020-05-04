@@ -1,4 +1,4 @@
-color GAME_COLOR; // Random color that can be used throughout the code
+//color myRocket_col; // Random color that can be used throughout the code
 color GAME_COLOR_; //old
 
 void drawColors() {
@@ -43,10 +43,7 @@ void drawColors() {
       float bri = map(j, 0, h, 220, 100);
       color col = color(hue, sat, bri);
       fill(col);
-      if (i == my_i && j == my_j) {
-        GAME_COLOR = col;
-        myRocket.setColor(GAME_COLOR);
-      }
+      if (i == my_i && j == my_j) myRocket.col = col;
       rect(x, y, BOX_WIDTH, BOX_HEIGHT);
     }
   }

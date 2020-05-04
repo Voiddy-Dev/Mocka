@@ -127,6 +127,7 @@ class Player {
       printArray(split);
       try {
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
+        if (split[0].equals("/terrain")) randomizeTerrain(1+int(split[1]));
       } 
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");

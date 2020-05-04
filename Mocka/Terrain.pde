@@ -112,11 +112,6 @@ class Platform extends PlatformInfo {
     return true;
   }
 
-  // returns true if something is touching the platform
-  public boolean isTouching(int inX, int inY) {
-    return (inX <= x + w/2) && (inX >= x - w/2) && (inY <= y + h/2) && (inY >= y - h/2);
-  }
-
   // display the platform
   public void show() {
     rect(x, y, w, h);

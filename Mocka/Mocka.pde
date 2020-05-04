@@ -23,6 +23,7 @@ void setup() {
 }
 
 void draw() {
+  updateUI();
   if (current_scene == Scene.game) drawGame();
   if (current_scene == Scene.color_palette) drawColors();
   if (current_scene == Scene.chat) drawChat();

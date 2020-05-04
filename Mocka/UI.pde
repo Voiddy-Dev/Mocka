@@ -1,8 +1,4 @@
-class MyRocket extends Rocket {
-  MyRocket(float x, float y) {
-    super(x, y);
-  }
-}
+boolean INPUT_up, INPUT_left, INPUT_right;
 
 void mousePressed() {
   if (current_scene == Scene.color_palette) {
@@ -11,13 +7,11 @@ void mousePressed() {
   }
 }
 
-final int ESCC = 567890987; // that's a key mash fyi
-
 void keyPressed() {
-  if (keyCode == UP) myRocket.INPUT_up = true;
-  if (keyCode == LEFT)myRocket.INPUT_left = true;
-  if (keyCode == RIGHT)myRocket.INPUT_right = true;
-  if (keyCode == 27) { 
+  if (keyCode == UP) INPUT_up = true;
+  if (keyCode == LEFT)INPUT_left = true;
+  if (keyCode == RIGHT)INPUT_right = true;
+  if (keyCode == 27 || key == ESC) { 
     if (current_scene != Scene.game) {
       setScene(Scene.game);
       key = 0; // prevent esc to close
@@ -25,15 +19,31 @@ void keyPressed() {
   }
 }
 
+void keyReleased() {
+  if (keyCode == UP) INPUT_up = false;
+  if (keyCode == LEFT) INPUT_left = false;
+  if (keyCode == RIGHT) INPUT_right = false;
+}
+
+int standupCounter = 0;
+boolean standupDirection;
+
+void updateUI() {
+  if (standupCounter == 0) {
+    myRocket.INPUT_up = INPUT_up;
+    myRocket.INPUT_left = INPUT_left;
+    myRocket.INPUT_right = INPUT_right;
+  } else {
+    myRocket.INPUT_up = false;
+    myRocket.INPUT_left = standupDirection;
+    myRocket.INPUT_right = !standupDirection;
+    standupCounter--;
+  }
+}
+
 void keyTyped() {
   if (current_scene == Scene.game) keyTyped_GAME();
   else if (current_scene == Scene.chat) keyTyped_CHAT();
-}
-
-void keyReleased() {
-  if (keyCode == UP) myRocket.INPUT_up = false;
-  if (keyCode == LEFT) myRocket.INPUT_left = false;
-  if (keyCode == RIGHT) myRocket.INPUT_right = false;
 }
 
 void keyTyped_GAME() {
@@ -52,13 +62,16 @@ void keyTyped_GAME() {
   }
   if (key == 'y') current_scene = Scene.color_palette;
   if (key == ' ') {
+    if (standupCounter != 0) return;
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
     println(angle);
     if (abs(angle) > radians(45)) {
-      if (angle < 0) myRocket.body.applyAngularImpulse(37);
+      standupDirection = angle < 0;
+      if (standupDirection) myRocket.body.applyAngularImpulse(37);
       else myRocket.body.applyAngularImpulse(-37);
+      standupCounter = 20;
     }
   }
   if (keyCode == 27) key = ESC;

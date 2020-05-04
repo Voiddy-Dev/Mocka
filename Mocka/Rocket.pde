@@ -172,3 +172,9 @@ public class Rocket {
     }
   }
 }
+
+class MyRocket extends Rocket {
+  MyRocket(float x, float y) {
+    super(x, y);
+  }
+}

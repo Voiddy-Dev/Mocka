@@ -110,14 +110,11 @@ public class Rocket {
     scale(1.0/10);
     rocketShape.setFill(col);
     rocketShape.setStroke(false);
-    //rocketShape.setStroke(col);
-    //rocketShape.setFill(false);
-    //shape(rocketShape);
-    //pushMatrix();
-    gamemode.decorate(this);
+    pushMatrix();
     translate(-rocketIcon.width/2, -rocketIcon.height/2);
     shape(rocketIcon);
-    //popMatrix();
+    popMatrix();
+    gamemode.decorate(this);
     popMatrix();
 
     exhaust.show(col);

@@ -34,6 +34,30 @@ class Freeplay implements Gamemode {
   }
 }
 
+class Crowning implements Gamemode {
+  Player winner;
+  Crowning(Player winner) {
+    this.winner = winner;
+  }
+  byte GAME_ID() {
+    return 2;
+  }
+  int PACKET_SIZE() {
+    return 4;
+  }
+  void PUT_DATA(ByteBuffer data) {
+    data.putInt(winner.UUID);
+  }
+  void INTERPRET(Player p, ByteBuffer data) {
+  }
+  void update() {
+  }
+  void playerAdd(Player p) {
+  }
+  void playerRemove(Player p) {
+  }
+}
+
 class TagGame implements Gamemode {
   final int IMMUNE_TIME = 150;
   final int INACTIVE_TIME = 60;
@@ -74,7 +98,18 @@ class TagGame implements Gamemode {
       PlayerStatus status_it = scores.get(UUID_it); 
       if (status_it.life > 0) status_it.life--;
       else {
-        println("we done");
+        int UUID_winner = 0;
+        int life_winner = -1;
+        for (Map.Entry entry : scores.entrySet()) {
+          int life = ((PlayerStatus)entry.getValue()).life;
+          if (life > life_winner) {
+            UUID_winner = (int)entry.getKey();
+            life_winner = life;
+          }
+        }
+        Player winner = players.get(UUID_winner);
+        setGamemode(new Crowning(winner));
+        println("SERVER: winner: "+UUID_winner+" "+winner);
       }
     }
   }

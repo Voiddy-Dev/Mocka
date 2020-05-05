@@ -50,6 +50,65 @@ class Freeplay implements Gamemode {
   }
 }
 
+class Crowning implements Gamemode {
+  Rocket victor;
+  Crowning(ByteBuffer data) {
+    int UUID = data.getInt();
+    println(UUID);
+    this.victor = getRocket(UUID);
+  }
+  void update() {
+  }
+  void respawn() {
+  }
+  void beginContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
+  }
+  void hud() {
+    fill(0);
+    textAlign(LEFT, TOP);
+    //text("Winnnnnn", 0, 0);
+  }
+  int FRAMES = 0;
+  void decorate(Rocket r) {
+    //pushMatrix();
+    pushStyle();
+    if (r != victor) return;
+    FRAMES--;
+    if (FRAMES <= 0) {
+      FRAMES = (int)random(10, 45);
+      PVector pos = new PVector(random(width), random(height - 100));
+      for (int i = 0; i < 40; i++) {
+        PVector vel = new PVector(0.3, 0).rotate(random(TAU));
+        r.exhaust.turnOn(pos, vel, new PVector(0, 0));
+      }
+    }
+    // Crown time!
+    noStroke();
+    fill(212, 175, 55);
+    translate(0, -114);
+    //translate(0, -154);
+    beginShape();
+    vertex(62, 15);
+    vertex(87, -40);
+    vertex(24, -21);
+    vertex(0, -80);
+    vertex(-24, -21);
+    vertex(-87, -40);
+    vertex(-62, 15);
+    endShape(CLOSE);
+    // emerald
+    translate(0, -10);
+    rectMode(CENTER);
+    fill(r.col);
+    rotate(QUARTER_PI);
+    rect(0, 0, 33, 33);
+    popStyle();
+    //popMatrix();
+  }
+}
+
 class TagGame implements Gamemode {
   int startLife, immuneTime, inactiveTime;
   int startgame_countdown;
@@ -181,7 +240,7 @@ class TagGame implements Gamemode {
     if (startgame_countdown > 0) {
       textAlign(CENTER, CENTER);
       textSize(100);
-      fill(0);
+      fill(100);
       text(1+(startgame_countdown/60), width/2, height/2);
     }
 

@@ -101,6 +101,7 @@ void INTERPRET_GAMEMODE_START() {
   int MODE_ID = network_data.get();
   if (MODE_ID == 0) setGamemode(new Freeplay());
   if (MODE_ID == 1) setGamemode(new TagGame(network_data));
+  if (MODE_ID == 2) setGamemode(new Crowning(network_data));
 }
 
 void INTERPRET_CHAT() {

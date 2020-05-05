@@ -60,7 +60,7 @@ void keyTyped_GAME() {
     Vec2 new_vel = new Vec2(0, 0);
     myRocket.body.setLinearVelocity(new_vel);
     myRocket.body.setAngularVelocity(0);
-    if (myRocket.state != STATE_IS_IT) NOTIFY_CAPITULATE();
+    gamemode.respawn();
   }
   if (key == 't') setScene(Scene.chat);
   if (key == '/') {

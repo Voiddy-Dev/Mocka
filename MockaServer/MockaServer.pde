@@ -29,6 +29,7 @@ void setup() {
   size(0, 0); 
 
   randomizeTerrain(8);
+  setGamemode(new Freeplay());
 
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
   println("SERVER: Starting server");
@@ -52,13 +53,10 @@ boolean SOMEONES_IT = false;
 // (TCP) run when a new client connects to a server
 void serverEvent(Server serv, Client myClient) {
   int UUID = getFreeUUID();
-  TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_NEW_PLAYER(UUID), UUID);
+  TCP_SEND_ALL_CLIENTS(NOTIFY_NEW_PLAYER(UUID));
   Player myPlayer = new Player(myClient, UUID);
   players.put(UUID, myPlayer);
-  if (!SOMEONES_IT) {
-    myPlayer.setState(State.it);
-    SOMEONES_IT = true;
-  }
+  myPlayer.synchronize();
 }
 
 InetAddress InetAddressByName(String ip) {

@@ -1,23 +1,10 @@
 HashMap<Integer, Player> players = new HashMap<Integer, Player>();
 
-enum State {
-  normal, it;
-  static byte getValue(State state) {
-    if (state == normal) return (byte)0;
-    if (state == it) return (byte)1;
-    return (byte)(-1);
-  }
-}
-
 class Player {
   Client TCP_CLIENT;
   int UUID;
   color col;
   String name;
-
-  State state = State.normal;
-  int imunity_counter = 0;
-  int life_counter = 120 * 60;
 
   Player(Client client_, int UUID_) {
     name = randomName();
@@ -25,43 +12,22 @@ class Player {
 
     TCP_CLIENT = client_;
     UUID = UUID_;
-    println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
-
     TCP_SEND(NOTIFY_YOUR_UUID(UUID));
-    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
-    TCP_SEND(NOTIFY_PLAYER_INFO(this));
     TCP_SEND(NOTIFY_TERRAIN(platforms));
-    //note_missing_hole(UUID, UUID);
+    TCP_SEND(NOTIFY_GAMEMODE_STATE());
+    println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
+  }
+
+  void synchronize() {
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
     // Notify this new player about all existing players
     for (Map.Entry entry : players.entrySet()) {
       Player p = (Player)entry.getValue();
-      if (p.UUID != UUID) {
-        TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
-        TCP_SEND(NOTIFY_PLAYER_INFO(p));
-        TCP_SEND(NOTIFY_PLAYER_STATE(p));
-        note_missing_hole(UUID, p.UUID);
-      }
+      if (p == this) continue;
+      TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
+      TCP_SEND(NOTIFY_PLAYER_INFO(p)); 
+      note_missing_hole(UUID, p.UUID);
     }
-  }
-
-  void setColor(color col) {
-    this.col = col;
-    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
-  }
-
-  void setName(String name) {
-    println("setting name");
-    println(name);
-    this.name = name;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
-  }
-
-  void setState(State state) {
-    //println("SERVER: setting state of player "+UUID+" to "+state);
-    this.state = state;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_STATE(this));
-    if (state == State.it) imunity_counter = 60;
-    else imunity_counter = 0;
   }
 
   void TCP_SEND(ByteBuffer buf) {
@@ -71,8 +37,6 @@ class Player {
   ByteBuffer network_data = ByteBuffer.allocate(0);
 
   void updateNetwork() {
-    if (imunity_counter > 0) imunity_counter--;
-    if (state == State.it) if (life_counter > 0) life_counter--;
     readNetwork();
     interpretNetwork();
   }
@@ -81,34 +45,16 @@ class Player {
     if (network_data.remaining()>0) {
       byte PACKET_ID = network_data.get();
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
-      if (PACKET_ID == 0) setColor(network_data.getInt());
+      if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
       //if (PACKET_ID == 1) randomizeTerrain();
-      if (PACKET_ID == 2) INTERPRET_TAGGED_OTHER(network_data.getInt());
-      if (PACKET_ID == 3) INTERPRET_CAPITULATE();
+      if (PACKET_ID == 2) gamemode.INTERPRET(this, network_data);
       if (PACKET_ID == 4) INTERPRET_CHAT();
     }
   }
 
-  void INTERPRET_TAGGED_OTHER(int other_UUID) {
-    Player other =  players.get(other_UUID);
-    if (state == State.it && imunity_counter == 0 && other.state != State.it) {
-      setState(State.normal);
-      other.setState(State.it);
-    }
-  }
-
-  void INTERPRET_CAPITULATE() {
-    if (state == State.it) return;
-    for (Map.Entry entry : players.entrySet()) {
-      Player p = (Player)entry.getValue();
-      if (p == this) continue;
-      if (p.state == State.it) {
-        if (p.imunity_counter != 0) return;
-        setState(State.it);
-        p.setState(State.normal);
-        return;
-      }
-    }
+  void INTERPRET_SET_COLOR(color col) { // 
+    this.col = col;
+    TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
   }
 
   void INTERPRET_CHAT() {
@@ -130,9 +76,9 @@ class Player {
     else {
       println("SERVER: Interpreting a command");
       String[] split = msg.split(" ");
-      printArray(split);
+      String[] args = subset(split, 1);
       try {
-        if (split[0].equals("/newgame")) newGame();
+        if (split[0].equals("/newgame")) setGamemode(new TagGame(args));
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1])+1);
       } 
@@ -140,6 +86,13 @@ class Player {
         println("SERVER: failed to interpret command from client");
       }
     }
+  }
+
+  void setName(String name) {
+    println("setting name");
+    println(name);
+    this.name = name;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
   }
 
   String NAMIFY(String name) {
@@ -166,32 +119,30 @@ class Player {
   }
 }
 
+void updatePlayers() {
+  for (Map.Entry entry : players.entrySet()) {
+    Player p = (Player)entry.getValue();
+    p.updateNetwork();
+  }
+}
+
 void removeInactivePlayers() {
   Iterator<Map.Entry<Integer, Player>> iter = players.entrySet().iterator();
   while (iter.hasNext()) {
     Map.Entry<Integer, Player> entry = iter.next();
     Player p = entry.getValue();
     if (!p.TCP_CLIENT.active()) {
-      if (p.state == State.it) SOMEONES_IT = false;
       iter.remove();
       TCP_SEND_ALL_CLIENTS(NOTIFY_DED_PLAYER(p.UUID));
+      gamemode.playerRemove(p);
       println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
     }
   }
-  if (!SOMEONES_IT && !players.isEmpty()) {
-    iter = players.entrySet().iterator();
-    Map.Entry<Integer, Player> entry = iter.next();
-    Player p = entry.getValue();
-    p.setState(State.it);
-    SOMEONES_IT = true;
-  }
 }
 
-void updatePlayers() {
-  for (Map.Entry entry : players.entrySet()) {
-    Player p = (Player)entry.getValue();
-    p.updateNetwork();
-  }
+Player randomPlayer() {
+  Object[] values = players.values().toArray();
+  return (Player)values[int(random(values.length))];
 }
 
 int getFreeUUID() {

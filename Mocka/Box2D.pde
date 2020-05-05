@@ -39,6 +39,6 @@ void beginContact(Contact cp) {
   else if (o2 instanceof EnemyRocket) enemy = (EnemyRocket) o2;
   else return;
   //println(enemy.UUID);
-  if (myRocket.state == STATE_IS_IT) NOTIFY_TAGGED_OTHER(enemy.UUID); 
-  else if (enemy.state == STATE_IS_IT) NOTIFY_CAPITULATE();
+  //if (myRocket.state == STATE_IS_IT) NOTIFY_TAGGED_OTHER(enemy.UUID); 
+  //else if (enemy.state == STATE_IS_IT) NOTIFY_CAPITULATE();
 }

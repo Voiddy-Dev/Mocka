@@ -9,9 +9,9 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-//String SERVER_IP = "localhost";
+String SERVER_IP = "localhost";
 //String SERVER_IP = "91.160.183.12";
-String SERVER_IP = "lmhleetmcgang.ddns.net";
+//String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;
@@ -67,7 +67,7 @@ void interpretNetwork() {
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
     if (PACKET_ID == 4) INTERPRET_TERRAIN();
     if (PACKET_ID == 5) INTERPRET_PLAYER_INFO();
-    if (PACKET_ID == 6) INTERPRET_PLAYER_STATE();
+    if (PACKET_ID == 6) INTERPRET_GAMEMODE_STATE();
     if (PACKET_ID == 7) INTERPRET_CHAT();
   }
 }
@@ -107,13 +107,10 @@ void INTERPRET_PLAYER_INFO() {
   r.setName(name);
 }
 
-void INTERPRET_PLAYER_STATE() {
-  int UUID = network_data.getInt();
-  Rocket r = getRocket(UUID);
-  r.life_counter = network_data.getInt();
-  r.imunity_counter = network_data.getInt();
-  r.setState(network_data.get());
-  println("got player state: life: "+r.life_counter);
+void INTERPRET_GAMEMODE_STATE() {
+  int MODE_ID = network_data.get();
+  if (MODE_ID == 0) setGamemode(new Freeplay());
+  if (MODE_ID == 1) setGamemode(new TagGame(network_data));
 }
 
 void INTERPRET_CHAT() {

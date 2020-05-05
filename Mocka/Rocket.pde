@@ -40,10 +40,6 @@ public class Rocket {
 
   String name = "";
 
-  byte state = STATE_NORMAL;
-  int imunity_counter = 0;
-  int life_counter = 0; 
-
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();
     makeBody(new Vec2(x, y));
@@ -57,10 +53,6 @@ public class Rocket {
 
   void setColor(color col) {
     this.col = col;
-  }
-
-  void setState(byte state) {
-    this.state = state;
   }
 
   private void makeBody(Vec2 center) {
@@ -123,11 +115,7 @@ public class Rocket {
     //rocketShape.setFill(false);
     //shape(rocketShape);
     //pushMatrix();
-    if (state == STATE_IS_IT) {
-      noStroke();
-      fill(255, 0, 0, 32);
-      ellipse(0, 0, 320, 320);
-    }
+    gamemode.decorate(this);
     translate(-rocketIcon.width/2, -rocketIcon.height/2);
     shape(rocketIcon);
     //popMatrix();
@@ -138,8 +126,6 @@ public class Rocket {
 
   // User interactions / arrow keys
   public void interactions() {
-    if (state == STATE_IS_IT) if (life_counter > 0) life_counter--;
-
     Vec2 pos = box2d.getBodyPixelCoord(body);
     float angle = body.getAngle();
 

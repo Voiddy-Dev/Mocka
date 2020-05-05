@@ -67,13 +67,11 @@ ByteBuffer NOTIFY_PLAYER_INFO(Player p) {
   return data;
 }
 
-ByteBuffer NOTIFY_PLAYER_STATE(Player p) {
-  ByteBuffer data = ByteBuffer.allocate(14);
+ByteBuffer NOTIFY_GAMEMODE_STATE() {
+  ByteBuffer data = ByteBuffer.allocate(2+gamemode.PACKET_SIZE());
   data.put((byte)6);
-  data.putInt(p.UUID);
-  data.putInt(p.life_counter);
-  data.putInt(p.imunity_counter);
-  data.put(State.getValue(p.state));
+  data.put(gamemode.GAME_ID());
+  gamemode.PUT_DATA(data);
   return data;
 }
 

@@ -3,7 +3,8 @@ import java.util.Map;
 MyRocket myRocket;
 
 final boolean DEBUG_PUNCHING = false;
-final boolean DEBUG_PACKETS  = false;
+final boolean DEBUG_PACKETS  = true;
+final boolean DEBUG_GAMEMODE = true;
 
 void setup() {
   //size(120, 80, FX2D);
@@ -12,12 +13,10 @@ void setup() {
   //size(960, 640, FX2D);
   size(1200, 790, FX2D);
 
+  setGamemode(new Disconnected());
   rocketShape = createRocketShape();
-
   setupBox2D();
-
   setupNetworking();
-
   myRocket = new MyRocket(width/2, height-80);
 }
 
@@ -58,6 +57,7 @@ void drawGame() {
   myRocket.interactions();
   updateEnemies();
   box2d.step();
+  gamemode.update();
   informEnemies();
 
   background(255); // white background
@@ -69,5 +69,5 @@ void drawGame() {
   showEnemies();
 
   showTerrain(); // terrain
-  showTag();
+  gamemode.hud();
 }

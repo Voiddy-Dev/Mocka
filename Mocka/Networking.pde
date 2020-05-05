@@ -9,9 +9,9 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-String SERVER_IP = "localhost";
+//String SERVER_IP = "localhost";
 //String SERVER_IP = "91.160.183.12";
-//String SERVER_IP = "lmhleetmcgang.ddns.net";
+String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;
@@ -29,17 +29,6 @@ void NOTIFY_MY_COLOR(color col) {
 
 void NOTIFY_NEW_TERRAIN() {
   client.write(new byte[]{(byte)1});
-}
-
-void NOTIFY_TAGGED_OTHER(int UUID) {
-  ByteBuffer data = ByteBuffer.allocate(5);
-  data.put((byte)2);
-  data.putInt(UUID);
-  client.write(data.array());
-}
-
-void NOTIFY_CAPITULATE() {
-  client.write(new byte[]{(byte)3});
 }
 
 void NOTIFY_CHAT(String msg) {
@@ -67,8 +56,9 @@ void interpretNetwork() {
     if (PACKET_ID == 3) INTERPRET_YOUR_UUID();
     if (PACKET_ID == 4) INTERPRET_TERRAIN();
     if (PACKET_ID == 5) INTERPRET_PLAYER_INFO();
-    if (PACKET_ID == 6) INTERPRET_GAMEMODE_STATE();
+    if (PACKET_ID == 6) INTERPRET_GAMEMODE_START();
     if (PACKET_ID == 7) INTERPRET_CHAT();
+    if (PACKET_ID == 8) INTERPRET_GAMEMODE_UPDATE();
   }
 }
 
@@ -107,7 +97,7 @@ void INTERPRET_PLAYER_INFO() {
   r.setName(name);
 }
 
-void INTERPRET_GAMEMODE_STATE() {
+void INTERPRET_GAMEMODE_START() {
   int MODE_ID = network_data.get();
   if (MODE_ID == 0) setGamemode(new Freeplay());
   if (MODE_ID == 1) setGamemode(new TagGame(network_data));
@@ -116,6 +106,10 @@ void INTERPRET_GAMEMODE_STATE() {
 void INTERPRET_CHAT() {
   String msg = getString(network_data);
   addToChatHistory(msg);
+}
+
+void INTERPRET_GAMEMODE_UPDATE() {
+  gamemode.INTERPRET(network_data);
 }
 
 int SERVER_UDP_PORT;

@@ -85,6 +85,7 @@ public class Rocket {
     float a = body.getAngle();
 
     fill(col);
+    noStroke();
     triangle(pos.x-7, pos.y-30, pos.x+7, pos.y-30, pos.x, pos.y-22);
 
     pushMatrix();
@@ -98,8 +99,6 @@ public class Rocket {
     }
 
     rotate(-a);
-    noStroke();
-
     fill(col);
     if (INPUT_right) {
       triangle(-5, -5-JET_OFFSET, -5, 5-JET_OFFSET, -random(10, 18), -JET_OFFSET);

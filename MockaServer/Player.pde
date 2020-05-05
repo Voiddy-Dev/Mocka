@@ -14,7 +14,7 @@ class Player {
     UUID = UUID_;
     TCP_SEND(NOTIFY_YOUR_UUID(UUID));
     TCP_SEND(NOTIFY_TERRAIN(platforms));
-    TCP_SEND(NOTIFY_GAMEMODE_STATE());
+    TCP_SEND(NOTIFY_START_GAMEMODE());
     println("SERVER: new TCP connection. ip: "+TCP_CLIENT.ip()+" UUID: "+UUID);
   }
 

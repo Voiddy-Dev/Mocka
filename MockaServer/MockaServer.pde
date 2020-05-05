@@ -43,6 +43,7 @@ void draw() {
     SERVER_UDP_SOCKET.close();
     stop();
   }
+  gamemode.update();
   removeInactivePlayers();
   updatePlayers();
   updateHoles();

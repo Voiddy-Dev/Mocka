@@ -8,6 +8,8 @@ void setGamemode(Gamemode newgamemode) {
 interface Gamemode {
   void update();
   void respawn();
+  void beginContact(Contact cp);
+  void INTERPRET(ByteBuffer data);
   void hud();
   void decorate(Rocket r);
 }
@@ -16,6 +18,10 @@ class Disconnected implements Gamemode {
   void update() {
   }
   void respawn() {
+  }
+  void beginContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
   }
   void hud() {
     fill(0);
@@ -31,6 +37,10 @@ class Freeplay implements Gamemode {
   }
   void respawn() {
   }
+  void beginContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
+  }
   void hud() {
     fill(0);
     textAlign(LEFT, TOP);
@@ -41,19 +51,22 @@ class Freeplay implements Gamemode {
 }
 
 class TagGame implements Gamemode {
-  int startLife;
+  int startLife, immuneTime, inactiveTime;
   int startgame_countdown;
+
   int UUID_it;
   HashMap<Integer, PlayerStatus> scores;
 
   TagGame(ByteBuffer data) {
     startLife = data.getInt();
+    immuneTime = data.getInt();
+    inactiveTime = data.getInt();
     startgame_countdown = data.getInt();
     UUID_it = data.getInt();
     int size = data.getInt();
     scores = new HashMap<Integer, PlayerStatus>();
     PlayerStatus prev = null;
-    for (int i = 0; i < size; i++) prev = scores.put(data.getInt(), new PlayerStatus(prev, data));
+    for (int i = 0; i < size; i++) scores.put(data.getInt(), prev = new PlayerStatus(prev, data));
     if (DEBUG_GAMEMODE) println("client: finished setting up Taggame!");
   }
 
@@ -69,6 +82,8 @@ class TagGame implements Gamemode {
       this.prev = prev;
       if (prev == null) pos = 0; 
       else pos = prev.pos + 1;
+      println(pos, prev);
+      prev = this;
 
       life = data.getInt();
       immune = data.getInt();
@@ -79,24 +94,97 @@ class TagGame implements Gamemode {
   void update() {
     if (startgame_countdown > 0) startgame_countdown--;
     else {
-      PlayerStatus status = scores.get(UUID_it); 
-      if (status.life > 0) status.life--;
+      PlayerStatus status_it = scores.get(UUID_it); 
+      if (status_it.life > 0) status_it.life--;
+      for (PlayerStatus status : scores.values()) {
+        if (status.immune > 0) status.immune--;
+        if (status.inactive > 0) status.inactive--;
+      }
     }
   }
 
   void respawn() {
-    client.write(new byte[]{(byte) 2, (byte)3});
+    client.write(new byte[]{(byte) 2, (byte)0});
+  }
+
+  void beginContact(Contact cp) {
+    Fixture f1 = cp.getFixtureA();
+    Fixture f2 = cp.getFixtureB();
+    Body b1 = f1.getBody();
+    Body b2 = f2.getBody();
+    // Get objects that reference these bodies
+    Object o1 = b1.getUserData();
+    Object o2 = b2.getUserData();
+    if (o1 != myRocket && o2 != myRocket) return; // does not concern us (ie our player-local simulation)
+    EnemyRocket enemy;
+    if (o1 instanceof EnemyRocket) enemy = (EnemyRocket) o1;
+    else if (o2 instanceof EnemyRocket) enemy = (EnemyRocket) o2;
+    else return;
+    //println(enemy.UUID);
+    PlayerStatus myStatus = scores.get(myRocket.UUID);
+    if (myStatus == null) return;
+    PlayerStatus otherStatus = scores.get(enemy.UUID);
+    if (otherStatus == null) return;
+    if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID); 
+    else if (enemy.UUID == UUID_it && otherStatus.inactive == 0 && myStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
+  }
+
+  void NOTIFY_TAGGED_OTHER(int UUID) {
+    ByteBuffer data = ByteBuffer.allocate(6);
+    data.put((byte)2);
+    data.put((byte)1);
+    data.putInt(UUID);
+    client.write(data.array());
+  }
+
+  void NOTIFY_CAPITULATE() {
+    client.write(new byte[]{(byte)2, (byte)0});
+  }
+
+  void INTERPRET(ByteBuffer data) {
+    println("Interpretting and update.......");
+    UUID_it = data.getInt();
+    int size = data.getInt();
+    for (int i = 0; i < size; i++) {
+      int UUID = data.getInt();
+      PlayerStatus status = scores.get(UUID);
+      status.life = data.getInt();
+      status.immune = data.getInt();
+      status.inactive = data.getInt();
+    }
   }
 
   void decorate(Rocket r) {
+    PlayerStatus status = scores.get(r.UUID);
+    if (status == null) return;
     if (r.UUID == UUID_it) {
       noStroke();
       fill(255, 0, 0, 32);
       ellipse(0, 0, 320, 320);
+      if (status.inactive > 0) {
+        float angle = map(status.inactive, 0, inactiveTime, 0, PI);
+        noFill();
+        stroke(0);
+        strokeWeight(3*10);
+        arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
+      }
+    } else if (status.immune > 0) {
+      float angle = map(status.immune, 0, immuneTime, 0, PI);
+      noFill();
+      stroke(#66D62B);
+      strokeWeight(3*10);
+      arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
     }
   }
 
   void hud() {
+    if (startgame_countdown > 0) {
+      textAlign(CENTER, CENTER);
+      textSize(100);
+      fill(0);
+      text(1+(startgame_countdown/60), width/2, height/2);
+    }
+
     pushMatrix();
     rectMode(CORNER);
     textAlign(LEFT, CENTER);
@@ -107,12 +195,13 @@ class TagGame implements Gamemode {
       int UUID = (int)entry.getKey();
       PlayerStatus status = (PlayerStatus)entry.getValue();
       Rocket r = getRocket(UUID);
+      if (r == null) continue;
 
       if (status.prev != null && status.prev.life < status.life) {
         status.pos -= 1;
         status.prev.pos += 1;
         PlayerStatus tmp = status.prev.prev;
-        status.prev = status;
+        status.prev.prev = status;
         status.prev = tmp;
       }
       status.pos_ += (status.pos - status.pos_) * 0.2;
@@ -127,6 +216,7 @@ class TagGame implements Gamemode {
       fill(0);
       text(status.pos+1, 3, textvertcenter);
       text(r.name, 20, textvertcenter);
+      if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
 
       int gap = 2;
       translate(80, 0);
@@ -139,79 +229,5 @@ class TagGame implements Gamemode {
       popMatrix();
     }
     popMatrix();
-  }
-
-  void hud_() {
-
-    pushStyle();
-    pushMatrix();
-    int num_entries = 1 + enemies.size();
-    int rows = 2;
-    int cols = max(1, (num_entries - 1) / rows);
-    float w = min(300, float(width) / cols);
-    float h = float(100) / rows;
-    float remaining_width = w - h*2.6;
-    Iterator<Rocket> it = allRockets();
-    int i = 0;
-    int j = 0;
-    textSize(16);
-    strokeWeight(5);
-    translate(0, height-100);
-    while (it.hasNext()) {
-      Rocket r = it.next();
-      PlayerStatus status = scores.get(r.UUID);
-      if (status == null) continue;
-      color bgcol = r.UUID == UUID_it ? color(255, 222, 222) : color(255);
-      pushMatrix();
-      translate(i*w, j*h);
-      noFill();
-      //stroke(128);
-      noStroke();
-      rect(w/2, h/2, w, h);
-
-      // Leaderboard
-      fill(bgcol);
-      stroke(r.col);
-      ellipse(h*0.5, h*0.5, h*0.75, h*0.75);
-
-      // Name
-      translate(h * 0.75, 0);
-
-      pushMatrix();
-      translate(h*0.9, h*0.5);
-
-      fill(bgcol);
-      stroke(r.col);
-      rect(0, 2, h * 1.2, h*0.5);
-      fill(0);
-      text(r.name, 0, 0, h * 1.5, h);
-      popMatrix();
-
-      // Score
-      translate(h*1.7, 0);
-
-      translate(remaining_width*0.5, h*0.5);
-      fill(bgcol);
-      noStroke();
-      rect(0, 2, remaining_width, h*0.5); // bg
-      fill(r.col);
-      float full = map(status.life, 0, 120*60, 0, remaining_width);
-      rect(-(remaining_width-full)/2, 2, full, h*0.5);
-      noFill();
-      stroke(120);
-      rect(0, 2, remaining_width, h*0.5);
-      fill(0);
-      text(status.life / 60, 0, 0);
-
-
-      popMatrix();
-      j++;
-      if (j == rows) {
-        j = 0;
-        i++;
-      }
-    }
-    popMatrix();
-    popStyle();
   }
 }

@@ -67,7 +67,7 @@ ByteBuffer NOTIFY_PLAYER_INFO(Player p) {
   return data;
 }
 
-ByteBuffer NOTIFY_GAMEMODE_STATE() {
+ByteBuffer NOTIFY_START_GAMEMODE() {
   ByteBuffer data = ByteBuffer.allocate(2+gamemode.PACKET_SIZE());
   data.put((byte)6);
   data.put(gamemode.GAME_ID());

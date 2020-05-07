@@ -130,17 +130,23 @@ class TagGame implements Gamemode {
   }
 
   class PlayerStatus {
+    int place;
     int pos;
     float pos_ = 0;
-    PlayerStatus prev;
+    PlayerStatus prev, next;
 
     int life;
     int immune = 0;
     int inactive = 0;
     PlayerStatus(PlayerStatus prev, ByteBuffer data) {
+      place = 1;
+      next = null;
       this.prev = prev;
-      if (prev == null) pos = 0; 
-      else pos = prev.pos + 1;
+      if (prev == null) pos = 0;
+      else {
+        pos = prev.pos + 1;
+        prev.next = this;
+      }
       println(pos, prev);
       prev = this;
 
@@ -257,11 +263,27 @@ class TagGame implements Gamemode {
       if (r == null) continue;
 
       if (status.prev != null && status.prev.life < status.life) {
-        status.pos -= 1;
-        status.prev.pos += 1;
-        PlayerStatus tmp = status.prev.prev;
-        status.prev.prev = status;
-        status.prev = tmp;
+        PlayerStatus status_next = status.next;
+        PlayerStatus status_prev = status.prev;
+        PlayerStatus status_prev_prev = status_prev.prev;
+        // prev pointers
+        status.prev = status_prev_prev;
+        status_prev = status;
+        if (status_next != null) status_next.prev = status_prev;
+        // next pointers
+        status_prev.next = status_next;
+        status.next = status_prev;
+        if (status_prev_prev != null) status_prev_prev.next = status;
+        // vertical pos
+        status.pos -= 1;  
+        status_prev.pos += 1;
+        // place
+        status.place = status_prev.place;
+        PlayerStatus s = status_prev;
+        while (s != null) {
+          s.place = s.prev.place + ((s.prev.life == s.life) ? 0 : 0);
+          s = s.prev;
+        }
       }
       status.pos_ += (status.pos - status.pos_) * 0.2;
 
@@ -273,9 +295,9 @@ class TagGame implements Gamemode {
         rect(0, 0, 80 + 100, 24);
       }
       fill(0);
-      text(status.pos+1, 3, textvertcenter);
+      text(status.place, 3, textvertcenter);
       text(r.name, 20, textvertcenter);
-      if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
+      //if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
 
       int gap = 2;
       translate(80, 0);

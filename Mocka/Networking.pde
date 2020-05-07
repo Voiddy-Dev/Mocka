@@ -31,6 +31,10 @@ void NOTIFY_NEW_TERRAIN() {
   client.write(new byte[]{(byte)1});
 }
 
+void NOTIFY_RESPAWN() {
+  client.write(new byte[]{(byte)3});
+}
+
 void NOTIFY_CHAT(String msg) {
   ByteBuffer data = ByteBuffer.allocate(1+4+2*msg.length());
   data.put((byte)4);

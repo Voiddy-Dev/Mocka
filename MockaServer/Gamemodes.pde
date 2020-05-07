@@ -2,6 +2,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+final boolean SHORT_ROUNDS = false;
+
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
@@ -17,6 +19,7 @@ interface Gamemode {
   void update();
   void playerAdd(Player p);
   void playerRemove(Player p);
+  void respawn(Player p);
 }
 
 class Freeplay implements Gamemode {
@@ -35,6 +38,8 @@ class Freeplay implements Gamemode {
   void playerAdd(Player p) {
   }
   void playerRemove(Player p) {
+  }
+  void respawn(Player p) {
   }
 }
 
@@ -69,6 +74,8 @@ class Leaderboard implements Gamemode {
   }
   void playerRemove(Player p) {
   }
+  void respawn(Player p) {
+  }
 }
 class Earning {
   int UUID, points_won, places_won;
@@ -81,7 +88,7 @@ class Earning {
 
 class Crowning implements Gamemode {
   Player winner;
-  int celebrateTime = 60; //4*60;
+  int celebrateTime = SHORT_ROUNDS ? 60 : 4*60;
   Gamemode leaderboard;
   Crowning(Player winner, Gamemode leaderboard) {
     this.winner = winner;
@@ -106,11 +113,14 @@ class Crowning implements Gamemode {
   }
   void playerRemove(Player p) {
   }
+  void respawn(Player p) {
+  }
 }
 
 class TagGame implements Gamemode {
   final int IMMUNE_TIME = 150;
   final int INACTIVE_TIME = 60;
+  final int INACTIVE_RESPAWN_TIME = 150;
 
   int startLife;
   int startgame_countdown;
@@ -119,14 +129,14 @@ class TagGame implements Gamemode {
 
   TagGame(int startLife) {
     this.startLife = startLife;
-    startgame_countdown = 30;//3*60 - 1;
+    startgame_countdown = SHORT_ROUNDS ? 30 : 3*60 - 1;
     UUID_it = randomPlayer().UUID;
     scores = new HashMap<Integer, PlayerStatus>();
-    for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? startgame_countdown : 0, (p.UUID == UUID_it) ? startgame_countdown : 0));
+    for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? IMMUNE_TIME : 0, (p.UUID == UUID_it) ? INACTIVE_TIME : 0));
   }
 
   TagGame(String[] args) {
-    this(5);//120 * 60);
+    this(SHORT_ROUNDS ? 5 : 120 * 60);
   }
 
   class PlayerStatus {
@@ -238,6 +248,17 @@ class TagGame implements Gamemode {
     TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
   }
 
+  void respawn(Player p) {
+    // Player p has resapwned, punish them hard
+    PlayerStatus status_p = scores.get(p.UUID);
+    if (status_p == null) return;
+    PlayerStatus status_it = scores.get(UUID_it);
+    status_it.immune = IMMUNE_TIME;
+    status_p.inactive = INACTIVE_RESPAWN_TIME;
+    UUID_it = p.UUID;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
   void INTERPRET(Player p, ByteBuffer data) {
     int MSG_ID = data.get();
     switch (MSG_ID) {
@@ -248,15 +269,12 @@ class TagGame implements Gamemode {
       TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
       break;
     case 1 : // contact claim
-      println("--- TAGGING ");
       int UUID_other = data.getInt();
       int UUID_tagger = (p.UUID == UUID_it) ? p.UUID : UUID_other;
       int UUID_tagged = (p.UUID == UUID_it) ? UUID_other : p.UUID;
       if (UUID_tagger != UUID_it) break;
-      println(scores.get(UUID_tagger).inactive);
       if (scores.get(UUID_tagger).inactive > 0) break;
       if (scores.get(UUID_tagged) == null) break;
-      println(scores.get(UUID_tagged).immune);
       if (scores.get(UUID_tagged).immune > 0) break;
       scores.get(UUID_tagger).immune = IMMUNE_TIME;
       scores.get(UUID_tagged).inactive = INACTIVE_TIME;

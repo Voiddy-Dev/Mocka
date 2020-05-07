@@ -246,7 +246,6 @@ class TagGame implements Gamemode {
   }
 
   void respawn() {
-    client.write(new byte[]{(byte) 2, (byte)0});
   }
 
   void beginContact(Contact cp) {

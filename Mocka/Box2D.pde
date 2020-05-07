@@ -15,14 +15,13 @@ void setupBox2D() {
   box2d.listenForCollisions();
 }
 
-boolean TOUCHING_SOMETHING = false;
+int TOUCHING_SOMETHING = 0;
 
 void beginContact(Contact cp) {
   gamemode.beginContact(cp);
-
-  TOUCHING_SOMETHING = true;
+  TOUCHING_SOMETHING++;
 }
 
 void endContact(Contact cp) {
-  TOUCHING_SOMETHING = false;
+  TOUCHING_SOMETHING--;
 }

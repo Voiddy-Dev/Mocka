@@ -27,20 +27,33 @@ void keyReleased() {
   if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') INPUT_right = false;
 }
 
-int standupCounter = 0;
-boolean standupDirection;
+int standupCounter = Integer.MAX_VALUE;
 
 void updateUI() {
-  if (standupCounter == 0) {
+  if (!doingStandingProcedure()) {
     myRocket.INPUT_up = INPUT_up;
     myRocket.INPUT_left = INPUT_left;
     myRocket.INPUT_right = INPUT_right;
   } else {
+    standupCounter++;
+    float angle = myRocket.body.getAngle();
+    angle = ((angle % TAU) + TAU) % TAU;
+    if (angle > PI) angle -= TAU;
+    boolean standupDirection = angle < 0;
+    if (angle > PI) angle -= TAU;
+    if (abs(angle) < radians(10)) standupCounter = Integer.MAX_VALUE;
+    if (standupCounter % 30 == 0) {
+      if (angle < 0) myRocket.body.applyAngularImpulse(37);
+      else myRocket.body.applyAngularImpulse(-37);
+    }
     myRocket.INPUT_up = false;
     myRocket.INPUT_left = standupDirection;
     myRocket.INPUT_right = !standupDirection;
-    standupCounter--;
   }
+}
+
+boolean doingStandingProcedure() {
+  return standupCounter < 60;
 }
 
 void keyTyped() {
@@ -57,6 +70,8 @@ void keyTyped_GAME() {
     myRocket.body.setLinearVelocity(new_vel);
     myRocket.body.setAngularVelocity(0);
     gamemode.respawn();
+    NOTIFY_RESPAWN();
+    //TOUCHING_SOMETHING = 0;
   }
   if (ckey == 'T') setScene(Scene.chat);
   if (key == '/') {
@@ -64,16 +79,17 @@ void keyTyped_GAME() {
     setScene(Scene.chat);
   }
   if (ckey == 'Y') current_scene = Scene.color_palette;
-  if (key == ' ' && TOUCHING_SOMETHING) {
-    if (standupCounter != 0) return;
+  if (key == ' ' && TOUCHING_SOMETHING != 0) {
+    if (doingStandingProcedure()) return;
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
     if (abs(angle) > radians(45)) {
-      standupDirection = angle < 0;
-      if (standupDirection) myRocket.body.applyAngularImpulse(37);
-      else myRocket.body.applyAngularImpulse(-37);
-      standupCounter = 20;
+      boolean standupDirection = angle < 0;
+      float force = (abs(angle) > radians(90)) ? 37 : 27;
+      if (standupDirection) myRocket.body.applyAngularImpulse(force);
+      else myRocket.body.applyAngularImpulse(-force);
+      standupCounter = 0;
     }
   }
   if (keyCode == 27) key = ESC;

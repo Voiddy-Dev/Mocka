@@ -56,6 +56,7 @@ class Player {
       if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
       //if (PACKET_ID == 1) randomizeTerrain();
       if (PACKET_ID == 2) gamemode.INTERPRET(this, network_data);
+      if (PACKET_ID == 3) gamemode.respawn(this);
       if (PACKET_ID == 4) INTERPRET_CHAT();
     }
   }

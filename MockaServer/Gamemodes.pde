@@ -122,7 +122,7 @@ class TagGame implements Gamemode {
     startgame_countdown = 3*60 - 1;
     UUID_it = randomPlayer().UUID;
     scores = new HashMap<Integer, PlayerStatus>();
-    for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife));
+    for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? startgame_countdown : 0, (p.UUID == UUID_it) ? startgame_countdown : 0));
   }
 
   TagGame(String[] args) {
@@ -132,11 +132,14 @@ class TagGame implements Gamemode {
   class PlayerStatus {
     int place; // used at end
 
-    int life;
-    int immune = 0;
-    int inactive = 0;
+    int life, immune, inactive;
     PlayerStatus(int life) {
+      this(life, 0, 0);
+    }
+    PlayerStatus(int life, int immune, int inactive) {
       this.life = life;
+      this.immune = immune;
+      this.inactive = inactive;
     }
   }
 

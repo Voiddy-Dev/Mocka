@@ -35,7 +35,13 @@ class Disconnected implements Gamemode {
   }
 }
 
-class Leaderboard {
+class Leaderboard implements Gamemode {
+  Leaderboard(ByteBuffer data) {
+    boolean is_fresh = data.get() != (byte)0;
+    int size = data.getInt();
+    Earning[] earnings = new Earning[size];
+    for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(data.getInt(), data.getInt(), data.getInt());
+  }
   void update() {
   }
   void respawn() {
@@ -43,10 +49,6 @@ class Leaderboard {
   void beginContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
-    boolean is_fresh = data.get() != (byte)0;
-    int size = data.getInt();
-    Earning[] earnings = new Earning[size];
-    for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(data.getInt(), data.getInt(), data.getInt());
   }
   void hud() {
   }

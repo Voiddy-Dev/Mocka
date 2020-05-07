@@ -64,6 +64,10 @@ class Player {
     this.col = col;
     TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
   }
+  void INTERPRET_SET_COLOR_ALL(color col) { // 
+    this.col = col;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
+  }
 
   void INTERPRET_CHAT() {
     try {
@@ -89,7 +93,7 @@ class Player {
         if (split[0].equals("/newgame")) setGamemode(new TagGame(args));
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1]));
-        if (split[0].equals("/color")) INTERPRET_SET_COLOR(COLORIFY(split[1]));
+        if (split[0].equals("/color")) INTERPRET_SET_COLOR_ALL(COLORIFY(split[1]));
       } 
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");

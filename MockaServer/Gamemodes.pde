@@ -1,3 +1,7 @@
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
@@ -34,10 +38,54 @@ class Freeplay implements Gamemode {
   }
 }
 
+class Leaderboard implements Gamemode {
+  boolean is_fresh = true;
+  Earning[] earnings;
+  Leaderboard(Earning[] earnings) {
+    this.earnings = earnings;
+  }
+  byte GAME_ID() {
+    return 3;
+  }
+  int PACKET_SIZE() {
+    return 5 + earnings.length*12;
+  }
+  void PUT_DATA(ByteBuffer data) {
+    data.put(is_fresh ? (byte)1 : (byte)0);
+    data.putInt(earnings.length);
+    for (int i = 0; i < earnings.length; i++) {
+      Earning e = earnings[i];
+      data.putInt(e.UUID);
+      data.putInt(e.points_won);
+      data.putInt(e.places_won);
+    }
+    is_fresh = false;
+  }
+  void INTERPRET(Player p, ByteBuffer data) {
+  }
+  void update() {
+  }
+  void playerAdd(Player p) {
+  }
+  void playerRemove(Player p) {
+  }
+}
+class Earning {
+  int UUID, points_won, places_won;
+  Earning(int UUID, int points_won, int places_won) {
+    this.UUID = UUID;
+    this.points_won = points_won;
+    this.places_won = places_won;
+  }
+}
+
 class Crowning implements Gamemode {
   Player winner;
-  Crowning(Player winner) {
+  int celebrateTime = 4*60;
+  Gamemode leaderboard;
+  Crowning(Player winner, Gamemode leaderboard) {
     this.winner = winner;
+    this.leaderboard = leaderboard;
   }
   byte GAME_ID() {
     return 2;
@@ -51,6 +99,8 @@ class Crowning implements Gamemode {
   void INTERPRET(Player p, ByteBuffer data) {
   }
   void update() {
+    celebrateTime--;
+    if (celebrateTime < 0) setGamemode(leaderboard);
   }
   void playerAdd(Player p) {
   }
@@ -80,6 +130,8 @@ class TagGame implements Gamemode {
   }
 
   class PlayerStatus {
+    int place; // used at end
+
     int life;
     int immune = 0;
     int inactive = 0;
@@ -96,7 +148,7 @@ class TagGame implements Gamemode {
         if (status.inactive > 0) status.inactive--;
       }
       PlayerStatus status_it = scores.get(UUID_it); 
-      if (status_it.life > 0) status_it.life--;
+      if (status_it != null && status_it.life > 0) status_it.life--;
       else {
         int UUID_winner = 0;
         int life_winner = -1;
@@ -108,7 +160,58 @@ class TagGame implements Gamemode {
           }
         }
         Player winner = players.get(UUID_winner);
-        setGamemode(new Crowning(winner));
+        // compute leaderboards
+
+
+        // Sort place for this round
+        List<Map.Entry<Integer, PlayerStatus>> scores_sorted = new ArrayList(scores.entrySet());
+        Collections.sort(scores_sorted, new Comparator<Map.Entry<Integer, PlayerStatus>>() {
+          public int compare(Map.Entry<Integer, PlayerStatus> o1, Map.Entry<Integer, PlayerStatus> o2) {
+            return o1.getValue().life - o2.getValue().life;
+          }
+        }
+        );
+        if (scores_sorted.size() > 0) scores_sorted.get(0).getValue().place = 1;
+        for (int i = 1; i < scores_sorted.size(); i++) {
+          PlayerStatus p = scores_sorted.get(i).getValue();
+          PlayerStatus above = scores_sorted.get(i-1).getValue();
+          p.place = above.place + ((p.life == above.life) ? 0 : 1);
+        }
+        // note where players stood in leaderboards before
+        for (Player p : players.values()) {
+          p.place_ = p.place;
+          p.points_ = p.points;
+        }
+        // update points
+        for (Map.Entry entry : scores.entrySet()) {
+          int UUID = (int)entry.getKey();
+          Player p = players.get(UUID);
+          PlayerStatus status = (PlayerStatus)entry.getValue();
+          if (p != null) p.points += scores.size() - status.place; // Give points!!
+        }
+        // update places
+        List<Player> players_sorted = new ArrayList(players.values());
+        Collections.sort(players_sorted, new Comparator<Player>() {
+          public int compare(Player p1, Player p2) {
+            return p1.points - p2.points;
+          }
+        }
+        );
+        if (players.size() > 0) players_sorted.get(0).place = 1;
+        for (int i = 1; i < players_sorted.size(); i++) {
+          Player p = players_sorted.get(i);
+          Player above = players_sorted.get(i-1);
+          p.place = above.place + ((p.points == above.points) ? 0 : 1);
+        }
+        // create earnings
+        Earning[] earnings = new Earning[players.size()];
+        int i = 0;
+        for (Player p : players.values()) {
+          earnings[i] = new Earning(p.UUID, p.points - p.points_, p.place - p.place);
+          i++;
+        }
+        Leaderboard leaderboard = new Leaderboard(earnings);
+        setGamemode(new Crowning(winner, leaderboard)); 
         println("SERVER: winner: "+UUID_winner+" "+winner);
       }
     }
@@ -130,13 +233,13 @@ class TagGame implements Gamemode {
   void INTERPRET(Player p, ByteBuffer data) {
     int MSG_ID = data.get();
     switch (MSG_ID) {
-    case 0: // Capitulate
+    case 0 : // Capitulate
       if (scores.get(p.UUID) == null) break;
       UUID_it = p.UUID;
       scores.get(UUID_it).inactive = INACTIVE_TIME;
       TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
       break;
-    case 1: // contact claim
+    case 1 : // contact claim
       println("--- TAGGING ");
       int UUID_other = data.getInt();
       int UUID_tagger = (p.UUID == UUID_it) ? p.UUID : UUID_other;

@@ -8,9 +8,10 @@ void mousePressed() {
 }
 
 void keyPressed() {
-  if (keyCode == UP || key == 'Z' || key == 'I') INPUT_up = true;
-  if (keyCode == LEFT || key == 'Q' || key == 'J') INPUT_left = true;
-  if (keyCode == RIGHT || key == 'D' || key == 'L') INPUT_right = true;
+  char ckey = (""+key).toUpperCase().charAt(0);
+  if (keyCode == UP || ckey == 'Z' || ckey == 'I') INPUT_up = true;
+  if (keyCode == LEFT || ckey == 'Q' || ckey == 'J') INPUT_left = true;
+  if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') INPUT_right = true;
   if (keyCode == 27 || key == ESC) { 
     if (current_scene != Scene.game) {
       setScene(Scene.game);
@@ -20,9 +21,10 @@ void keyPressed() {
 }
 
 void keyReleased() {
-  if (keyCode == UP || key == 'Z' || key == 'I') INPUT_up = false;
-  if (keyCode == LEFT || key == 'Q' || key == 'J') INPUT_left = false;
-  if (keyCode == RIGHT || key == 'D' || key == 'L') INPUT_right = false;
+  char ckey = (""+key).toUpperCase().charAt(0);
+  if (keyCode == UP || ckey == 'Z' || ckey == 'I') INPUT_up = false;
+  if (keyCode == LEFT || ckey == 'Q' || ckey == 'J') INPUT_left = false;
+  if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') INPUT_right = false;
 }
 
 int standupCounter = 0;
@@ -47,7 +49,8 @@ void keyTyped() {
 }
 
 void keyTyped_GAME() {
-  if (key == 'r') {
+  char ckey = (""+key).toUpperCase().charAt(0);
+  if (ckey == 'R') {
     Vec2 new_pos = box2d.coordPixelsToWorld(WIDTH/2, HEIGHT/2);
     myRocket.body.setTransform(new_pos, 0);
     Vec2 new_vel = new Vec2(0, 0);
@@ -55,12 +58,12 @@ void keyTyped_GAME() {
     myRocket.body.setAngularVelocity(0);
     gamemode.respawn();
   }
-  if (key == 't') setScene(Scene.chat);
+  if (ckey == 'T') setScene(Scene.chat);
   if (key == '/') {
     chat_txt_entry = "/";
     setScene(Scene.chat);
   }
-  if (key == 'y') current_scene = Scene.color_palette;
+  if (ckey == 'Y') current_scene = Scene.color_palette;
   if (key == ' ') {
     if (standupCounter != 0) return;
     float angle = myRocket.body.getAngle();

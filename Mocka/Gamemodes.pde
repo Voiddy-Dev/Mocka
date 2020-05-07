@@ -24,11 +24,41 @@ class Disconnected implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
-    fill(0);
-    textAlign(LEFT, TOP);
-    text("Disconnected...", 0, 0);
+    pushMatrix();
+    fill(255, 0, 0);
+    textAlign(CENTER);
+    translate(WIDTH/2, HEIGHT/2);
+    text("Disconnected...\nServer is probably offline!", 0, 0);
+    popMatrix();
   }
   void decorate(Rocket r) {
+  }
+}
+
+class Leaderboard {
+  void update() {
+  }
+  void respawn() {
+  }
+  void beginContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
+    boolean is_fresh = data.get() != (byte)0;
+    int size = data.getInt();
+    Earning[] earnings = new Earning[size];
+    for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(data.getInt(), data.getInt(), data.getInt());
+  }
+  void hud() {
+  }
+  void decorate(Rocket r) {
+  }
+  class Earning {
+    int UUID, points_won, places_won;
+    Earning(int UUID, int points_won, int places_won) {
+      this.UUID = UUID;
+      this.points_won = points_won;
+      this.places_won = places_won;
+    }
   }
 }
 
@@ -160,7 +190,7 @@ class TagGame implements Gamemode {
     if (startgame_countdown > 0) startgame_countdown--;
     else {
       PlayerStatus status_it = scores.get(UUID_it); 
-      if (status_it.life > 0) status_it.life--;
+      if (status_it != null && status_it.life > 0) status_it.life--;
       for (PlayerStatus status : scores.values()) {
         if (status.immune > 0) status.immune--;
         if (status.inactive > 0) status.inactive--;
@@ -273,7 +303,7 @@ class TagGame implements Gamemode {
         PlayerStatus status_prev_prev = status_prev.prev;
         // prev pointers
         status.prev = status_prev_prev;
-        status_prev = status;
+        status_prev.prev = status;
         if (status_next != null) status_next.prev = status_prev;
         // next pointers
         status_prev.next = status_next;
@@ -285,7 +315,7 @@ class TagGame implements Gamemode {
         // place
         status.place = status_prev.place;
         PlayerStatus s = status_prev;
-        while (s != null) {
+        while (s.prev != null) {
           s.place = s.prev.place + ((s.prev.life == s.life) ? 0 : 0);
           s = s.prev;
         }

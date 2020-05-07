@@ -6,9 +6,17 @@ class Player {
   color col;
   String name;
 
+  int points, points_;
+  int place, place_;
+
   Player(Client client_, int UUID_) {
     name = randomName();
     col = color(random(0, 255), random(0, 255), random(0, 255));
+    points = 0;
+    Player last = lastPlayer();
+    if (last == null) place = 1;
+    else if (last.points == points) place = last.place;
+    else place = last.place + 1;
 
     TCP_CLIENT = client_;
     UUID = UUID_;
@@ -80,7 +88,8 @@ class Player {
       try {
         if (split[0].equals("/newgame")) setGamemode(new TagGame(args));
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
-        if (split[0].equals("/terrain")) randomizeTerrain(int(split[1])+1);
+        if (split[0].equals("/terrain")) randomizeTerrain(int(split[1]));
+        if (split[0].equals("/color")) INTERPRET_SET_COLOR(COLORIFY(split[1]));
       } 
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");
@@ -97,6 +106,10 @@ class Player {
 
   String NAMIFY(String name) {
     return name.toUpperCase().substring(0, 3);
+  }
+
+  color COLORIFY(String str_col) {
+    return unhex("FF" + str_col);
   }
 
   void readNetwork() {
@@ -120,10 +133,7 @@ class Player {
 }
 
 void updatePlayers() {
-  for (Map.Entry entry : players.entrySet()) {
-    Player p = (Player)entry.getValue();
-    p.updateNetwork();
-  }
+  for (Player p : players.values()) p.updateNetwork();
 }
 
 void removeInactivePlayers() {
@@ -138,6 +148,12 @@ void removeInactivePlayers() {
       println("SERVER: player with UUID "+p.UUID+" is no longer active, disconnecting");
     }
   }
+}
+
+Player lastPlayer() {
+  Player last = null;
+  for (Player p : players.values()) if (last == null || p.points < last.points) last = p;
+  return last;
 }
 
 Player randomPlayer() {

@@ -59,10 +59,12 @@ ByteBuffer NOTIFY_TERRAIN(PlatformInfo[] platforms) {
 }
 
 ByteBuffer NOTIFY_PLAYER_INFO(Player p) {
-  ByteBuffer data = ByteBuffer.allocate(1 + 4 + 4 + 4+2*p.name.length());
+  ByteBuffer data = ByteBuffer.allocate(1 + 4 + 4 + 8 + 4+2*p.name.length());
   data.put((byte)5);
   data.putInt(p.UUID);
   data.putInt(p.col);
+  data.putInt(p.points);
+  data.putInt(p.place);
   putString(data, p.name);
   return data;
 }

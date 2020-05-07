@@ -91,6 +91,8 @@ void INTERPRET_PLAYER_INFO() {
   int UUID = network_data.getInt();
   println("PLYZER INGO "+UUID);
   color col = network_data.getInt();
+  int points = network_data.getInt();
+  int place = network_data.getInt();
   String name = getString(network_data);
   Rocket r = getRocket(UUID);
   r.setColor(col);

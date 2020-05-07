@@ -13,7 +13,7 @@ void drawChat() {
   pushStyle();
   pushMatrix();
 
-  translate(0, height - BOTTOM_BORDER);
+  translate(0, HEIGHT - BOTTOM_BORDER);
   textAlign(LEFT, BOTTOM);
   rectMode(CORNER);
 

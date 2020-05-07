@@ -81,7 +81,7 @@ class Earning {
 
 class Crowning implements Gamemode {
   Player winner;
-  int celebrateTime = 4*60;
+  int celebrateTime = 60; //4*60;
   Gamemode leaderboard;
   Crowning(Player winner, Gamemode leaderboard) {
     this.winner = winner;
@@ -119,14 +119,14 @@ class TagGame implements Gamemode {
 
   TagGame(int startLife) {
     this.startLife = startLife;
-    startgame_countdown = 3*60 - 1;
+    startgame_countdown = 30;//3*60 - 1;
     UUID_it = randomPlayer().UUID;
     scores = new HashMap<Integer, PlayerStatus>();
     for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? startgame_countdown : 0, (p.UUID == UUID_it) ? startgame_countdown : 0));
   }
 
   TagGame(String[] args) {
-    this(120 * 60);
+    this(5);//120 * 60);
   }
 
   class PlayerStatus {
@@ -170,7 +170,7 @@ class TagGame implements Gamemode {
         List<Map.Entry<Integer, PlayerStatus>> scores_sorted = new ArrayList(scores.entrySet());
         Collections.sort(scores_sorted, new Comparator<Map.Entry<Integer, PlayerStatus>>() {
           public int compare(Map.Entry<Integer, PlayerStatus> o1, Map.Entry<Integer, PlayerStatus> o2) {
-            return o1.getValue().life - o2.getValue().life;
+            return o2.getValue().life - o1.getValue().life;
           }
         }
         );
@@ -194,23 +194,28 @@ class TagGame implements Gamemode {
         }
         // update places
         List<Player> players_sorted = new ArrayList(players.values());
-        Collections.sort(players_sorted, new Comparator<Player>() {
+        players_sorted.sort(new Comparator<Player>() {
           public int compare(Player p1, Player p2) {
-            return p1.points - p2.points;
+            return p2.points - p1.points;
           }
         }
         );
-        if (players.size() > 0) players_sorted.get(0).place = 1;
+        if (players_sorted.size() > 0) players_sorted.get(0).place = 1;
         for (int i = 1; i < players_sorted.size(); i++) {
           Player p = players_sorted.get(i);
           Player above = players_sorted.get(i-1);
-          p.place = above.place + ((p.points == above.points) ? 0 : 1);
+          if (p.points == above.points) p.place = above.place;
+          else p.place = 1+i;
+        }
+        for (int i = 0; i < players_sorted.size(); i++) {
+          Player p = players_sorted.get(i);
+          println(p.name+ " points "+p.points+" ("+p.points_+") place "+p.place+" ("+p.place_+")");
         }
         // create earnings
         Earning[] earnings = new Earning[players.size()];
         int i = 0;
         for (Player p : players.values()) {
-          earnings[i] = new Earning(p.UUID, p.points - p.points_, p.place - p.place);
+          earnings[i] = new Earning(p.UUID, p.points - p.points_, p.place_ - p.place);
           i++;
         }
         Leaderboard leaderboard = new Leaderboard(earnings);

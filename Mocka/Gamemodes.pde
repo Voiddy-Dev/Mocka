@@ -48,7 +48,7 @@ class Leaderboard implements Gamemode {
     for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(is_fresh, data.getInt(), data.getInt(), data.getInt());
     Arrays.sort(earnings, new Comparator<Earning>() {
       public int compare(Earning e1, Earning e2) {
-        return e1.points - e2.points;
+        return e2.points - e1.points;
       }
     }
     );

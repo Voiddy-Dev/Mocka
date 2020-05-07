@@ -21,7 +21,14 @@ final int SERVER_UDP_PORT_A_WAN = 16440;
 final int SERVER_UDP_PORT_B_LAN = 16441;
 final int SERVER_UDP_PORT_B_WAN = 16441;
 
-final InetAddress GATEWAY = InetAddressByName("192.168.0.1");
+final InetAddress[] GATEWAYS = {
+  InetAddressByName("192.168.0.1"), 
+  InetAddressByName("192.168.1.1")
+};
+boolean isIPaGateway(InetAddress ip) {
+  for (InetAddress gateway : GATEWAYS) if (gateway.equals(ip)) return true;
+  return false;
+}
 final InetAddress WAN = InetAddressByName("91.160.183.12");
 
 void keyPressed() {

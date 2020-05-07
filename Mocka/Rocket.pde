@@ -65,7 +65,7 @@ public class Rocket {
     // Define the body and make it from the shape
     BodyDef bd = new BodyDef();
     bd.type = BodyType.DYNAMIC;
-    bd.position.set(box2d.coordPixelsToWorld(center));
+    bd.position.set(center);
     body = box2d.createBody(bd);
 
     body.createFixture(sd, 1.0);

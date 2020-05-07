@@ -42,6 +42,13 @@ void NOTIFY_CHAT(String msg) {
   client.write(data.array());
 }
 
+void NOTIFY_PUNCHING_FAILED(int UUID) {
+  ByteBuffer data = ByteBuffer.allocate(5);
+  data.put((byte)5);
+  data.putInt(UUID);
+  client.write(data.array());
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -197,8 +204,9 @@ void punch_hole() {
     //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
   } 
   catch(Exception e) {
-    println("client: failed to punch hole! (yikes)");
+    println("client: failed to punch hole! (yikes) Notifying server...");
     println(e);
+    NOTIFY_PUNCHING_FAILED(INCOMING_ENEMY_UUID);
   } 
   finally {
     try {
@@ -313,29 +321,38 @@ void readNetwork() {
   }
 }
 
-int getExternalPort(DatagramSocket socket) {
+int getExternalPort(DatagramSocket socket) throws Exception {
+  // Use a well know STUN server to discover what the external port of 'socket' is
+  byte[] data = new byte[20];
+  data[0] = (byte) 0; // STUN Message Type 
+  data[1] = (byte) 1;
+  data[2] = (byte) 0; // Message Length
+  data[3] = (byte) 0;
+  InetAddress STUNserver = null;
   try {
-    byte[] data = new byte[20];
-    data[0] = (byte) 0; // STUN Message Type 
-    data[1] = (byte) 1;
-    data[2] = (byte) 0; // Message Length
-    data[3] = (byte) 0;
-    for (int i = 4; i < 20; i++) data[i] = (byte) random(0, 255);
-    InetAddress STUNserver = InetAddress.getByName("stun.l.google.com");
-    DatagramPacket packet = new DatagramPacket(data, data.length, STUNserver, 19302);
-    socket.send(packet);
-
+    STUNserver = InetAddress.getByName("stun.l.google.com");
     socket.setSoTimeout(1000);
-    DatagramPacket receive = new DatagramPacket(new byte[1024], 1024);
-    socket.receive(receive);
-
-    int port = (receive.getData()[26] & 0xff) << 8 | (receive.getData()[27] & 0xff);
-    return port;
   } 
-  catch(Exception e) {
-    println("client: Could not find external port using stun.l.google.com: "+e);
-    return 0;
+  catch (Exception e) {
+    println("client: Could not resolve the address of stun.l.google.com!");
+    println(e);
+    throw e;
   }
+  for (int i = 4; i < 20; i++) data[i] = (byte) random(0, 255);
+  DatagramPacket packet = new DatagramPacket(data, data.length, STUNserver, 19302);
+  DatagramPacket receive = new DatagramPacket(new byte[1024], 1024);
+
+  for (int i = 0; i < 10; i++) {
+    try {
+      socket.send(packet);
+      socket.receive(receive);
+      int external_port = (receive.getData()[26] & 0xff) << 8 | (receive.getData()[27] & 0xff);
+      return external_port;
+    } 
+    catch(Exception e) { // retry
+    }
+  }
+  throw new Exception("client: ERROR finding external port; too many attempts to contact stun.l.google.com failed");
 }
 
 // copy pasted off stack overflow. THX!

@@ -58,6 +58,7 @@ class Player {
       if (PACKET_ID == 2) gamemode.INTERPRET(this, network_data);
       if (PACKET_ID == 3) gamemode.respawn(this);
       if (PACKET_ID == 4) INTERPRET_CHAT();
+      if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
     }
   }
 

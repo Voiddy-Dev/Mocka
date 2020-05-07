@@ -96,8 +96,8 @@ void punch_hole() {
       println(e);
       throw new Exception();
     }
-    boolean A_IS_LOCAL = A_PUBLIC_IP.equals(GATEWAY);
-    boolean B_IS_LOCAL = B_PUBLIC_IP.equals(GATEWAY);
+    boolean A_IS_LOCAL = isIPaGateway(A_PUBLIC_IP);
+    boolean B_IS_LOCAL = isIPaGateway(B_PUBLIC_IP);
     InetAddress A_PUBLIC_IP_ = A_IS_LOCAL ? WAN : A_PUBLIC_IP;
     InetAddress B_PUBLIC_IP_ = B_IS_LOCAL ? WAN : B_PUBLIC_IP;
     if (!A_IS_LOCAL && A_PUBLIC_PORT != A_PUBLIC_PORT_STUN) println("SERVER: A's public and STUN ports don't match up! I don't know which port to use for remote so yikes. (public/STUN: "+A_PUBLIC_PORT+" / "+A_PUBLIC_PORT_STUN+")");

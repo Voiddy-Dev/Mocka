@@ -95,6 +95,7 @@ public class Rocket {
       fill(0);
       textSize(18);
       textAlign(CENTER, CENTER);
+      rectMode(CENTER);
       text(name, 0, -43, 100, 30);
     }
 

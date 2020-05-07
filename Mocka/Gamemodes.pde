@@ -62,12 +62,13 @@ class Leaderboard implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
+    pushMatrix();
     translate(WIDTH/2, HEIGHT/2);
     noFill();
     stroke(0);
     strokeWeight(2);
     rectMode(CENTER);
-    rect(0, 0, 410, 10+24*earnings.length);
+    rect(0, 0, 410, 10+48*earnings.length);
     translate(-200, -24*earnings.length);
     rectMode(CORNER);
     int textvertcenter = 10;
@@ -83,6 +84,7 @@ class Leaderboard implements Gamemode {
       text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
       popMatrix();
     }
+    popMatrix();
   }
   void decorate(Rocket r) {
   }

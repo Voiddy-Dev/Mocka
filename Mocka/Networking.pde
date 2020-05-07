@@ -95,8 +95,12 @@ void INTERPRET_PLAYER_INFO() {
   int place = network_data.getInt();
   String name = getString(network_data);
   Rocket r = getRocket(UUID);
-  r.setColor(col);
-  r.setName(name);
+  if (r != null) {
+    r.setColor(col);
+    r.setName(name);
+    r.points = points;
+    r.place = place;
+  }
 }
 
 void INTERPRET_GAMEMODE_START() {

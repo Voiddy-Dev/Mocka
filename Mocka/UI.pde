@@ -64,7 +64,7 @@ void keyTyped_GAME() {
     setScene(Scene.chat);
   }
   if (ckey == 'Y') current_scene = Scene.color_palette;
-  if (key == ' ') {
+  if (key == ' ' && TOUCHING_SOMETHING) {
     if (standupCounter != 0) return;
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;

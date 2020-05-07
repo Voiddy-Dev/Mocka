@@ -28,9 +28,6 @@ PShape createRocketShape() {
   return shape;
 }
 
-final byte STATE_NORMAL = 0;
-final byte STATE_IS_IT = 1;
-
 public class Rocket {
   Body body; // Box2d body
   ParticleSystem exhaust;
@@ -39,6 +36,8 @@ public class Rocket {
   int UUID = -1;
 
   String name = "";
+
+  int place, points;
 
   public Rocket(float x, float y) {
     exhaust = new ParticleSystem();

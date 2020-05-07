@@ -21,7 +21,7 @@ void setup() {
   rocketShape = createRocketShape();
   setupBox2D();
   setupNetworking();
-  myRocket = new MyRocket(WIDTH/2, HEIGHT-80);
+  myRocket = new MyRocket(0, 0);
 }
 
 void draw() {

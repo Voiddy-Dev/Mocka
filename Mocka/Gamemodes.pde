@@ -1,3 +1,7 @@
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Arrays;
+
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
@@ -36,11 +40,18 @@ class Disconnected implements Gamemode {
 }
 
 class Leaderboard implements Gamemode {
+  Earning[] earnings;
   Leaderboard(ByteBuffer data) {
     boolean is_fresh = data.get() != (byte)0;
     int size = data.getInt();
-    Earning[] earnings = new Earning[size];
-    for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(data.getInt(), data.getInt(), data.getInt());
+    earnings = new Earning[size];
+    for (int i = 0; i < earnings.length; i++) earnings[i] = new Earning(is_fresh, data.getInt(), data.getInt(), data.getInt());
+    Arrays.sort(earnings, new Comparator<Earning>() {
+      public int compare(Earning e1, Earning e2) {
+        return e1.points - e2.points;
+      }
+    }
+    );
   }
   void update() {
   }
@@ -51,15 +62,47 @@ class Leaderboard implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
+    translate(WIDTH/2, HEIGHT/2);
+    noFill();
+    stroke(0);
+    strokeWeight(2);
+    rectMode(CENTER);
+    rect(0, 0, 410, 10+24*earnings.length);
+    translate(-200, -24*earnings.length);
+    rectMode(CORNER);
+    int textvertcenter = 10;
+    for (int i = 0; i < earnings.length; i++) {
+      Earning e = earnings[i];
+      Rocket r = e.r;
+      if (r == null) continue;
+      pushMatrix();
+      translate(0, 24*i);
+      fill(0);
+      text(r.place + " ("+(-e.places_won)+")", 3, textvertcenter);
+      text(r.name, 40, textvertcenter);
+      text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
+      popMatrix();
+    }
   }
   void decorate(Rocket r) {
   }
   class Earning {
     int UUID, points_won, places_won;
-    Earning(int UUID, int points_won, int places_won) {
+    Rocket r;
+    int points;
+    Earning(boolean is_fresh, int UUID, int points_won, int places_won) {
       this.UUID = UUID;
       this.points_won = points_won;
       this.places_won = places_won;
+      r = getRocket(UUID);
+      if (r == null) points = 0;
+      else {
+        if (is_fresh) {
+          r.points += points_won;
+          r.place += places_won;
+        }
+        points = r.points;
+      }
     }
   }
 }
@@ -255,9 +298,13 @@ class TagGame implements Gamemode {
     PlayerStatus status = scores.get(r.UUID);
     if (status == null) return;
     if (r.UUID == UUID_it) {
-      noStroke();
-      fill(255, 0, 0, 32);
+      strokeWeight(15);
+      stroke(255, 0, 0);
+      fill(255, 0, 0, 50);
       ellipse(0, 0, 320, 320);
+      noStroke();
+      fill(255, 0, 0, 20);
+      ellipse(0, 0, 520, 520);
       if (status.inactive > 0) {
         float angle = map(status.inactive, 0, inactiveTime, 0, PI);
         noFill();

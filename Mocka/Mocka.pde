@@ -3,8 +3,6 @@ import java.util.Map;
 MyRocket myRocket;
 
 final boolean DEBUG_PUNCHING = false;
-final boolean DEBUG_PACKETS  = true;
-final boolean DEBUG_GAMEMODE = true;
 final boolean DEBUG_PACKETS  = false;
 final boolean DEBUG_GAMEMODE = false;
 

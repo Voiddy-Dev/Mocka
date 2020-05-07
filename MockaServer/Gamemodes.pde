@@ -210,12 +210,16 @@ class TagGame implements Gamemode {
           }
         }
         );
-        if (players_sorted.size() > 0) players_sorted.get(0).place = 1;
+        if (players_sorted.size() > 0) {
+          players_sorted.get(0).place = 1;
+          TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(players_sorted.get(0)));
+        }
         for (int i = 1; i < players_sorted.size(); i++) {
           Player p = players_sorted.get(i);
           Player above = players_sorted.get(i-1);
           if (p.points == above.points) p.place = above.place;
           else p.place = 1+i;
+          TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(p));
         }
         for (int i = 0; i < players_sorted.size(); i++) {
           Player p = players_sorted.get(i);

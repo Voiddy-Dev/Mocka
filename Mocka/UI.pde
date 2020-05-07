@@ -48,7 +48,7 @@ void keyTyped() {
 
 void keyTyped_GAME() {
   if (key == 'r') {
-    Vec2 new_pos = box2d.coordPixelsToWorld(width/2, height/2);
+    Vec2 new_pos = box2d.coordPixelsToWorld(WIDTH/2, HEIGHT/2);
     myRocket.body.setTransform(new_pos, 0);
     Vec2 new_vel = new Vec2(0, 0);
     myRocket.body.setLinearVelocity(new_vel);

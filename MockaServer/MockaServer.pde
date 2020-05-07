@@ -12,6 +12,9 @@ import java.util.Iterator;
 DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
+final int WIDTH = 1200;
+final int HEIGHT = 790;
+
 final int SERVER_TCP_PORT = 25577;
 final int SERVER_UDP_PORT_A_LAN = 16440;
 final int SERVER_UDP_PORT_A_WAN = 16440;

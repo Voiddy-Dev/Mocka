@@ -78,7 +78,7 @@ class Crowning implements Gamemode {
     FRAMES--;
     if (FRAMES <= 0) {
       FRAMES = (int)random(10, 45);
-      PVector pos = new PVector(random(width), random(height - 100));
+      PVector pos = new PVector(random(WIDTH), random(HEIGHT - 100));
       for (int i = 0; i < 40; i++) {
         PVector vel = new PVector(0.3, 0).rotate(random(TAU));
         r.exhaust.turnOn(pos, vel, new PVector(0, 0));
@@ -247,13 +247,18 @@ class TagGame implements Gamemode {
       textAlign(CENTER, CENTER);
       textSize(100);
       fill(100);
-      text(1+(startgame_countdown/60), width/2, height/2);
+      text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
     }
 
     pushMatrix();
     rectMode(CORNER);
     textAlign(LEFT, CENTER);
     textSize(18);
+
+    fill(255, 64);
+    noStroke();
+    rect(0, 0, 180, 24 * scores.size());
+
     int textvertcenter = 10;
     //for (PlayerStatus status : scores.values()) {
     for (Map.Entry entry : scores.entrySet()) {

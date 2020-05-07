@@ -20,9 +20,9 @@ void showTerrain() {
 
 PlatformInfo[] randomTerrain(int num_platforms) {
   PlatformInfo[] platforms = new PlatformInfo[num_platforms];
-  platforms[0] = new PlatformInfo(width/2, height - 50, width, 100);
+  platforms[0] = new PlatformInfo(WIDTH/2, HEIGHT - 50, WIDTH, 100);
   for (int i = 1; i < num_platforms; i++) {
-    platforms[i] = new PlatformInfo(random(width), random(height), random(40, 200), random(40, 100));
+    platforms[i] = new PlatformInfo(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100));
   }
   return platforms;
 }

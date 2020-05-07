@@ -8,8 +8,6 @@ void randomizeTerrain(int num_platforms) {
 // ###@@@### sync client / server sync
 
 PlatformInfo[] randomTerrain(int num_platforms) {
-  int WIDTH = 1200;
-  int HEIGHT = 790;
   PlatformInfo[] platforms = new PlatformInfo[num_platforms];
   platforms[0] = new PlatformInfo(WIDTH/2, HEIGHT - 50, WIDTH, 100);
   for (int i = 1; i < num_platforms; i++) {

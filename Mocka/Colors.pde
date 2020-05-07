@@ -13,7 +13,7 @@ void drawColors() {
 
   pushStyle();
   pushMatrix();
-  translate(width/2, height/2);
+  translate(WIDTH/2, HEIGHT/2);
   rectMode(CENTER);
 
   int w = color_matrix.length;
@@ -32,8 +32,8 @@ void drawColors() {
   final float BOX_WIDTH = (WINDOW_WIDTH / w) * 1.0;
   final float BOX_HEIGHT = (WINDOW_HEIGHT / h) * 1.0;
 
-  float my_i = constrain(floor(map(mouseX, (width-WINDOW_WIDTH)/2.0, (width+WINDOW_WIDTH)/2.0, 0, w)), 0, w-1);
-  float my_j = constrain(floor(map(mouseY, (height-WINDOW_HEIGHT)/2.0, (height+WINDOW_HEIGHT)/2.0, 0, h)), 0, h-1);
+  float my_i = constrain(floor(map(MOUSEX, (WIDTH-WINDOW_WIDTH)/2.0, (WIDTH+WINDOW_WIDTH)/2.0, 0, w)), 0, w-1);
+  float my_j = constrain(floor(map(MOUSEY, (HEIGHT-WINDOW_HEIGHT)/2.0, (HEIGHT+WINDOW_HEIGHT)/2.0, 0, h)), 0, h-1);
 
   noStroke();
 

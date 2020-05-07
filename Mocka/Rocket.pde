@@ -125,8 +125,8 @@ public class Rocket {
     Vec2 pos = box2d.getBodyPixelCoord(body);
     float angle = body.getAngle();
 
-    if (pos.x > width) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-width, pos.y)), angle);
-    if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+width, pos.y)), angle);
+    if (pos.x > WIDTH) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-WIDTH, pos.y)), angle);
+    if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+WIDTH, pos.y)), angle);
 
     // createExhaust
     float DIST_FROM_CENTER = 17;

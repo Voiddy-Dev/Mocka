@@ -79,7 +79,7 @@ class Leaderboard implements Gamemode {
       pushMatrix();
       translate(0, 24*i);
       fill(0);
-      text(r.place + " ("+(-e.places_won)+")", 3, textvertcenter);
+      text(r.place + " ("+(e.places_won)+")", 3, textvertcenter);
       text(r.name, 40, textvertcenter);
       text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
       popMatrix();
@@ -100,8 +100,8 @@ class Leaderboard implements Gamemode {
       if (r == null) points = 0;
       else {
         if (is_fresh) {
-          r.points += points_won;
-          r.place += places_won;
+          //r.points += points_won;
+          //r.place += places_won;
         }
         points = r.points;
       }

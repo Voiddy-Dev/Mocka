@@ -100,23 +100,26 @@ class Leaderboard implements Gamemode {
       pushMatrix();
       translate(-138, 0);
       noStroke();
-      if (e.places_won <= 0) {
+      if (e.places_won < 0) {
         fill(255, 0, 0);
         triangle(-7, -5, 7, -5, 0, 5); // red triangle
-      } else {
+      } else if (e.places_won > 0) {
         fill(0, 255, 0);
         triangle(-7, 5, 7, 5, 0, -5); // green triangle
+      } else {
+        fill(128);
+        rect(0, 0, 14, 4);
       }
       popMatrix();
       fill(0);
       textSize(15);
       // printing out places
-      if (e.places_won > 0) text("+ " + String.valueOf(e.places_won), -110, -3, 40, 50);
+      if (e.places_won > 0) text("+" + String.valueOf(e.places_won), -110, -3, 40, 50);
       else text(String.valueOf(e.places_won), -110, -3, 40, 50);
 
       // adding colors to name
       fill(e.r.col);
-      ellipse(-75, 0, 10, 10);
+      ellipse(-75, 0, 20, 20);
 
       stroke(0);
 
@@ -125,10 +128,13 @@ class Leaderboard implements Gamemode {
       rect(155, 0, 75, 40, 40); // added rounded rectangle
       textSize(25);
       fill(0);
-      text(String.valueOf(e.r.points), 155, -3, 50, 40); // adding points
+      text(String.valueOf(e.r.points), 140, -4, 50, 40); // adding points
+      textSize(15);
+      if (e.points_won > 0) text("+" + String.valueOf(e.points_won), 170, -3, 50, 40);
+      else text(String.valueOf(e.points_won), 170, -3, 50, 40);
 
       // Adding name 
-      text(e.r.name, 0, -3, 100, 50);
+      text(e.r.name, -25, -4, 100, 50);
 
       popMatrix();
     }

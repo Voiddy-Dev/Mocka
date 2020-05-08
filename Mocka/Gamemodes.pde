@@ -64,26 +64,92 @@ class Leaderboard implements Gamemode {
   void hud() {
     pushMatrix();
     translate(WIDTH/2, HEIGHT/2);
-    noFill();
-    stroke(0);
-    strokeWeight(2);
+
+    // outer box 
     rectMode(CENTER);
-    rect(0, 0, 410, 10+48*earnings.length);
-    translate(-200, -24*earnings.length);
-    rectMode(CORNER);
-    int textvertcenter = 10;
+    //color of background
+    fill(0, 255, 0, 30);
+    stroke(0); // surround it
+    strokeWeight(2);
+    rect(0, 0, 400, 50 * earnings.length); 
+
+    // boxes inside big box
     for (int i = 0; i < earnings.length; i++) {
+      // get specific player
       Earning e = earnings[i];
       Rocket r = e.r;
-      if (r == null) continue;
+      if (r == null) continue; // make sure he exists
+
+      stroke(0);
+      // Find outer box of name and place and everything
       pushMatrix();
-      translate(0, 24*i);
+      translate(0, (50 * i) - (25*earnings.length) + 25);
+      fill(0, 255, 0, 30);
+      rect(0, 0, 400, 50); // outer box withing big box
+
+      fill(0, 0, 255, 50);
+      rect(-175, 0, 50, 50);  // draw place box in blue
       fill(0);
-      text(r.place + " ("+(e.places_won)+")", 3, textvertcenter);
-      text(r.name, 40, textvertcenter);
-      text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
+      textSize(30);
+      // writing place text
+      text(String.valueOf(r.place), -175, -5, 50, 50 + 5); // 7 --> small offset to make it better
+
+      // going up or down
+      fill(255);
+      rect(-120, 0, 60, 50); // going up or down
+      pushMatrix();
+      translate(-138, 0);
+      noStroke();
+      if (e.places_won <= 0) {
+        fill(255, 0, 0);
+        triangle(-7, -5, 7, -5, 0, 5); // red triangle
+      } else {
+        fill(0, 255, 0);
+        triangle(-7, 5, 7, 5, 0, -5); // green triangle
+      }
+      popMatrix();
+      fill(0);
+      textSize(15);
+      // printing out places
+      if (e.places_won > 0) text("+ " + String.valueOf(e.places_won), -110, -3, 40, 50);
+      else text(String.valueOf(e.places_won), -110, -3, 40, 50);
+
+      // adding colors to name
+      fill(e.r.col);
+      ellipse(-75, 0, 10, 10);
+
+      stroke(0);
+
+      // Adding Points and scores 
+      fill(255);
+      rect(155, 0, 75, 40, 40); // added rounded rectangle
+      textSize(25);
+      text(String.valueOf(e.r.points), 155, 0, 50, 40); // adding points
+
+      // Adding name 
+      fill(0);
+      text(e.r.name, 0, -3, 100, 50);
+
       popMatrix();
     }
+
+    //rectMode(CENTER);
+    //rect(0, 0, 410, 10+48*earnings.length);
+    //translate(-200, -24*earnings.length);
+    //rectMode(CORNER);
+    //int textvertcenter = 10;
+    //for (int i = 0; i < earnings.length; i++) {
+    //  Earning e = earnings[i];
+    //  Rocket r = e.r;
+    //  if (r == null) continue;
+    //  pushMatrix();
+    //  translate(0, 24*i);
+    //  fill(0);
+    //  text(r.place + " ("+(e.places_won)+")", 3, textvertcenter);
+    //  text(r.name, 40, textvertcenter);
+    //  text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
+    //  popMatrix();
+    //}
     popMatrix();
   }
   void decorate(Rocket r) {

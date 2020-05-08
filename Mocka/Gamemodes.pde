@@ -119,7 +119,7 @@ class Leaderboard implements Gamemode {
 
       // adding colors to name
       fill(e.r.col);
-      ellipse(-75, 0, 20, 20);
+      ellipse(-70, 0, 20, 20);
 
       stroke(0);
 
@@ -134,7 +134,8 @@ class Leaderboard implements Gamemode {
       else text(String.valueOf(e.points_won), 170, -3, 50, 40);
 
       // Adding name 
-      text(e.r.name, -25, -4, 100, 50);
+      textSize(30);
+      text(e.r.name, -10, -4, 100, 50);
 
       popMatrix();
     }

@@ -124,32 +124,14 @@ class Leaderboard implements Gamemode {
       fill(255);
       rect(155, 0, 75, 40, 40); // added rounded rectangle
       textSize(25);
-      text(String.valueOf(e.r.points), 155, 0, 50, 40); // adding points
+      fill(0);
+      text(String.valueOf(e.r.points), 155, -3, 50, 40); // adding points
 
       // Adding name 
-      fill(0);
       text(e.r.name, 0, -3, 100, 50);
 
       popMatrix();
     }
-
-    //rectMode(CENTER);
-    //rect(0, 0, 410, 10+48*earnings.length);
-    //translate(-200, -24*earnings.length);
-    //rectMode(CORNER);
-    //int textvertcenter = 10;
-    //for (int i = 0; i < earnings.length; i++) {
-    //  Earning e = earnings[i];
-    //  Rocket r = e.r;
-    //  if (r == null) continue;
-    //  pushMatrix();
-    //  translate(0, 24*i);
-    //  fill(0);
-    //  text(r.place + " ("+(e.places_won)+")", 3, textvertcenter);
-    //  text(r.name, 40, textvertcenter);
-    //  text(r.points+" pts (+" + e.points_won + ")", 100, textvertcenter);
-    //  popMatrix();
-    //}
     popMatrix();
   }
   void decorate(Rocket r) {

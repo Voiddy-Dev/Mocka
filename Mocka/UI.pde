@@ -42,7 +42,7 @@ void updateUI() {
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
     int dir = standupDirection ? -1 : 1;
-    standupAngle += (angle - standupAngle) * 0.03;
+    standupAngle += (angle - standupAngle) * 0.2;
     standupAngle -= dir * (radians(45)/20);
     float force = (angle - standupAngle) * 20;
     force = constrain(force, -13, 13);

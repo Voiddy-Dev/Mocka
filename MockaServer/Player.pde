@@ -92,6 +92,7 @@ class Player {
       String[] split = msg.split(" ");
       String[] args = subset(split, 1);
       try {
+        if (split[0].equals("/freeplay")) setGamemode(new Freeplay());
         if (split[0].equals("/newgame")) setGamemode(new TagGame(args));
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1]));

@@ -92,10 +92,7 @@ void INTERPRET_YOUR_UUID() {
 
 void INTERPRET_TERRAIN() {
   killTerrain();
-  PlatformInfo[] infos = dataToTerrain(network_data);
-  if (DEBUG_PACKETS) println("client: Received terrain of size "+infos.length);
-  platforms = new Platform[infos.length];
-  for (int i = 0; i < infos.length; i++) platforms[i] = new Platform(infos[i]);
+  platforms = getPlatforms(network_data);
 }
 
 void INTERPRET_PLAYER_INFO() {

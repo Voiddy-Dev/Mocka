@@ -1,87 +1,70 @@
 Platform[] platforms = new Platform[0];
 
 void killTerrain() {
-  for (Platform p : platforms) {
-    box2d.destroyBody(p.body);
-  }
+  for (Platform p : platforms) p.killBody();
   platforms = new Platform[0];
 }
 
 void showTerrain() {
   noStroke();
   fill(0);
-
   rectMode(CENTER);
-  // Simple small rectangle at the bottom of the screen
   for (Platform p : platforms) p.show();
 }
 
-// ###@@@### sync client / server sync
+Platform[] getPlatforms(ByteBuffer data) {
+  int size = data.getInt();
+  Platform[] plats = new Platform[size];
+  for (int i = 0; i < size; i++) plats[i] = getPlatform(data);
+  return plats;
+}
 
-PlatformInfo[] randomTerrain(int num_platforms) {
-  PlatformInfo[] platforms = new PlatformInfo[num_platforms];
-  platforms[0] = new PlatformInfo(WIDTH/2, HEIGHT - 50, WIDTH, 100);
+Platform getPlatform(ByteBuffer data) {
+  //byte id = data.get();
+  //if (id == (byte) 0) return new Rectangle(data);
+  return new Rectangle(data);
+}
+
+interface Platform {
+  void show();
+  void killBody();
+  void putData(ByteBuffer data);
+}
+
+Platform[] randomTerrain(int num_platforms) {
+  Platform[] platforms = new Platform[num_platforms];
+  platforms[0] = new Rectangle(WIDTH/2, HEIGHT - 50, WIDTH, 100, 0);
   for (int i = 1; i < num_platforms; i++) {
-    platforms[i] = new PlatformInfo(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100));
+    platforms[i] = new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100), 0);
   }
   return platforms;
 }
 
-void writeTerrain(ByteBuffer data, PlatformInfo[] platforms) {
+void writeTerrain(ByteBuffer data, Platform[] platforms) {
   data.putInt(platforms.length);
-  for (PlatformInfo p : platforms) p.putData(data);
+  for (Platform p : platforms) p.putData(data);
 }
 
-PlatformInfo[] dataToTerrain(ByteBuffer data) {
-  PlatformInfo[] platforms = new PlatformInfo[data.getInt()];
-  for (int i = 0; i < platforms.length; i++) platforms[i] = new PlatformInfo(data);
+Platform[] dataToTerrain(ByteBuffer data) {
+  Platform[] platforms = new Platform[data.getInt()];
+  for (int i = 0; i < platforms.length; i++) platforms[i] = new Rectangle(data);
   return platforms;
 }
 
-class PlatformInfo {
-  float x, y, w, h;
+class Rectangle implements Platform {
+  float x, y, w, h, angle;
+  Body body;
 
-  PlatformInfo(float x, float y, float w, float h) {
+  // constructor and initialize the platform
+  Rectangle(ByteBuffer data) {
+    this(data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat(), 0);
+  }
+  Rectangle(float x, float y, float w, float h, float angle) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
-  }
-
-  PlatformInfo(PlatformInfo info) {
-    this(info.x, info.y, info.w, info.h);
-  }
-
-  PlatformInfo(ByteBuffer data) {
-    this(data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat());
-  }
-
-  void putData(ByteBuffer data) {
-    data.putFloat(x);
-    data.putFloat(y);
-    data.putFloat(w);
-    data.putFloat(h);
-  }
-}
-
-// ###@@@### end client / server sync
-
-class Platform extends PlatformInfo {
-  // coordinates and used var
-  int used;
-
-  Body body;
-
-  // constant that corresponds the necessary wait time
-  // to make a platform disappear
-  int NECESSARY_FRAMES = 20;
-  int HEIGHT = 20;
-
-  // constructor and initialize the platform
-  public Platform(PlatformInfo info) {
-    super(info);
-
-    this.used = NECESSARY_FRAMES;
+    this.angle = angle;
 
     // Define the polygon
     PolygonShape sd = new PolygonShape();
@@ -104,12 +87,16 @@ class Platform extends PlatformInfo {
     body.setUserData(this);
   }
 
-  // reduce the used variable if possible otherwise return false
-  public boolean reduceUsed() {
-    if (used <= 0) return false;
+  void putData(ByteBuffer data) {
+    data.putFloat(x);
+    data.putFloat(y);
+    data.putFloat(w);
+    data.putFloat(h);
+    //data.putFloat(angle);
+  }
 
-    used--;
-    return true;
+  void killBody() {
+    box2d.destroyBody(body);
   }
 
   // display the platform

@@ -337,8 +337,10 @@ class FloatGame implements Gamemode {
     PlayerStatus status = scores.get(r.UUID);
     if (status == null) return;
     strokeWeight(30);
-    stroke(r.col);
+    if (status.in_air) stroke(r.col);
+    else stroke(r.col, 100);
     noFill();
+    rotate(r.body.getAngle());
     float angle = status.life * HALF_PI / 60;
     arc(0, 0, 320, 320, angle, angle+QUARTER_PI);
     arc(0, 0, 320, 320, angle+HALF_PI, angle+3*QUARTER_PI);

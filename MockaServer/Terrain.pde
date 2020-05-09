@@ -1,62 +1,79 @@
-PlatformInfo[] platforms;
+Platform[] platforms;
 
 void randomizeTerrain(int num_platforms) {
   platforms = randomTerrain(num_platforms);
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
 }
 
-// ###@@@### sync client / server sync
-
-PlatformInfo[] randomTerrain(int num_platforms) {
-  PlatformInfo[] platforms = new PlatformInfo[num_platforms+4];
+Platform[] randomTerrain(int num_platforms) {
+  Platform[] platforms = new Platform[num_platforms+4];
 
   // BORDERS
-  platforms[0] = new PlatformInfo(WIDTH/2, HEIGHT - 25, WIDTH, 50); // base platform
-  platforms[1] = new PlatformInfo(1, HEIGHT/2, 2, HEIGHT); // left 
-  platforms[2] = new PlatformInfo(WIDTH-1, HEIGHT/2, 2, HEIGHT); // right
-  platforms[3] = new PlatformInfo(WIDTH/2, 1, WIDTH, 2); // top 
+  platforms[0] = new Rectangle(WIDTH/2, HEIGHT - 25, WIDTH, 50); // base platform
+  platforms[1] = new Rectangle(1, HEIGHT/2, 2, HEIGHT); // left 
+  platforms[2] = new Rectangle(WIDTH-1, HEIGHT/2, 2, HEIGHT); // right
+  platforms[3] = new Rectangle(WIDTH/2, 1, WIDTH, 2); // top 
 
   for (int i = 0; i < num_platforms; i++) {
-    platforms[i+4] = new PlatformInfo(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100));
+    platforms[i+4] = new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100));
   }
   return platforms;
 }
 
-void writeTerrain(ByteBuffer data, PlatformInfo[] platforms) {
-  data.putInt(platforms.length);
-  for (PlatformInfo p : platforms) p.putData(data);
+int sizePlatforms(Platform[] plats) {
+  int total = 4;
+  for (Platform p : plats) total += p.size();
+  return total;
 }
 
-PlatformInfo[] dataToTerrain(ByteBuffer data) {
-  PlatformInfo[] platforms = new PlatformInfo[data.getInt()];
-  for (int i = 0; i < platforms.length; i++) platforms[i] = new PlatformInfo(data);
-  return platforms;
+void putPlatforms(ByteBuffer data, Platform[] plats) {
+  data.putInt(plats.length);
+  for (Platform p : plats) p.putData(data);
 }
 
-class PlatformInfo {
-  float x, y, w, h;
+Platform[] getPlatforms(ByteBuffer data) {
+  int size = data.getInt();
+  Platform[] plats = new Platform[size];
+  for (int i = 0; i < size; i++) plats[i] = getPlatform(data);
+  return plats;
+}
 
-  PlatformInfo(float x, float y, float w, float h) {
+Platform getPlatform(ByteBuffer data) {
+  byte id = data.get();
+  if (id == (byte) 0) return new Rectangle(data);
+  return null;
+}
+
+interface Platform {
+  void putData(ByteBuffer data);
+  int size();
+}
+
+class Rectangle implements Platform {
+  float x, y, w, h, angle;
+
+  Rectangle(ByteBuffer data) {
+    this(data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat());
+  }
+  Rectangle(float x, float y, float w, float h) {
+    this(x, y, w, h, 0);
+  }
+  Rectangle(float x, float y, float w, float h, float angle) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+    this.angle = angle;
   }
-
-  PlatformInfo(PlatformInfo info) {
-    this(info.x, info.y, info.w, info.h);
-  }
-
-  PlatformInfo(ByteBuffer data) {
-    this(data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat());
-  }
-
   void putData(ByteBuffer data) {
+    data.put((byte)0);
     data.putFloat(x);
     data.putFloat(y);
     data.putFloat(w);
     data.putFloat(h);
+    data.putFloat(angle);
+  }
+  int size() {
+    return 21;
   }
 }
-
-// ###@@@### end client / server sync

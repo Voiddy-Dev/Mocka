@@ -51,10 +51,10 @@ ByteBuffer NOTIFY_YOUR_UUID(int UUID) {
   return data;
 }
 
-ByteBuffer NOTIFY_TERRAIN(PlatformInfo[] platforms) {
-  ByteBuffer data = ByteBuffer.allocate(1+4+16*platforms.length);
+ByteBuffer NOTIFY_TERRAIN(Platform[] platforms) {
+  ByteBuffer data = ByteBuffer.allocate(1+sizePlatforms(platforms));
   data.put((byte)4);
-  writeTerrain(data, platforms);
+  putPlatforms(data, platforms);
   return data;
 }
 

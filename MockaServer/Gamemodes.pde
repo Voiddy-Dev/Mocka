@@ -46,8 +46,14 @@ class Freeplay implements Gamemode {
 class Leaderboard implements Gamemode {
   boolean is_fresh = true;
   Earning[] earnings;
-  Leaderboard(Earning[] earnings) {
-    this.earnings = earnings;
+  Leaderboard() {
+    // create earnings
+    earnings = new Earning[players.size()];
+    int i = 0;
+    for (Player p : players.values()) {
+      earnings[i] = new Earning(p.UUID, p.points - p.points_, p.place_ - p.place);
+      i++;
+    }
   }
   byte GAME_ID() {
     return 3;
@@ -76,13 +82,17 @@ class Leaderboard implements Gamemode {
   }
   void respawn(Player p) {
   }
-}
-class Earning {
-  int UUID, points_won, places_won;
-  Earning(int UUID, int points_won, int places_won) {
-    this.UUID = UUID;
-    this.points_won = points_won;
-    this.places_won = places_won;
+  class Earning {
+    int UUID, points_won, places_won;
+    Earning(int UUID, int points_won, int places_won) {
+      this.UUID = UUID;
+      this.points_won = points_won;
+      this.places_won = places_won;
+      // we've taken note of progress, reset for next match
+      Player p = players.get(UUID);
+      p.points_ = p.points;
+      p.place_ = p.place;
+    }
   }
 }
 
@@ -162,81 +172,48 @@ class TagGame implements Gamemode {
       }
       PlayerStatus status_it = scores.get(UUID_it); 
       if (status_it != null && status_it.life > 0) status_it.life--;
-      else {
-        int UUID_winner = 0;
-        int life_winner = -1;
-        for (Map.Entry entry : scores.entrySet()) {
-          int life = ((PlayerStatus)entry.getValue()).life;
-          if (life > life_winner) {
-            UUID_winner = (int)entry.getKey();
-            life_winner = life;
-          }
-        }
-        Player winner = players.get(UUID_winner);
-        // compute leaderboards
+      else finishGame();
+    }
+  }
 
-
-        // Sort place for this round
-        List<Map.Entry<Integer, PlayerStatus>> scores_sorted = new ArrayList(scores.entrySet());
-        Collections.sort(scores_sorted, new Comparator<Map.Entry<Integer, PlayerStatus>>() {
-          public int compare(Map.Entry<Integer, PlayerStatus> o1, Map.Entry<Integer, PlayerStatus> o2) {
-            return o2.getValue().life - o1.getValue().life;
-          }
-        }
-        );
-        if (scores_sorted.size() > 0) scores_sorted.get(0).getValue().place = 1;
-        for (int i = 1; i < scores_sorted.size(); i++) {
-          PlayerStatus p = scores_sorted.get(i).getValue();
-          PlayerStatus above = scores_sorted.get(i-1).getValue();
-          p.place = above.place + ((p.life == above.life) ? 0 : 1);
-        }
-        // note where players stood in leaderboards before
-        for (Player p : players.values()) {
-          p.place_ = p.place;
-          p.points_ = p.points;
-        }
-        // update points
-        for (Map.Entry entry : scores.entrySet()) {
-          int UUID = (int)entry.getKey();
-          Player p = players.get(UUID);
-          PlayerStatus status = (PlayerStatus)entry.getValue();
-          if (p != null) p.points += scores.size() - status.place; // Give points!!
-        }
-        // update places
-        List<Player> players_sorted = new ArrayList(players.values());
-        players_sorted.sort(new Comparator<Player>() {
-          public int compare(Player p1, Player p2) {
-            return p2.points - p1.points;
-          }
-        }
-        );
-        if (players_sorted.size() > 0) {
-          players_sorted.get(0).place = 1;
-          TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(players_sorted.get(0)));
-        }
-        for (int i = 1; i < players_sorted.size(); i++) {
-          Player p = players_sorted.get(i);
-          Player above = players_sorted.get(i-1);
-          if (p.points == above.points) p.place = above.place;
-          else p.place = 1+i;
-          TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(p));
-        }
-        for (int i = 0; i < players_sorted.size(); i++) {
-          Player p = players_sorted.get(i);
-          println(p.name+ " points "+p.points+" ("+p.points_+") place "+p.place+" ("+p.place_+")");
-        }
-        // create earnings
-        Earning[] earnings = new Earning[players.size()];
-        int i = 0;
-        for (Player p : players.values()) {
-          earnings[i] = new Earning(p.UUID, p.points - p.points_, p.place_ - p.place);
-          i++;
-        }
-        Leaderboard leaderboard = new Leaderboard(earnings);
-        setGamemode(new Crowning(winner, leaderboard)); 
-        println("SERVER: winner: "+UUID_winner+" "+winner);
+  void finishGame() {
+    if (scores.size() == 0) {
+      setGamemode(new Freeplay());
+      return;
+    }
+    // Sort scores, in decreasing order
+    List<Map.Entry<Integer, PlayerStatus>> scores_sorted = new ArrayList(scores.entrySet());
+    Collections.sort(scores_sorted, new Comparator<Map.Entry<Integer, PlayerStatus>>() {
+      public int compare(Map.Entry<Integer, PlayerStatus> o1, Map.Entry<Integer, PlayerStatus> o2) {
+        return o2.getValue().life - o1.getValue().life;
       }
     }
+    );
+
+    Player winner = players.get(scores_sorted.get(0).getKey());
+    // compute leaderboards, attribute scores
+    scores_sorted.get(0).getValue().place = 1;
+    winner.points += scores.size() - 1; // Give points!!
+    for (int i = 1; i < scores_sorted.size(); i++) {
+      PlayerStatus status = scores_sorted.get(i).getValue();
+      PlayerStatus status_player_infront = scores_sorted.get(i-1).getValue();
+      if (status.life == status_player_infront.life) status.place = status_player_infront.place;
+      else status.place = 1+i;
+      Player p = players.get(scores_sorted.get(i).getKey());
+      p.points += scores.size() - status.place; // Give points!!
+    }
+
+    println("SERVER: scores for this game:");
+    for (int i = 0; i < scores_sorted.size(); i++) {
+      PlayerStatus status = scores_sorted.get(i).getValue();
+      Player p = players.get(scores_sorted.get(i).getKey());
+      println(i+" "+p.name+" place: "+status.place+" life: "+status.life);
+    }
+
+    sortPlayers();
+    Leaderboard leaderboard = new Leaderboard();
+    setGamemode(new Crowning(winner, leaderboard)); 
+    println("SERVER: winner: "+winner.UUID+" "+winner);
   }
 
   void playerAdd(Player p) {

@@ -156,6 +156,32 @@ void removeInactivePlayers() {
   }
 }
 
+void sortPlayers() {
+  if (players.size() == 0) return;
+  // update places
+  List<Player> players_sorted = new ArrayList(players.values());
+  players_sorted.sort(new Comparator<Player>() {
+    public int compare(Player p1, Player p2) {
+      return p2.points - p1.points;
+    }
+  }
+  );
+  players_sorted.get(0).place = 1;
+  TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(players_sorted.get(0)));
+  for (int i = 1; i < players_sorted.size(); i++) {
+    Player p = players_sorted.get(i);
+    Player above = players_sorted.get(i-1);
+    if (p.points == above.points) p.place = above.place;
+    else p.place = 1+i;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(p));
+  }
+  println("SERVER: sorted players:");
+  for (int i = 0; i < players_sorted.size(); i++) {
+    Player p = players_sorted.get(i);
+    println(i+" "+p.name+" place: "+p.place+" points: "+p.points);
+  }
+}
+
 Player lastPlayer() {
   Player last = null;
   for (Player p : players.values()) if (last == null || p.points < last.points) last = p;

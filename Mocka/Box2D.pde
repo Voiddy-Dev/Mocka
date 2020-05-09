@@ -23,7 +23,8 @@ void beginContact(Contact cp) {
 }
 
 void endContact(Contact cp) {
-  if (contactIsWithPlatform(cp)) TOUCHING_PLATFORMS--;
+  if (contactIsWithPlatform(cp)) TOUCHING_PLATFORMS = max(0, TOUCHING_PLATFORMS-1);
+  gamemode.endContact(cp);
 }
 
 boolean contactIsWithPlatform(Contact cp) {

@@ -13,6 +13,7 @@ interface Gamemode {
   void update();
   void respawn();
   void beginContact(Contact cp);
+  void endContact(Contact cp);
   void INTERPRET(ByteBuffer data);
   void hud();
   void decorate(Rocket r);
@@ -24,6 +25,8 @@ class Disconnected implements Gamemode {
   void respawn() {
   }
   void beginContact(Contact cp) {
+  }
+  void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
   }
@@ -58,6 +61,8 @@ class Leaderboard implements Gamemode {
   void respawn() {
   }
   void beginContact(Contact cp) {
+  }
+  void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
   }
@@ -171,6 +176,8 @@ class Freeplay implements Gamemode {
   }
   void beginContact(Contact cp) {
   }
+  void endContact(Contact cp) {
+  }
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
@@ -194,6 +201,8 @@ class Crowning implements Gamemode {
   void respawn() {
   }
   void beginContact(Contact cp) {
+  }
+  void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
   }
@@ -241,6 +250,203 @@ class Crowning implements Gamemode {
   }
 }
 
+
+
+//  ______ _             _    _____                      
+// |  ____| |           | |  / ____|                     
+// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___ 
+// |  __| | |/ _ \ / _` | __| | |_ |/ _` | '_ ` _ \ / _ \
+// | |    | | (_) | (_| | |_| |__| | (_| | | | | | |  __/
+// |_|    |_|\___/ \__,_|\__|\_____|\__,_|_| |_| |_|\___|
+
+
+class FloatGame implements Gamemode {
+  int life_goal; 
+  int startgame_countdown;
+
+  HashMap<Integer, PlayerStatus> scores;
+
+  FloatGame(ByteBuffer data) {
+    life_goal = data.getInt();
+    startgame_countdown = data.getInt();
+    int size = data.getInt();
+    scores = new HashMap<Integer, PlayerStatus>();
+    PlayerStatus prev = null;
+    for (int i = 0; i < size; i++) scores.put(data.getInt(), prev = new PlayerStatus(prev, data));
+    if (DEBUG_GAMEMODE) println("client: finished setting up Taggame!");
+    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+  }
+
+  class PlayerStatus {
+    int place;
+    int pos;
+    float pos_ = 0;
+    PlayerStatus prev, next;
+
+    boolean in_air;
+    int life;
+    PlayerStatus(PlayerStatus prev, ByteBuffer data) {
+      place = 1;
+      next = null;
+      this.prev = prev;
+      if (prev == null) pos = 0;
+      else {
+        pos = prev.pos + 1;
+        prev.next = this;
+      }
+      life = data.getInt();
+      in_air = data.get() != 0;
+    }
+  }
+
+  void update() {
+    if (startgame_countdown > 0) startgame_countdown--;
+    else {
+      for (PlayerStatus status : scores.values()) if (status.in_air) status.life++;
+    }
+  }
+
+  void respawn() {
+    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+  }
+
+  void beginContact(Contact cp) {
+    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+  }
+  void endContact(Contact cp) {
+    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+  }
+
+  void NOTIFY_TOUCHING_PLATFORMS(int count) {
+    client.write(new byte[]{(byte)2, (byte)count});
+  }
+
+  void INTERPRET(ByteBuffer data) {
+    println("Interpretting and update.......");
+    startgame_countdown = data.getInt();
+    int size = data.getInt();
+    for (int i = 0; i < size; i++) {
+      int UUID = data.getInt();
+      PlayerStatus status = scores.get(UUID);
+      status.life = data.getInt();
+      status.in_air = data.get() != 0;
+    }
+  }
+
+  void decorate(Rocket r) {
+    /*
+    PlayerStatus status = scores.get(r.UUID);
+     if (status == null) return;
+     if (r.UUID == UUID_it) {
+     strokeWeight(15);
+     stroke(255, 0, 0);
+     fill(255, 0, 0, 50);
+     ellipse(0, 0, 320, 320);
+     noStroke();
+     fill(255, 0, 0, 20);
+     ellipse(0, 0, 520, 520);
+     if (status.inactive > 0) {
+     float angle = map(status.inactive, 0, inactiveTime, 0, PI);
+     noFill();
+     stroke(0);
+     strokeWeight(3*10);
+     arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
+     }
+     } else if (status.immune > 0) {
+     float angle = map(status.immune, 0, immuneTime, 0, PI);
+     noFill();
+     stroke(#66D62B);
+     strokeWeight(3*10);
+     arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
+     }
+     */
+  }
+
+  void hud() {
+    if (startgame_countdown > 0) {
+      textAlign(CENTER, CENTER);
+      textSize(100);
+      fill(100);
+      text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
+    }
+
+    pushMatrix();
+    rectMode(CORNER);
+    textAlign(LEFT, CENTER);
+    textSize(18);
+
+    fill(255, 64);
+    noStroke();
+    rect(0, 0, 180, 24 * scores.size());
+
+    int textvertcenter = 10;
+    //for (PlayerStatus status : scores.values()) {
+    for (Map.Entry entry : scores.entrySet()) {
+      int UUID = (int)entry.getKey();
+      PlayerStatus status = (PlayerStatus)entry.getValue();
+      Rocket r = getRocket(UUID);
+      if (r == null) continue;
+
+      if (status.prev != null && status.prev.life < status.life) {
+        PlayerStatus status_next = status.next;
+        PlayerStatus status_prev = status.prev;
+        PlayerStatus status_prev_prev = status_prev.prev;
+        // prev pointers
+        status.prev = status_prev_prev;
+        status_prev.prev = status;
+        if (status_next != null) status_next.prev = status_prev;
+        // next pointers
+        status_prev.next = status_next;
+        status.next = status_prev;
+        if (status_prev_prev != null) status_prev_prev.next = status;
+        // vertical pos
+        status.pos -= 1;  
+        status_prev.pos += 1;
+        // place
+        status.place = status_prev.place;
+        PlayerStatus s = status_prev;
+        while (s.prev != null) {
+          s.place = s.prev.place + ((s.prev.life == s.life) ? 0 : 0);
+          s = s.prev;
+        }
+      }
+      status.pos_ += (status.pos - status.pos_) * 0.2;
+
+      pushMatrix();
+      translate(0, status.pos_ * 24);
+      /*if (UUID == UUID_it) {
+       noStroke();
+       fill(255, 0, 0, 32);
+       rect(0, 0, 80 + 100, 24);
+       }*/
+      fill(0);
+      text(status.place, 3, textvertcenter);
+      text(r.name, 20, textvertcenter);
+      //if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
+
+      int gap = 2;
+      translate(80, 0);
+      noStroke();
+      fill(r.col);
+      float w = map(status.life, 0, life_goal, 0, 100 - 2*gap); 
+      rect(gap, gap, w, 24 - 2*gap);
+      fill(0);
+      text(status.life/60, 6, textvertcenter);
+      popMatrix();
+    }
+    popMatrix();
+  }
+}
+
+// _______           _____                      
+//|__   __|         / ____|                     
+//   | | __ _  __ _| |  __  __ _ _ __ ___   ___ 
+//   | |/ _` |/ _` | | |_ |/ _` | '_ ` _ \ / _ \
+//   | | (_| | (_| | |__| | (_| | | | | | |  __/
+//   |_|\__,_|\__, |\_____|\__,_|_| |_| |_|\___|
+//             __/ |                            
+//            |___/                             
+
 class TagGame implements Gamemode {
   int startLife, immuneTime, inactiveTime;
   int startgame_countdown;
@@ -279,9 +485,6 @@ class TagGame implements Gamemode {
         pos = prev.pos + 1;
         prev.next = this;
       }
-      println(pos, prev);
-      prev = this;
-
       life = data.getInt();
       immune = data.getInt();
       inactive = data.getInt();
@@ -318,6 +521,8 @@ class TagGame implements Gamemode {
     if (otherStatus == null) return;
     if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID); 
     else if (enemy.UUID == UUID_it && otherStatus.inactive == 0 && myStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
+  }
+  void endContact(Contact cp) {
   }
 
   void NOTIFY_TAGGED_OTHER(int UUID) {

@@ -12,11 +12,12 @@ class Player {
   Player(Client client_, int UUID_) {
     name = randomName();
     col = color(random(0, 255), random(0, 255), random(0, 255));
-    points = 0;
+    points_ = points = 0;
     Player last = lastPlayer();
     if (last == null) place = 1;
     else if (last.points == points) place = last.place;
     else place = last.place + 1;
+    place_ = place;
 
     TCP_CLIENT = client_;
     UUID = UUID_;
@@ -93,7 +94,8 @@ class Player {
       String[] args = subset(split, 1);
       try {
         if (split[0].equals("/freeplay")) setGamemode(new Freeplay());
-        if (split[0].equals("/newgame")) setGamemode(new TagGame(args));
+        if (split[0].equals("/tag")) setGamemode(new TagGame(args));
+        if (split[0].equals("/float")) setGamemode(new FloatGame(args));
         if (split[0].equals("/name")) setName(NAMIFY(split[1]));
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1]));
         if (split[0].equals("/color")) INTERPRET_SET_COLOR_ALL(COLORIFY(split[1]));

@@ -4,6 +4,11 @@ import java.util.List;
 
 final boolean SHORT_ROUNDS = false;
 
+final int THREE_SECONDS = 3*60;
+final int TWO_MINUTES = 120*60;
+final int STARTGAME_COUNTDOWN = SHORT_ROUNDS ? 30 : THREE_SECONDS;
+final int DEFAULT_LIFE = SHORT_ROUNDS ? 30 : TWO_MINUTES;
+
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
@@ -127,6 +132,169 @@ class Crowning implements Gamemode {
   }
 }
 
+
+//  ______ _             _    _____                      
+// |  ____| |           | |  / ____|                     
+// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___ 
+// |  __| | |/ _ \ / _` | __| | |_ |/ _` | '_ ` _ \ / _ \
+// | |    | | (_) | (_| | |_| |__| | (_| | | | | | |  __/
+// |_|    |_|\___/ \__,_|\__|\_____|\__,_|_| |_| |_|\___|
+
+
+
+class FloatGame implements Gamemode {
+  int life_goal;
+
+  int startgame_countdown;
+  HashMap<Integer, PlayerStatus> scores;
+
+  FloatGame(int life_goal) {
+    this.life_goal = life_goal;
+    startgame_countdown = STARTGAME_COUNTDOWN;
+    scores = new HashMap<Integer, PlayerStatus>();
+    for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus());
+  }
+
+  FloatGame(String[] args) {
+    this(DEFAULT_LIFE);
+  }
+
+  class PlayerStatus {
+    int place; // used at end
+
+    boolean in_air = false;
+    int life;
+    PlayerStatus() {
+    }
+  }
+
+  void update() {
+    if (startgame_countdown > 0) startgame_countdown--;
+    else {
+      for (PlayerStatus status : scores.values()) if (status.in_air) status.life++;
+      for (PlayerStatus status : scores.values()) if (status.life >= life_goal) {
+        finishGame();
+        break;
+      }
+    }
+  }
+
+  void finishGame() {
+    if (scores.size() == 0) {
+      setGamemode(new Freeplay());
+      return;
+    }
+    // Sort scores, in decreasing order
+    List<Map.Entry<Integer, PlayerStatus>> scores_sorted = new ArrayList(scores.entrySet());
+    Collections.sort(scores_sorted, new Comparator<Map.Entry<Integer, PlayerStatus>>() {
+      public int compare(Map.Entry<Integer, PlayerStatus> o1, Map.Entry<Integer, PlayerStatus> o2) {
+        return o2.getValue().life - o1.getValue().life;
+      }
+    }
+    );
+
+    Player winner = players.get(scores_sorted.get(0).getKey());
+    // compute leaderboards, attribute scores
+    scores_sorted.get(0).getValue().place = 1;
+    winner.points += scores.size() - 1; // Give points!!
+    for (int i = 1; i < scores_sorted.size(); i++) {
+      PlayerStatus status = scores_sorted.get(i).getValue();
+      PlayerStatus status_player_infront = scores_sorted.get(i-1).getValue();
+      if (status.life == status_player_infront.life) status.place = status_player_infront.place;
+      else status.place = 1+i;
+      Player p = players.get(scores_sorted.get(i).getKey());
+      p.points += scores.size() - status.place; // Give points!!
+    }
+
+    println("SERVER: scores for this game:");
+    for (int i = 0; i < scores_sorted.size(); i++) {
+      PlayerStatus status = scores_sorted.get(i).getValue();
+      Player p = players.get(scores_sorted.get(i).getKey());
+      println(i+" "+p.name+" place: "+status.place+" life: "+status.life);
+    }
+
+    sortPlayers();
+    Leaderboard leaderboard = new Leaderboard();
+    setGamemode(new Crowning(winner, leaderboard)); 
+    println("SERVER: winner: "+winner.UUID+" "+winner);
+  }
+
+  void playerAdd(Player p) {
+  }
+
+  void playerRemove(Player p) {
+    if (players.size() == 0) {
+      setGamemode(new Freeplay());
+      return;
+    }
+    scores.remove(p.UUID);
+    TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
+  }
+
+  void respawn(Player p) {
+    // Player p has resapwned, punish them hard
+    PlayerStatus status = scores.get(p.UUID);
+    if (status == null) return;
+    status.life = max(status.life - 5*60, 0);
+    status.in_air = true;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
+  void INTERPRET(Player p, ByteBuffer data) {
+    byte info = data.get();
+    PlayerStatus status = scores.get(p.UUID);
+    if (status == null) return;
+    status.in_air = info == 0;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
+  ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
+    ByteBuffer data = ByteBuffer.allocate(1+4 + 4+9*scores.size());
+    data.put((byte)8);
+    data.putInt(startgame_countdown);
+    data.putInt(scores.size());
+    for (Map.Entry entry : scores.entrySet()) {
+      data.putInt((int)entry.getKey());
+      PlayerStatus status = (PlayerStatus)entry.getValue();
+      data.putInt(status.life);
+      data.put(status.in_air ? (byte)1 : (byte)0);
+    }
+    return data;
+  }
+
+  byte GAME_ID() {
+    return 4;
+  }
+  int PACKET_SIZE() {
+    return 4+4 + 4+9*scores.size();
+  }
+  void PUT_DATA(ByteBuffer data) {
+    data.putInt(life_goal);
+    data.putInt(startgame_countdown);
+    data.putInt(scores.size());
+    for (Map.Entry entry : scores.entrySet()) {
+      data.putInt((int)entry.getKey());
+      PlayerStatus status = (PlayerStatus)entry.getValue();
+      data.putInt(status.life);
+      data.put(status.in_air ? (byte)1 : (byte)0);
+    }
+  }
+}
+
+
+
+// _______           _____                      
+//|__   __|         / ____|                     
+//   | | __ _  __ _| |  __  __ _ _ __ ___   ___ 
+//   | |/ _` |/ _` | | |_ |/ _` | '_ ` _ \ / _ \
+//   | | (_| | (_| | |__| | (_| | | | | | |  __/
+//   |_|\__,_|\__, |\_____|\__,_|_| |_| |_|\___|
+//             __/ |                            
+//            |___/                             
+
+
+
+
 class TagGame implements Gamemode {
   final int IMMUNE_TIME = 150;
   final int INACTIVE_TIME = 60;
@@ -139,14 +307,14 @@ class TagGame implements Gamemode {
 
   TagGame(int startLife) {
     this.startLife = startLife;
-    startgame_countdown = SHORT_ROUNDS ? 30 : 3*60 - 1;
+    startgame_countdown = STARTGAME_COUNTDOWN;
     UUID_it = randomPlayer().UUID;
     scores = new HashMap<Integer, PlayerStatus>();
     for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? IMMUNE_TIME : 0, (p.UUID == UUID_it) ? INACTIVE_TIME : 0));
   }
 
   TagGame(String[] args) {
-    this(SHORT_ROUNDS ? 5 : 120 * 60);
+    this(DEFAULT_LIFE);
   }
 
   class PlayerStatus {

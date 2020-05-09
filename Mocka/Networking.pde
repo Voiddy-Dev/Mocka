@@ -97,7 +97,7 @@ void INTERPRET_TERRAIN() {
 
 void INTERPRET_PLAYER_INFO() {
   int UUID = network_data.getInt();
-  println("PLYZER INGO "+UUID);
+  if (DEBUG_PACKETS) println("PLAYER INFO "+UUID);
   color col = network_data.getInt();
   int points = network_data.getInt();
   int place = network_data.getInt();

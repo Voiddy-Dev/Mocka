@@ -304,13 +304,8 @@ class TagGame implements Gamemode {
   }
 
   void beginContact(Contact cp) {
-    Fixture f1 = cp.getFixtureA();
-    Fixture f2 = cp.getFixtureB();
-    Body b1 = f1.getBody();
-    Body b2 = f2.getBody();
-    // Get objects that reference these bodies
-    Object o1 = b1.getUserData();
-    Object o2 = b2.getUserData();
+    Object o1 = cp.getFixtureA().getBody().getUserData();
+    Object o2 = cp.getFixtureB().getBody().getUserData();
     if (o1 != myRocket && o2 != myRocket) return; // does not concern us (ie our player-local simulation)
     EnemyRocket enemy;
     if (o1 instanceof EnemyRocket) enemy = (EnemyRocket) o1;

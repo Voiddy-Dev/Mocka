@@ -28,6 +28,8 @@ void keyReleased() {
 }
 
 int standupCounter = Integer.MAX_VALUE;
+float standupAngle;
+boolean standupDirection;
 
 void updateUI() {
   if (!doingStandingProcedure()) {
@@ -39,13 +41,13 @@ void updateUI() {
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
-    boolean standupDirection = angle < 0;
-    if (angle > PI) angle -= TAU;
+    int dir = standupDirection ? -1 : 1;
+    standupAngle += (angle - standupAngle) * 0.03;
+    standupAngle -= dir * (radians(45)/20);
+    float force = (angle - standupAngle) * 20;
+    force = constrain(force, -13, 13);
+    myRocket.body.applyAngularImpulse(-force);
     if (abs(angle) < radians(10)) standupCounter = Integer.MAX_VALUE;
-    if (standupCounter % 30 == 0) {
-      if (angle < 0) myRocket.body.applyAngularImpulse(37);
-      else myRocket.body.applyAngularImpulse(-37);
-    }
     myRocket.INPUT_up = false;
     myRocket.INPUT_left = standupDirection;
     myRocket.INPUT_right = !standupDirection;
@@ -79,18 +81,16 @@ void keyTyped_GAME() {
     setScene(Scene.chat);
   }
   if (ckey == 'Y') current_scene = Scene.color_palette;
-  if (key == ' ' && TOUCHING_SOMETHING != 0) {
+  if (key == ' ' && TOUCHING_PLATFORMS != 0) {
     if (doingStandingProcedure()) return;
     float angle = myRocket.body.getAngle();
     angle = ((angle % TAU) + TAU) % TAU;
     if (angle > PI) angle -= TAU;
     if (abs(angle) > radians(45)) {
-      boolean standupDirection = angle < 0;
-      float force = (abs(angle) > radians(90)) ? 37 : 27;
-      if (standupDirection) myRocket.body.applyAngularImpulse(force);
-      else myRocket.body.applyAngularImpulse(-force);
-      standupCounter = 0;
+      standupDirection = angle < 0;
+      standupAngle = angle;
     }
+    standupCounter = 0;
   }
   if (keyCode == 27) key = ESC;
 }

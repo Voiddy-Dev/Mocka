@@ -334,32 +334,16 @@ class FloatGame implements Gamemode {
   }
 
   void decorate(Rocket r) {
-    /*
     PlayerStatus status = scores.get(r.UUID);
-     if (status == null) return;
-     if (r.UUID == UUID_it) {
-     strokeWeight(15);
-     stroke(255, 0, 0);
-     fill(255, 0, 0, 50);
-     ellipse(0, 0, 320, 320);
-     noStroke();
-     fill(255, 0, 0, 20);
-     ellipse(0, 0, 520, 520);
-     if (status.inactive > 0) {
-     float angle = map(status.inactive, 0, inactiveTime, 0, PI);
-     noFill();
-     stroke(0);
-     strokeWeight(3*10);
-     arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
-     }
-     } else if (status.immune > 0) {
-     float angle = map(status.immune, 0, immuneTime, 0, PI);
-     noFill();
-     stroke(#66D62B);
-     strokeWeight(3*10);
-     arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
-     }
-     */
+    if (status == null) return;
+    strokeWeight(30);
+    stroke(r.col);
+    noFill();
+    float angle = status.life * HALF_PI / 60;
+    arc(0, 0, 320, 320, angle, angle+QUARTER_PI);
+    arc(0, 0, 320, 320, angle+HALF_PI, angle+3*QUARTER_PI);
+    arc(0, 0, 320, 320, angle+PI, angle+PI+QUARTER_PI);
+    arc(0, 0, 320, 320, angle+3*HALF_PI, angle+TAU-QUARTER_PI);
   }
 
   void hud() {

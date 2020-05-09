@@ -15,9 +15,16 @@ Platform[] randomTerrain(int num_platforms) {
   platforms[3] = new Rectangle(WIDTH/2, 1, WIDTH, 2); // top 
 
   for (int i = 0; i < num_platforms; i++) {
-    platforms[i+4] = new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100));
+    platforms[i+4] = randomPlatform();
   }
   return platforms;
+}
+
+Platform randomPlatform() {
+  float rand = random(1);
+  if (rand < 0.6) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100), 0);
+  else if (rand < 0.8) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 100), random(40, 100), random(TAU));
+  else return new Circle(random(WIDTH), random(HEIGHT), random(40, 100));
 }
 
 int sizePlatforms(Platform[] plats) {
@@ -41,12 +48,36 @@ Platform[] getPlatforms(ByteBuffer data) {
 Platform getPlatform(ByteBuffer data) {
   byte id = data.get();
   if (id == (byte) 0) return new Rectangle(data);
+  if (id == (byte) 1) return new Circle(data);
   return null;
 }
 
 interface Platform {
   void putData(ByteBuffer data);
   int size();
+}
+
+class Circle implements Platform {
+  float x, y, r;
+
+  Circle(ByteBuffer data) {
+    this(data.getFloat(), data.getFloat(), data.getFloat());
+  }
+  Circle(float x, float y, float r) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+  }
+
+  void putData(ByteBuffer data) {
+    data.put((byte)1);
+    data.putFloat(x);
+    data.putFloat(y);
+    data.putFloat(r);
+  }
+  int size() {
+    return 13;
+  }
 }
 
 class Rectangle implements Platform {

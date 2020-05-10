@@ -50,6 +50,9 @@ jobs:
     - name: Figuring out structure
       run: cd ..; dir; cd ..; dir; cd ..; dir
     
+    - name: Listing Something
+      run: cd ../../_temp; dir
+    
     - name: Executing processing-java
       run: ./processing-3.5.4/processing-java.exe --sketch="D:\a\Mocka\Mocka\Mocka" --export
     

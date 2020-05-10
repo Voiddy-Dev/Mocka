@@ -32,10 +32,10 @@ jobs:
       run: Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/processing.zip", "$PWD")
       
     - name: Listing the directory
-      run: dir; echo $GITHUB_WORKSPACE
+      run: dir
     
     - name: Executing processing-java
-      run: ./processing-3.5.4/processing-java.exe --sketch="$GITHUB_WORKSPACE/Mocka" --export
+      run: ./processing-3.5.4/processing-java.exe --sketch="D:\a\Mocka\Mocka\Mocka" --export
     
     - name: Listing the directory - Mocka
       run: cd Mocka; dir

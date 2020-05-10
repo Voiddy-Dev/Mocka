@@ -43,6 +43,9 @@ jobs:
       
     - name: Extracting Box2D
       run: cd processing-3.5.4/modes/java/libraries; Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/box2d_processing.zip", "$PWD")
+  
+    - name: Listing the directory
+      run: cd processing-3.5.4/modes/java/libraries; dir
     
     - name: Executing processing-java
       run: ./processing-3.5.4/processing-java.exe --sketch="D:\a\Mocka\Mocka\Mocka" --export

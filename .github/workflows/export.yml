@@ -35,17 +35,17 @@ jobs:
       run: cd processing-3.5.4/modes/java/libraries; dir
     
     - name: Creating Libraries Folder 
-      run: cd processing-3.5.4; mkdir libraries
+      run: mkdir Documents/Processing/libraries
     
     - name: Downloading Box2D
       #http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip
-      run: cd processing-3.5.4/libraries; Invoke-WebRequest -Uri http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip -OutFile box2d_processing.zip
+      run: cd Documents/Processing/libraries; Invoke-WebRequest -Uri http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip -OutFile box2d_processing.zip
       
     - name: Extracting Box2D
-      run: cd processing-3.5.4/libraries; Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/box2d_processing.zip", "$PWD")
+      run: cd Documents/Processing/libraries; Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/box2d_processing.zip", "$PWD")
   
     - name: Listing the directory
-      run: cd processing-3.5.4/libraries; dir
+      run: cd Documents/Processing/libraries; dir
     
     - name: Executing processing-java
       run: ./processing-3.5.4/processing-java.exe --sketch="D:\a\Mocka\Mocka\Mocka" --export

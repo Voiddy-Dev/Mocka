@@ -34,6 +34,22 @@ jobs:
     - name: Listing the directory
       run: dir
     
+    - name: Creating Libraries Folder 
+      run: cd Mocka; mkdir libraries; cd libraries
+    
+    - name: Downloading Box2D
+      #http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip
+      run: Invoke-WebRequest -Uri http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip -OutFile box2d_processing.zip
+      
+    - name: Extracting Processing
+      run: Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/box2d_processing.zip", "$PWD")
+    
+    - name: Listing the directory
+      run: dir
+    
+    - name: Go back to root dir
+      run: cd ../..
+    
     - name: Executing processing-java
       run: ./processing-3.5.4/processing-java.exe --sketch="D:\a\Mocka\Mocka\Mocka" --export
     

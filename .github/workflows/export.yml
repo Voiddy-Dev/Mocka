@@ -41,7 +41,7 @@ jobs:
       #http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip
       run: cd Mocka/libraries; Invoke-WebRequest -Uri http://www.shiffman.net/p5/libraries/box2d_processing/box2d_processing.zip -OutFile box2d_processing.zip
       
-    - name: Extracting Processing
+    - name: Extracting Box2D
       run: cd Mocka/libraries; Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/box2d_processing.zip", "$PWD")
     
     - name: Listing the directory

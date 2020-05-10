@@ -22,4 +22,4 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: Run a one-line script
-      run: echo "hi"
+      run: wget https://download.processing.org/processing-3.5.4-windows64.zip

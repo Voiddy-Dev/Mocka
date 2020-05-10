@@ -33,3 +33,9 @@ jobs:
       
     - name: Listing the directory
       run: dir
+    
+    - name: Executing processing-java
+      run: ./processing-3.5.4/processing-java.exe --sketch="$GITHUB_WORKSPACE/Mocka" --export
+    
+    - name: Listing the directory - Mocka
+      run: cd Mocka; dir

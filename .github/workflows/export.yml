@@ -32,7 +32,7 @@ jobs:
       run: Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/processing.zip", "$PWD")
       
     - name: Listing the directory
-      run: dir
+      run: cd ~/.processing; dir
     
     - name: Creating Libraries Folder 
       run: cd processing-3.5.4; mkdir libraries

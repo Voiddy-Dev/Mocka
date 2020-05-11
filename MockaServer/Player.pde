@@ -56,7 +56,7 @@ class Player {
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
       if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
       //if (PACKET_ID == 1) randomizeTerrain();
-      if (PACKET_ID == 2) gamemode.INTERPRET(this, network_data);
+      if (PACKET_ID == 2) INTERPRET_GAMEMODE_UPDATE();
       if (PACKET_ID == 3) gamemode.respawn(this);
       if (PACKET_ID == 4) INTERPRET_CHAT();
       if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
@@ -70,6 +70,17 @@ class Player {
   void INTERPRET_SET_COLOR_ALL(color col) { // 
     this.col = col;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
+  }
+
+  void INTERPRET_GAMEMODE_UPDATE() {
+    byte GAME_ID = network_data.get();
+    short len = network_data.getShort();
+    if (GAME_ID == gamemode.GAME_ID()) gamemode.INTERPRET(this, network_data);
+    else {
+      // oops! received a packet which is meant to be read by a gamemode which is no longer the current one
+      // discard, whilst being carefull to read just the bytes that need to be
+      for (int i = 0; i < len; i++) network_data.get();
+    }
   }
 
   void INTERPRET_CHAT() {

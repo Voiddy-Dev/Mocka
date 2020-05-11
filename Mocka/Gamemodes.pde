@@ -10,6 +10,7 @@ void setGamemode(Gamemode newgamemode) {
 }
 
 interface Gamemode {
+  byte GAME_ID();
   void update();
   void respawn();
   void beginContact(Contact cp);
@@ -21,6 +22,9 @@ interface Gamemode {
 }
 
 class CTF implements Gamemode {
+  byte GAME_ID() {
+    return 5;
+  }
   CTF(ByteBuffer data) {
   }
   void update() {
@@ -36,13 +40,23 @@ class CTF implements Gamemode {
   void hud() {
   }
   void decoratePre(Rocket r) {
-    rect(0, 0, 200, 200);
   }
   void decoratePost(Rocket r) {
+    fill(255, 0, 0);
+    noStroke();
+    translate(0, -45); // center of hublot
+    rotate(radians(30)*sin(frameCount/18.));
+    rect(50, -160+40-4, 100, 80);
+    stroke(0);
+    strokeWeight(20);
+    line(0, 0, 0, -160);
   }
 }
 
 class Disconnected implements Gamemode {
+  byte GAME_ID() {
+    return -1;
+  }
   void update() {
   }
   void respawn() {
@@ -68,6 +82,9 @@ class Disconnected implements Gamemode {
 }
 
 class Leaderboard implements Gamemode {
+  byte GAME_ID() {
+    return 3;
+  }
   Earning[] earnings;
   Leaderboard(ByteBuffer data) {
     boolean is_fresh = data.get() != (byte)0;
@@ -197,6 +214,9 @@ class Leaderboard implements Gamemode {
 }
 
 class Freeplay implements Gamemode {
+  byte GAME_ID() {
+    return 0;
+  }
   void update() {
   }
   void respawn() {
@@ -219,6 +239,9 @@ class Freeplay implements Gamemode {
 }
 
 class Crowning implements Gamemode {
+  byte GAME_ID() {
+    return 2;
+  }
   Rocket victor;
   Crowning(ByteBuffer data) {
     int UUID = data.getInt();
@@ -244,7 +267,6 @@ class Crowning implements Gamemode {
   void decoratePre(Rocket r) {
   }
   void decoratePost(Rocket r) {
-    //pushMatrix();
     pushStyle();
     if (r != victor) return;
     FRAMES--;
@@ -277,7 +299,6 @@ class Crowning implements Gamemode {
     rotate(QUARTER_PI);
     rect(0, 0, 33, 33);
     popStyle();
-    //popMatrix();
   }
 }
 
@@ -292,6 +313,9 @@ class Crowning implements Gamemode {
 
 
 class FloatGame implements Gamemode {
+  byte GAME_ID() {
+    return 4;
+  }
   int life_goal; 
   int startgame_countdown;
 
@@ -349,7 +373,7 @@ class FloatGame implements Gamemode {
   }
 
   void NOTIFY_TOUCHING_PLATFORMS(int count) {
-    client.write(new byte[]{(byte)2, (byte)count});
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)count});
   }
 
   void INTERPRET(ByteBuffer data) {
@@ -389,7 +413,6 @@ class FloatGame implements Gamemode {
       text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
     }
 
-    pushMatrix();
     rectMode(CORNER);
     textAlign(LEFT, CENTER);
     textSize(18);
@@ -453,7 +476,6 @@ class FloatGame implements Gamemode {
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }
-    popMatrix();
   }
 }
 
@@ -467,6 +489,9 @@ class FloatGame implements Gamemode {
 //            |___/                             
 
 class TagGame implements Gamemode {
+  byte GAME_ID() {
+    return 1;
+  }
   int startLife, immuneTime, inactiveTime;
   int startgame_countdown;
 
@@ -545,15 +570,17 @@ class TagGame implements Gamemode {
   }
 
   void NOTIFY_TAGGED_OTHER(int UUID) {
-    ByteBuffer data = ByteBuffer.allocate(6);
+    ByteBuffer data = ByteBuffer.allocate(7);
     data.put((byte)2);
+    data.put(GAME_ID());
+    data.putShort((short)2);
     data.put((byte)1);
     data.putInt(UUID);
     client.write(data.array());
   }
 
   void NOTIFY_CAPITULATE() {
-    client.write(new byte[]{(byte)2, (byte)0});
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0});
   }
 
   void INTERPRET(ByteBuffer data) {
@@ -606,7 +633,6 @@ class TagGame implements Gamemode {
       text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
     }
 
-    pushMatrix();
     rectMode(CORNER);
     textAlign(LEFT, CENTER);
     textSize(18);
@@ -670,6 +696,5 @@ class TagGame implements Gamemode {
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }
-    popMatrix();
   }
 }

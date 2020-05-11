@@ -99,6 +99,10 @@ public class Rocket {
     rotate(-a);
     scale(1.0/10);
 
+    pushMatrix();
+    gamemode.decoratePre(this);
+    popMatrix();
+
     // Jets
     noStroke();
     fill(col);

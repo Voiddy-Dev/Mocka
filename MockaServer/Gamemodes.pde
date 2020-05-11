@@ -5,9 +5,14 @@ import java.util.List;
 final boolean SHORT_ROUNDS = false;
 
 final int THREE_SECONDS = 3*60;
+final int FIVE_SECONDS = 5*60;
 final int TWO_MINUTES = 120*60;
 final int STARTGAME_COUNTDOWN = SHORT_ROUNDS ? 30 : THREE_SECONDS;
 final int DEFAULT_LIFE = SHORT_ROUNDS ? 30 : TWO_MINUTES;
+
+color[] TEAM_COLORS_GLOBAL = {
+  #F01818, #3655FF, #0ACE22, #FFCC24
+};
 
 Gamemode gamemode;
 
@@ -50,26 +55,105 @@ class Freeplay implements Gamemode {
 }
 
 class CTF implements Gamemode {
-  CTF() {
+  int NUM_TEAMS;
+  color[] TEAM_COLORS;
+  boolean[] flag_at_home;
+  int[] flag_bearer_UUID;
+
+  int startgame_countdown;
+
+  HashMap<Integer, PlayerStatus> status;
+
+  CTF(int NUM_TEAMS, color[] TEAM_COLORS) {
+    startgame_countdown = FIVE_SECONDS;
+    this.NUM_TEAMS = NUM_TEAMS;
+    this.TEAM_COLORS = TEAM_COLORS;
+    flag_at_home = new boolean[NUM_TEAMS];
+    flag_bearer_UUID = new int[NUM_TEAMS];
+
+    status = new HashMap<Integer, PlayerStatus>(players.size());
+    for (Player p : players.values()) status.put(p.UUID, new PlayerStatus(p));
+  }
+  CTF(int NUM_TEAMS) {
+    this(NUM_TEAMS, subset(TEAM_COLORS_GLOBAL, 0, NUM_TEAMS));
   }
   CTF(String[] args) {
-    this();
+    this(2);
   }
+  class PlayerStatus {
+    Player p;
+
+    byte team;
+    int capture_count, protected_count, jailed_count, jailing_count;
+
+    PlayerStatus(Player p) {
+      this.p = p;
+    }
+  }
+  int PlayerStatus_PACKET_SIZE() {
+    return 4 + 1+16;
+  }
+
   byte GAME_ID() {
     return 5;
   }
   int PACKET_SIZE() {
-    return 0;
+    return 4+4 + 4*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
   }
   void PUT_DATA(ByteBuffer data) {
+    data.putInt(startgame_countdown);
+
+    data.putInt(NUM_TEAMS);
+    for (color c : TEAM_COLORS) data.putInt(c);
+
+    data.putInt(status.size());
+    for (PlayerStatus s : status.values()) {
+      data.putInt(s.p.UUID);
+      data.put(s.team);
+      data.putInt(s.capture_count);
+      data.putInt(s.protected_count);
+      data.putInt(s.jailed_count);
+      data.putInt(s.jailing_count);
+    }
   }
   void INTERPRET(Player p, ByteBuffer data) {
+    byte MSG_ID = data.get();
+    if (MSG_ID == 0) {
+      byte team = data.get();
+      PlayerStatus s = status.get(p.UUID);
+      if (s == null) return;
+      s.team = team;
+      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    }
   }
+
+  ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
+    ByteBuffer data = ByteBuffer.allocate(1+4 + 4+21*status.size());
+    data.put((byte)8);
+    data.putInt(startgame_countdown);
+    data.putInt(status.size());
+    for (PlayerStatus s : status.values()) {
+      data.putInt(s.p.UUID);
+      data.put(s.team);
+      data.putInt(s.capture_count);
+      data.putInt(s.protected_count);
+      data.putInt(s.jailed_count);
+      data.putInt(s.jailing_count);
+    }
+    return data;
+  }
+
   void update() {
   }
   void playerAdd(Player p) {
   }
   void playerRemove(Player p) {
+    if (players.size() == 0) {
+      setGamemode(new Freeplay());
+      return;
+    }
+    status.remove(p.UUID);
+    TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
   }
   void respawn(Player p) {
   }

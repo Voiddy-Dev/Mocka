@@ -34,6 +34,7 @@ public class Rocket {
   boolean INPUT_up, INPUT_right, INPUT_left;
   color col;
   int UUID = -1;
+  float x, y;
 
   String name = "";
 
@@ -79,6 +80,8 @@ public class Rocket {
   // method to display the rocket 
   public void show() {
     Vec2 pos = box2d.getBodyPixelCoord(body);
+    x = pos.x;
+    y = pos.y;
     float a = body.getAngle();
 
     fill(col);

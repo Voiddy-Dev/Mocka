@@ -22,13 +22,62 @@ interface Gamemode {
 }
 
 class CTF implements Gamemode {
+  int countdown_counter;
+  int NUM_TEAMS;
+  color[] TEAM_COLORS;
+
+  HashMap<Integer, PlayerStatus> status;
+
   byte GAME_ID() {
     return 5;
   }
   CTF(ByteBuffer data) {
+    countdown_counter = data.getInt();
+
+    NUM_TEAMS = data.getInt();
+    TEAM_COLORS = new color[NUM_TEAMS];
+    for (int i = 0; i < NUM_TEAMS; i++) TEAM_COLORS[i] = data.getInt();
+
+    int size = data.getInt();
+    status = new HashMap<Integer, PlayerStatus>(size);
+    for (int i = 0; i < size; i++) {
+      int UUID = data.getInt();
+      status.put(UUID, new PlayerStatus(UUID, data));
+    }
   }
+  class PlayerStatus {
+    Rocket r;
+
+    byte team;
+    int capture_count, protected_count, jailed_count, jailing_count;
+
+    PlayerStatus(int UUID, ByteBuffer data) {
+      r = getRocket(UUID);
+      team = data.get();
+      capture_count = data.getInt();
+      protected_count = data.getInt();
+      jailed_count = data.getInt();
+      jailing_count = data.getInt();
+    }
+  }
+
+  byte myTeam = -1, myTeam_ = -1;
+
   void update() {
+    if (countdown_counter > 0) {
+      if (myRocket.x < WIDTH/2) myTeam = 0;
+      else myTeam = 1;
+      if (myTeam != myTeam_) {
+        myTeam_ = myTeam;
+        NOTIFY_MYTEAM();
+      }
+    }
   }
+
+  void NOTIFY_MYTEAM() {
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0, myTeam});
+  }
+
   void respawn() {
   }
   void beginContact(Contact cp) {
@@ -36,10 +85,24 @@ class CTF implements Gamemode {
   void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
+    countdown_counter = data.getInt();
+
+    int size = data.getInt();
+    for (int i = 0; i < size; i++) {
+      int UUID = data.getInt();
+      status.put(UUID, new PlayerStatus(UUID, data));
+    }
   }
   void hud() {
   }
   void decoratePre(Rocket r) {
+    PlayerStatus s = status.get(r.UUID);
+    if (s == null) return;
+    color col = TEAM_COLORS[s.team];
+    strokeWeight(15);
+    stroke(col);
+    fill(col, 50);
+    ellipse(0, 0, 320, 320);
   }
   void decoratePost(Rocket r) {
     fill(255, 0, 0);
@@ -373,7 +436,7 @@ class FloatGame implements Gamemode {
   }
 
   void NOTIFY_TOUCHING_PLATFORMS(int count) {
-    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)count});
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)1, (byte)count});
   }
 
   void INTERPRET(ByteBuffer data) {
@@ -573,14 +636,14 @@ class TagGame implements Gamemode {
     ByteBuffer data = ByteBuffer.allocate(7);
     data.put((byte)2);
     data.put(GAME_ID());
-    data.putShort((short)2);
+    data.putShort((short)5);
     data.put((byte)1);
     data.putInt(UUID);
     client.write(data.array());
   }
 
   void NOTIFY_CAPITULATE() {
-    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0});
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)1, (byte)0});
   }
 
   void INTERPRET(ByteBuffer data) {

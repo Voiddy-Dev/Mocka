@@ -67,6 +67,7 @@ void keyTyped_GAME() {
   char ckey = (""+key).toUpperCase().charAt(0);
   if (ckey == 'R') {
     TOUCHING_PLATFORMS = 0;
+    standupCounter = Integer.MAX_VALUE;
     Vec2 new_pos = box2d.coordPixelsToWorld(WIDTH/2, HEIGHT/2);
     myRocket.body.setTransform(new_pos, 0);
     Vec2 new_vel = new Vec2(0, 0);

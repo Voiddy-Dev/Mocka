@@ -14,6 +14,7 @@ Gamemode gamemode;
 void setGamemode(Gamemode newgamemode) {
   gamemode = newgamemode;
   TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
+  println("Set gamemode to "+gamemode.getClass());
 }
 
 interface Gamemode {
@@ -30,6 +31,32 @@ interface Gamemode {
 class Freeplay implements Gamemode {
   byte GAME_ID() {
     return 0;
+  }
+  int PACKET_SIZE() {
+    return 0;
+  }
+  void PUT_DATA(ByteBuffer data) {
+  }
+  void INTERPRET(Player p, ByteBuffer data) {
+  }
+  void update() {
+  }
+  void playerAdd(Player p) {
+  }
+  void playerRemove(Player p) {
+  }
+  void respawn(Player p) {
+  }
+}
+
+class CTF implements Gamemode {
+  CTF() {
+  }
+  CTF(String[] args) {
+    this();
+  }
+  byte GAME_ID() {
+    return 5;
   }
   int PACKET_SIZE() {
     return 0;

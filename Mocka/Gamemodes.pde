@@ -16,7 +16,30 @@ interface Gamemode {
   void endContact(Contact cp);
   void INTERPRET(ByteBuffer data);
   void hud();
-  void decorate(Rocket r);
+  void decoratePre(Rocket r);
+  void decoratePost(Rocket r);
+}
+
+class CTF implements Gamemode {
+  CTF(ByteBuffer data) {
+  }
+  void update() {
+  }
+  void respawn() {
+  }
+  void beginContact(Contact cp) {
+  }
+  void endContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
+  }
+  void hud() {
+  }
+  void decoratePre(Rocket r) {
+    rect(0, 0, 200, 200);
+  }
+  void decoratePost(Rocket r) {
+  }
 }
 
 class Disconnected implements Gamemode {
@@ -38,7 +61,9 @@ class Disconnected implements Gamemode {
     text("Disconnected...\nServer is probably offline!", 0, 0);
     popMatrix();
   }
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
   }
 }
 
@@ -146,7 +171,9 @@ class Leaderboard implements Gamemode {
     }
     popMatrix();
   }
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
   }
   class Earning {
     int UUID, points_won, places_won;
@@ -185,7 +212,9 @@ class Freeplay implements Gamemode {
     textAlign(LEFT, TOP);
     text("Freeplay", 0, 0);
   }
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
   }
 }
 
@@ -212,7 +241,9 @@ class Crowning implements Gamemode {
     //text("Winnnnnn", 0, 0);
   }
   int FRAMES = 0;
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
     //pushMatrix();
     pushStyle();
     if (r != victor) return;
@@ -333,7 +364,9 @@ class FloatGame implements Gamemode {
     }
   }
 
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
     PlayerStatus status = scores.get(r.UUID);
     if (status == null) return;
     strokeWeight(30);
@@ -536,7 +569,9 @@ class TagGame implements Gamemode {
     }
   }
 
-  void decorate(Rocket r) {
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
     PlayerStatus status = scores.get(r.UUID);
     if (status == null) return;
     if (r.UUID == UUID_it) {

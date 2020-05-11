@@ -118,6 +118,7 @@ void INTERPRET_GAMEMODE_START() {
   if (MODE_ID == 2) setGamemode(new Crowning(network_data));
   if (MODE_ID == 3) setGamemode(new Leaderboard(network_data));
   if (MODE_ID == 4) setGamemode(new FloatGame(network_data));
+  if (MODE_ID == 5) setGamemode(new CTF(network_data));
 }
 
 void INTERPRET_CHAT() {

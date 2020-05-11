@@ -76,8 +76,6 @@ public class Rocket {
     box2d.destroyBody(body);
   }
 
-  int JET_OFFSET=5;
-
   // method to display the rocket 
   public void show() {
     Vec2 pos = box2d.getBodyPixelCoord(body);
@@ -99,22 +97,24 @@ public class Rocket {
     }
 
     rotate(-a);
-    fill(col);
-    if (INPUT_right) {
-      triangle(-5, -5-JET_OFFSET, -5, 5-JET_OFFSET, -random(10, 18), -JET_OFFSET);
-    }
-    if (INPUT_left) {
-      triangle(5, -5-JET_OFFSET, 5, 5-JET_OFFSET, random(10, 18), -JET_OFFSET);
-    }
-
     scale(1.0/10);
+
+    // Jets
+    noStroke();
+    fill(col);
+    final int JET_OFFSET=50;
+    if (INPUT_right) triangle(-50, -50 - JET_OFFSET, -50, 50 - JET_OFFSET, -random(100, 180), -JET_OFFSET);
+    if (INPUT_left) triangle(50, -50 - JET_OFFSET, 50, 50 - JET_OFFSET, random(100, 180), -JET_OFFSET);
+
+    // Rocket body
     rocketShape.setFill(col);
     rocketShape.setStroke(false);
     pushMatrix();
     translate(-rocketIcon.width/2, -rocketIcon.height/2);
     shape(rocketIcon);
     popMatrix();
-    gamemode.decorate(this);
+
+    gamemode.decoratePost(this);
     popMatrix();
 
     exhaust.show(col);

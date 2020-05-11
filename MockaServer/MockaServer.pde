@@ -31,12 +31,10 @@ boolean isIPaGateway(InetAddress ip) {
 }
 final InetAddress WAN = InetAddressByName("91.160.183.12");
 
-void keyPressed() {
-  randomizeTerrain(8);
-}
+boolean editor = false;
 
 void setup() {
-  size(0, 0); 
+  size(1200, 790, FX2D);
 
   randomizeTerrain(8);
   setGamemode(new Freeplay());
@@ -46,6 +44,8 @@ void setup() {
 }
 
 void draw() {
+  background(255);
+  
   if (!SERVER_TCP_SERVER.active()) {
     println("SERVER: Trouble! Server is no longer processing-active. Stopping.");
     // Probably graciously notify all clients if possible

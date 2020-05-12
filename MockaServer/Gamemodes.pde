@@ -10,6 +10,10 @@ final int TWO_MINUTES = 120*60;
 final int STARTGAME_COUNTDOWN = SHORT_ROUNDS ? 30 : THREE_SECONDS;
 final int DEFAULT_LIFE = SHORT_ROUNDS ? 30 : TWO_MINUTES;
 
+// CTF
+final boolean DO_FLAG_THEFT = true;
+final boolean DO_FLAG_RELAY = true;
+
 color[] TEAM_COLORS_GLOBAL = {
   #F01818, #3655FF, #0ACE22, #FFCC24
 };
@@ -99,7 +103,7 @@ class CTF implements Gamemode {
   class PlayerStatus {
     Player p;
 
-    byte team;
+    byte team, loc;
     int capture_count, protected_count, jailed_count, jailing_count;
 
     PlayerStatus(Player p) {
@@ -117,7 +121,11 @@ class CTF implements Gamemode {
     return 1+4+4+4 + 12*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
   }
   void PUT_DATA(ByteBuffer data) {
-    data.put(ready ? (byte)1 : (byte)0);
+    byte mask = 0;
+    if (ready) mask += 1;
+    if (DO_FLAG_THEFT) mask += 2;
+    if (DO_FLAG_RELAY) mask += 4;
+    data.put(mask);
     data.putInt(startgame_countdown);
     data.putFloat(BASE_RADIUS);
 
@@ -142,6 +150,9 @@ class CTF implements Gamemode {
     byte MSG_ID = data.get();
     if (MSG_ID == 0) INTERPRET_MYTEAM(p, data);
     else if (MSG_ID == 1) INTERPRET_BASE_LOC(p, data);
+    else if (MSG_ID == 2) INTERPRET_LOC(p, data);
+    else if (MSG_ID == 3) INTERPRET_THEFT(p, data);
+    else if (MSG_ID == 4) INTERPRET_MURDER(p, data);
   }
 
   void INTERPRET_MYTEAM(Player p, ByteBuffer data) {
@@ -149,6 +160,15 @@ class CTF implements Gamemode {
     PlayerStatus s = status.get(p.UUID);
     if (s == null) return;
     s.team = team;
+    s.loc = team;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
+  void INTERPRET_LOC(Player p, ByteBuffer data) {
+    byte loc = data.get();
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    s.loc = loc;
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 
@@ -166,10 +186,51 @@ class CTF implements Gamemode {
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 
+  void INTERPRET_THEFT(Player p, ByteBuffer data) {
+    int theif_UUID = data.getInt();
+    int victim_UUID = data.getInt();
+    if (p.UUID != theif_UUID && p.UUID != theif_UUID)  return;
+    PlayerStatus theif_s = status.get(theif_UUID);
+    PlayerStatus victim_s = status.get(victim_UUID);
+    if (theif_s == null || victim_s == null) return;
+    boolean valid = false;
+    if (DO_FLAG_RELAY && theif_s.team == victim_s.team) valid = true;
+    if (DO_FLAG_THEFT && theif_s.team != victim_s.team) valid = true;
+    if (!valid) return;
+    for (Team t : teams) {
+      if (t.flag_at_home) continue;
+      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = theif_UUID;
+    }
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+  void INTERPRET_MURDER(Player p, ByteBuffer data) {
+    int murderer_UUID = data.getInt();
+    int victim_UUID = data.getInt();
+    if (p.UUID != murderer_UUID && p.UUID != murderer_UUID)  return;
+    PlayerStatus murderer_s = status.get(murderer_UUID);
+    PlayerStatus victim_s = status.get(victim_UUID);
+    if (murderer_s == null || victim_s == null) return;
+    Team murderer_t = teams[murderer_s.team];
+    boolean valid = false;
+    if (!murderer_t.flag_at_home && murderer_t.flag_bearer_UUID == victim_UUID) valid = true;
+    if (victim_s.loc == murderer_s.team) valid = true;
+    if (!valid) return;
+    for (Team t : teams) {
+      if (t.flag_at_home) continue;
+      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = murderer_UUID;
+    }
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    victim_s.p.TCP_SEND(NOTIFY_RESPAWN());
+  }
+
   ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
     ByteBuffer data = ByteBuffer.allocate(1+1+4 + 8*NUM_TEAMS + 4+21*status.size());
     data.put((byte)8);
-    data.put(ready ? (byte)1 : (byte)0);
+    byte mask = 0;
+    if (ready) mask += 1;
+    if (DO_FLAG_THEFT) mask += 2;
+    if (DO_FLAG_RELAY) mask += 4;
+    data.put(mask);
     data.putInt(startgame_countdown);
 
     for (Team t : teams) {

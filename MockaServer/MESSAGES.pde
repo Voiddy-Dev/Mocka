@@ -84,6 +84,12 @@ ByteBuffer NOTIFY_CHAT(String msg) {
   return data;
 }
 
+ByteBuffer NOTIFY_RESPAWN() {
+  ByteBuffer data = ByteBuffer.allocate(1);
+  data.put((byte)9);
+  return data;
+}
+
 void putString(ByteBuffer data, String str) {
   data.putInt(str.length());
   for (int i = 0; i < str.length(); i++) data.putChar(str.charAt(i));

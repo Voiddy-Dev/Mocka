@@ -5,6 +5,7 @@ import java.util.Arrays;
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
+  respawnPos = new PVector(WIDTH/2, HEIGHT/2);
   if (DEBUG_GAMEMODE) println("client: setting gamemode to "+newgamemode.getClass().getSimpleName());
   if (gamemode != null) gamemode.kill();
   gamemode = newgamemode;
@@ -24,6 +25,8 @@ interface Gamemode {
 }
 
 class CTF implements Gamemode {
+  boolean DO_FLAG_STEALING, DO_FLAG_RELAY;
+
   boolean ready;
   int startgame_countdown;
   float BASE_RADIUS;
@@ -37,7 +40,10 @@ class CTF implements Gamemode {
     return 5;
   }
   CTF(ByteBuffer data) {
-    ready = data.get() != 0;
+    byte mask = data.get();
+    ready = (mask & 1) != 0;
+    DO_FLAG_STEALING = (mask & 2) != 0;
+    DO_FLAG_RELAY = (mask & 3) != 0;
     startgame_countdown = data.getInt();
     BASE_RADIUS = data.getFloat();
 
@@ -51,6 +57,14 @@ class CTF implements Gamemode {
       int UUID = data.getInt();
       status.put(UUID, new PlayerStatus(UUID, data));
     }
+    setRespawnPoint();
+  }
+  void setRespawnPoint() {
+    if (startgame_countdown > 0) return;
+    PlayerStatus myStatus = status.get(myRocket.UUID);
+    if (myStatus == null) return;
+    Team myTeam = teams[myStatus.team];
+    respawnPos = new PVector(myTeam.x, myTeam.y - BASE_RADIUS - 15);
   }
   void kill() {
     for (Team t : teams) box2d.destroyBody(t.body);
@@ -105,27 +119,32 @@ class CTF implements Gamemode {
     }
   }
 
-  byte myTeam = -1, myTeam_ = -1;
+  byte loc = -1, loc_ = -1;
 
   void update() {
     if (startgame_countdown > 0) {
-      if (myRocket.x < WIDTH/2) myTeam = 0;
-      else myTeam = 1;
-      if (myTeam != myTeam_) {
-        myTeam_ = myTeam;
-        NOTIFY_MYTEAM();
+      if (myRocket.x < WIDTH/2) loc = 0;
+      else loc = 1;
+      if (loc != loc_) {
+        loc_ = loc;
+        if (startgame_countdown > 0) NOTIFY_MYTEAM(loc);
+        else NOTIFY_LOC(loc);
       }
     }
 
     if (!ready) return;
     if (startgame_countdown > 0) {
       startgame_countdown--;
+      if (startgame_countdown == 0) setRespawnPoint();
     } else {
     }
   }
 
-  void NOTIFY_MYTEAM() {
-    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0, myTeam});
+  void NOTIFY_MYTEAM(byte loc) {
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0, loc});
+  }
+  void NOTIFY_LOC(byte loc) {
+    client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)2, loc});
   }
   void NOTIFY_BASE_LOC() {
     ByteBuffer data = ByteBuffer.allocate(13);
@@ -146,7 +165,10 @@ class CTF implements Gamemode {
   void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
-    ready = data.get() != 0;
+    byte mask = data.get();
+    ready = (mask & 1) != 0;
+    DO_FLAG_STEALING = (mask & 2) != 0;
+    DO_FLAG_RELAY = (mask & 3) != 0;
     startgame_countdown = data.getInt();
 
     for (int i = 0; i < NUM_TEAMS; i++) teams[i].INTERPRET(data);
@@ -156,6 +178,7 @@ class CTF implements Gamemode {
       int UUID = data.getInt();
       status.put(UUID, new PlayerStatus(UUID, data));
     }
+    setRespawnPoint();
   }
 
   void hud() {

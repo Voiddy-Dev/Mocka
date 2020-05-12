@@ -160,6 +160,22 @@ public class Rocket {
   }
 }
 
+PVector respawnPos;
+
+void respawnRocket() {
+  //respawnRocket(WIDTH/2, HEIGHT/2);
+  respawnRocket(respawnPos.x, respawnPos.y);
+}
+void respawnRocket(float x, float y) {
+  TOUCHING_PLATFORMS = 0;
+  standupCounter = Integer.MAX_VALUE;
+  Vec2 new_pos = box2d.coordPixelsToWorld(x, y);
+  myRocket.body.setTransform(new_pos, 0);
+  Vec2 new_vel = new Vec2(0, 0);
+  myRocket.body.setLinearVelocity(new_vel);
+  myRocket.body.setAngularVelocity(0);
+}
+
 class MyRocket extends Rocket {
   MyRocket(float x, float y) {
     super(x, y);

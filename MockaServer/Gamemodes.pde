@@ -14,6 +14,8 @@ color[] TEAM_COLORS_GLOBAL = {
   #F01818, #3655FF, #0ACE22, #FFCC24
 };
 
+float BASE_RADIUS = 50;
+
 Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
@@ -55,21 +57,21 @@ class Freeplay implements Gamemode {
 }
 
 class CTF implements Gamemode {
+  boolean ready = false;
   int NUM_TEAMS;
-  color[] TEAM_COLORS;
-  boolean[] flag_at_home;
-  int[] flag_bearer_UUID;
+  Team[] teams;
 
   int startgame_countdown;
 
   HashMap<Integer, PlayerStatus> status;
 
   CTF(int NUM_TEAMS, color[] TEAM_COLORS) {
-    startgame_countdown = FIVE_SECONDS;
+    startgame_countdown = THREE_SECONDS;
     this.NUM_TEAMS = NUM_TEAMS;
-    this.TEAM_COLORS = TEAM_COLORS;
-    flag_at_home = new boolean[NUM_TEAMS];
-    flag_bearer_UUID = new int[NUM_TEAMS];
+    teams = new Team[NUM_TEAMS];
+    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(TEAM_COLORS[i]);
+    //teams[0].x = random(WIDTH/2);
+    //teams[1].x = random(WIDTH/2) + WIDTH/2;
 
     status = new HashMap<Integer, PlayerStatus>(players.size());
     for (Player p : players.values()) status.put(p.UUID, new PlayerStatus(p));
@@ -79,6 +81,20 @@ class CTF implements Gamemode {
   }
   CTF(String[] args) {
     this(2);
+  }
+
+  class Team {
+    boolean ready = false;
+    color col;
+    boolean flag_at_home;
+    int flag_bearer_UUID;
+    float x, y;
+
+    Team(color col) {
+      this.col = col;
+      x = -999; //random(WIDTH);
+      y = -999; //random(HEIGHT);
+    }
   }
   class PlayerStatus {
     Player p;
@@ -98,13 +114,19 @@ class CTF implements Gamemode {
     return 5;
   }
   int PACKET_SIZE() {
-    return 4+4 + 4*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
+    return 1+4+4+4 + 12*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
   }
   void PUT_DATA(ByteBuffer data) {
+    data.put(ready ? (byte)1 : (byte)0);
     data.putInt(startgame_countdown);
+    data.putFloat(BASE_RADIUS);
 
     data.putInt(NUM_TEAMS);
-    for (color c : TEAM_COLORS) data.putInt(c);
+    for (Team t : teams) {
+      data.putInt(t.col);
+      data.putFloat(t.x);
+      data.putFloat(t.y);
+    }
 
     data.putInt(status.size());
     for (PlayerStatus s : status.values()) {
@@ -118,19 +140,43 @@ class CTF implements Gamemode {
   }
   void INTERPRET(Player p, ByteBuffer data) {
     byte MSG_ID = data.get();
-    if (MSG_ID == 0) {
-      byte team = data.get();
-      PlayerStatus s = status.get(p.UUID);
-      if (s == null) return;
-      s.team = team;
-      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
-    }
+    if (MSG_ID == 0) INTERPRET_MYTEAM(p, data);
+    else if (MSG_ID == 1) INTERPRET_BASE_LOC(p, data);
+  }
+
+  void INTERPRET_MYTEAM(Player p, ByteBuffer data) {
+    byte team = data.get();
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    s.team = team;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
+  void INTERPRET_BASE_LOC(Player p, ByteBuffer data) {
+    float x = data.getFloat();
+    float y = data.getFloat();
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    Team t = teams[s.team];
+    t.x = x;
+    t.y = y;
+    t.ready = true;
+    ready = true;
+    for (Team tt : teams) if (!tt.ready) ready = false;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 
   ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
-    ByteBuffer data = ByteBuffer.allocate(1+4 + 4+21*status.size());
+    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 8*NUM_TEAMS + 4+21*status.size());
     data.put((byte)8);
+    data.put(ready ? (byte)1 : (byte)0);
     data.putInt(startgame_countdown);
+
+    for (Team t : teams) {
+      data.putFloat(t.x);
+      data.putFloat(t.y);
+    }
+
     data.putInt(status.size());
     for (PlayerStatus s : status.values()) {
       data.putInt(s.p.UUID);
@@ -144,6 +190,10 @@ class CTF implements Gamemode {
   }
 
   void update() {
+    if (!ready) return;
+    if (startgame_countdown > 0) startgame_countdown--;
+    else {
+    }
   }
   void playerAdd(Player p) {
   }

@@ -6,6 +6,7 @@ Gamemode gamemode;
 
 void setGamemode(Gamemode newgamemode) {
   if (DEBUG_GAMEMODE) println("client: setting gamemode to "+newgamemode.getClass().getSimpleName());
+  if (gamemode != null) gamemode.kill();
   gamemode = newgamemode;
 }
 
@@ -19,12 +20,16 @@ interface Gamemode {
   void hud();
   void decoratePre(Rocket r);
   void decoratePost(Rocket r);
+  void kill();
 }
 
 class CTF implements Gamemode {
-  int countdown_counter;
+  boolean ready;
+  int startgame_countdown;
+  float BASE_RADIUS;
+
   int NUM_TEAMS;
-  color[] TEAM_COLORS;
+  Team[] teams;
 
   HashMap<Integer, PlayerStatus> status;
 
@@ -32,17 +37,56 @@ class CTF implements Gamemode {
     return 5;
   }
   CTF(ByteBuffer data) {
-    countdown_counter = data.getInt();
+    ready = data.get() != 0;
+    startgame_countdown = data.getInt();
+    BASE_RADIUS = data.getFloat();
 
     NUM_TEAMS = data.getInt();
-    TEAM_COLORS = new color[NUM_TEAMS];
-    for (int i = 0; i < NUM_TEAMS; i++) TEAM_COLORS[i] = data.getInt();
+    teams = new Team[NUM_TEAMS];
+    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(data);
 
     int size = data.getInt();
     status = new HashMap<Integer, PlayerStatus>(size);
     for (int i = 0; i < size; i++) {
       int UUID = data.getInt();
       status.put(UUID, new PlayerStatus(UUID, data));
+    }
+  }
+  void kill() {
+    for (Team t : teams) box2d.destroyBody(t.body);
+  }
+
+  class Team {
+    color col;
+    boolean flag_at_home;
+    int flag_bearer_UUID;
+    Body body;
+    float x, y;
+
+    Team(ByteBuffer data) {
+      col = data.getInt();
+      x = data.getFloat();
+      y = data.getFloat();
+
+      // Create body
+      CircleShape sd = new CircleShape();
+      float b2dr = box2d.scalarPixelsToWorld(BASE_RADIUS);
+      sd.setRadius(b2dr);
+      BodyDef bd = new BodyDef();
+      bd.type = BodyType.STATIC;
+      bd.position.set(box2d.coordPixelsToWorld(x, y));
+      body = box2d.createBody(bd);
+      body.createFixture(sd, 1);
+      body.setUserData(this);
+    }
+    void INTERPRET(ByteBuffer data) {
+      x = data.getFloat();
+      y = data.getFloat();
+      body.setTransform(box2d.coordPixelsToWorld(x, y), 0);
+    }
+    public void show() {
+      fill(col);
+      ellipse(x, y, 2*BASE_RADIUS, 2*BASE_RADIUS);
     }
   }
   class PlayerStatus {
@@ -64,7 +108,7 @@ class CTF implements Gamemode {
   byte myTeam = -1, myTeam_ = -1;
 
   void update() {
-    if (countdown_counter > 0) {
+    if (startgame_countdown > 0) {
       if (myRocket.x < WIDTH/2) myTeam = 0;
       else myTeam = 1;
       if (myTeam != myTeam_) {
@@ -72,20 +116,40 @@ class CTF implements Gamemode {
         NOTIFY_MYTEAM();
       }
     }
+
+    if (!ready) return;
+    if (startgame_countdown > 0) {
+      startgame_countdown--;
+    } else {
+    }
   }
 
   void NOTIFY_MYTEAM() {
     client.write(new byte[]{(byte)2, GAME_ID(), (byte)0, (byte)2, (byte)0, myTeam});
   }
+  void NOTIFY_BASE_LOC() {
+    ByteBuffer data = ByteBuffer.allocate(13);
+    data.put((byte)2);          // Packet ID for GAMEMODE_UPDATE
+    data.put(GAME_ID());        // Byte for Gamemode ID
+    data.putShort((short)9);    // Length of message
+    data.put((byte)1);          // Message ID (specific to this gamemode)
+    data.putFloat(myRocket.x);
+    data.putFloat(myRocket.y);
+    client.write(data.array());
+  }
 
   void respawn() {
+    if (startgame_countdown > 0) NOTIFY_BASE_LOC();
   }
   void beginContact(Contact cp) {
   }
   void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
-    countdown_counter = data.getInt();
+    ready = data.get() != 0;
+    startgame_countdown = data.getInt();
+
+    for (int i = 0; i < NUM_TEAMS; i++) teams[i].INTERPRET(data);
 
     int size = data.getInt();
     for (int i = 0; i < size; i++) {
@@ -93,12 +157,28 @@ class CTF implements Gamemode {
       status.put(UUID, new PlayerStatus(UUID, data));
     }
   }
+
   void hud() {
+    for (Team t : teams) t.show();
+
+    if (startgame_countdown > 0) {
+      textAlign(CENTER, CENTER);
+      textSize(100);
+      fill(100);
+      String text;
+      if (ready) text = ""+(1+(startgame_countdown/60));
+      else { 
+        text = "Place all bases to begin";
+        textSize(30);
+      }
+      text(text, WIDTH/2, HEIGHT/2);
+    }
   }
+
   void decoratePre(Rocket r) {
     PlayerStatus s = status.get(r.UUID);
     if (s == null) return;
-    color col = TEAM_COLORS[s.team];
+    color col = teams[s.team].col;
     strokeWeight(15);
     stroke(col);
     fill(col, 50);
@@ -141,6 +221,8 @@ class Disconnected implements Gamemode {
   void decoratePre(Rocket r) {
   }
   void decoratePost(Rocket r) {
+  }
+  void kill() {
   }
 }
 
@@ -274,6 +356,8 @@ class Leaderboard implements Gamemode {
       }
     }
   }
+  void kill() {
+  }
 }
 
 class Freeplay implements Gamemode {
@@ -298,6 +382,8 @@ class Freeplay implements Gamemode {
   void decoratePre(Rocket r) {
   }
   void decoratePost(Rocket r) {
+  }
+  void kill() {
   }
 }
 
@@ -362,6 +448,8 @@ class Crowning implements Gamemode {
     rotate(QUARTER_PI);
     rect(0, 0, 33, 33);
     popStyle();
+  }
+  void kill() {
   }
 }
 
@@ -539,6 +627,8 @@ class FloatGame implements Gamemode {
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }
+  }
+  void kill() {
   }
 }
 
@@ -759,5 +849,7 @@ class TagGame implements Gamemode {
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }
+  }
+  void kill() {
   }
 }

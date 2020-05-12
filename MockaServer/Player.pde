@@ -135,7 +135,7 @@ class Player {
 
   void readNetwork() {
     if (TCP_CLIENT.available()>0) {
-      println("SEVER: Reading "+TCP_CLIENT.available()+" bytes from TCP server");
+      println("SERVER: Reading "+TCP_CLIENT.available()+" bytes from TCP server");
       // Processing's methods for reading from server is not great
       // I'm using nio.ByteBuffer instead.
       // My concern is that in one 'client.available' session, there could

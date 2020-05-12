@@ -49,7 +49,7 @@ class CTF implements Gamemode {
 
     NUM_TEAMS = data.getInt();
     teams = new Team[NUM_TEAMS];
-    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(data);
+    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(data, i);
 
     int size = data.getInt();
     status = new HashMap<Integer, PlayerStatus>(size);
@@ -71,16 +71,20 @@ class CTF implements Gamemode {
   }
 
   class Team {
+    byte id;
     color col;
     boolean flag_at_home;
     int flag_bearer_UUID;
     Body body;
     float x, y;
 
-    Team(ByteBuffer data) {
+    Team(ByteBuffer data, int id) {
+      this.id = (byte)id;
       col = data.getInt();
       x = data.getFloat();
       y = data.getFloat();
+      flag_at_home = data.get() != 0;
+      flag_bearer_UUID = data.getInt();
 
       // Create body
       CircleShape sd = new CircleShape();
@@ -99,7 +103,10 @@ class CTF implements Gamemode {
       body.setTransform(box2d.coordPixelsToWorld(x, y), 0);
     }
     public void show() {
-      fill(col);
+      strokeWeight(4);
+      stroke(col);
+      if (flag_at_home) fill(col);
+      else fill(col, 200);
       ellipse(x, y, 2*BASE_RADIUS, 2*BASE_RADIUS);
     }
   }
@@ -161,6 +168,17 @@ class CTF implements Gamemode {
     if (startgame_countdown > 0) NOTIFY_BASE_LOC();
   }
   void beginContact(Contact cp) {
+    if (startgame_countdown > 0) return;
+    Object o1 = cp.getFixtureA().getBody().getUserData();
+    Object o2 = cp.getFixtureB().getBody().getUserData();
+    if (o1 != myRocket && o2 != myRocket) return; // does not concern us (ie our player-local simulation)
+    Object other;
+    if (o1 == myRocket) other = o2;
+    else other = o1;
+    if (other instanceof Team) {
+      Team t = (Team)other;
+      client.write(new byte[]{2, GAME_ID(), 0, 2, 5, t.id});
+    }
   }
   void endContact(Contact cp) {
   }
@@ -171,7 +189,11 @@ class CTF implements Gamemode {
     DO_FLAG_RELAY = (mask & 3) != 0;
     startgame_countdown = data.getInt();
 
-    for (int i = 0; i < NUM_TEAMS; i++) teams[i].INTERPRET(data);
+    for (int i = 0; i < NUM_TEAMS; i++) {
+      teams[i].INTERPRET(data);
+      teams[i].flag_at_home = data.get() != 0;
+      teams[i].flag_bearer_UUID = data.getInt();
+    }
 
     int size = data.getInt();
     for (int i = 0; i < size; i++) {
@@ -182,6 +204,13 @@ class CTF implements Gamemode {
   }
 
   void hud() {
+    rectMode(CORNER);
+    noStroke();
+    fill(teams[0].col, 20);
+    rect(0, 0, WIDTH/2, HEIGHT);
+    fill(teams[1].col, 20);
+    rect(WIDTH/2, 0, WIDTH/2, HEIGHT);
+
     for (Team t : teams) t.show();
 
     if (startgame_countdown > 0) {
@@ -208,14 +237,22 @@ class CTF implements Gamemode {
     ellipse(0, 0, 320, 320);
   }
   void decoratePost(Rocket r) {
-    fill(255, 0, 0);
-    noStroke();
-    translate(0, -45); // center of hublot
-    rotate(radians(30)*sin(frameCount/18.));
-    rect(50, -160+40-4, 100, 80);
-    stroke(0);
-    strokeWeight(20);
-    line(0, 0, 0, -160);
+    int count = 0; // offset flags if carrying multiples
+    for (Team t : teams) {
+      if (t.flag_at_home) continue;
+      if (t.flag_bearer_UUID != r.UUID) continue;
+      pushMatrix();
+      fill(t.col);
+      noStroke();
+      translate(0, -45); // center of hublot
+      rotate(radians(30)*sin(degrees(30*count)+frameCount/18.));
+      rect(50, -160+40-4, 100, 80);
+      stroke(0);
+      strokeWeight(20);
+      line(0, 0, 0, -160);
+      popMatrix();
+      count ++;
+    }
   }
 }
 

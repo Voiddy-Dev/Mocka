@@ -55,11 +55,11 @@ class Player {
       byte PACKET_ID = network_data.get();
       println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
       if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
-      //if (PACKET_ID == 1) randomizeTerrain();
-      if (PACKET_ID == 2) INTERPRET_GAMEMODE_UPDATE();
-      if (PACKET_ID == 3) gamemode.respawn(this);
-      if (PACKET_ID == 4) INTERPRET_CHAT();
-      if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
+      //else if (PACKET_ID == 1) randomizeTerrain();
+      else if (PACKET_ID == 2) INTERPRET_GAMEMODE_UPDATE();
+      else if (PACKET_ID == 3) gamemode.respawn(this);
+      else if (PACKET_ID == 4) INTERPRET_CHAT();
+      else if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
     }
   }
 

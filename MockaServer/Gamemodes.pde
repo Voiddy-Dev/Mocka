@@ -70,7 +70,7 @@ class CTF implements Gamemode {
   HashMap<Integer, PlayerStatus> status;
 
   CTF(int NUM_TEAMS, color[] TEAM_COLORS) {
-    startgame_countdown = THREE_SECONDS;
+    startgame_countdown = 2; //THREE_SECONDS;
     this.NUM_TEAMS = NUM_TEAMS;
     teams = new Team[NUM_TEAMS];
     for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(TEAM_COLORS[i]);
@@ -98,6 +98,7 @@ class CTF implements Gamemode {
       this.col = col;
       x = -999; //random(WIDTH);
       y = -999; //random(HEIGHT);
+      flag_at_home = true;
     }
   }
   class PlayerStatus {
@@ -118,7 +119,7 @@ class CTF implements Gamemode {
     return 5;
   }
   int PACKET_SIZE() {
-    return 1+4+4+4 + 12*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
+    return 1+4+4+4 + 17*NUM_TEAMS + 4+status.size()*PlayerStatus_PACKET_SIZE();
   }
   void PUT_DATA(ByteBuffer data) {
     byte mask = 0;
@@ -134,6 +135,8 @@ class CTF implements Gamemode {
       data.putInt(t.col);
       data.putFloat(t.x);
       data.putFloat(t.y);
+      data.put(t.flag_at_home ? (byte)1 : (byte)0);
+      data.putInt(t.flag_bearer_UUID);
     }
 
     data.putInt(status.size());
@@ -153,6 +156,7 @@ class CTF implements Gamemode {
     else if (MSG_ID == 2) INTERPRET_LOC(p, data);
     else if (MSG_ID == 3) INTERPRET_THEFT(p, data);
     else if (MSG_ID == 4) INTERPRET_MURDER(p, data);
+    else if (MSG_ID == 5) INTERPRET_TOUCHED_BASE(p, data);
   }
 
   void INTERPRET_MYTEAM(Player p, ByteBuffer data) {
@@ -161,14 +165,6 @@ class CTF implements Gamemode {
     if (s == null) return;
     s.team = team;
     s.loc = team;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
-  }
-
-  void INTERPRET_LOC(Player p, ByteBuffer data) {
-    byte loc = data.get();
-    PlayerStatus s = status.get(p.UUID);
-    if (s == null) return;
-    s.loc = loc;
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 
@@ -183,6 +179,14 @@ class CTF implements Gamemode {
     t.ready = true;
     ready = true;
     for (Team tt : teams) if (!tt.ready) ready = false;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+  }
+
+  void INTERPRET_LOC(Player p, ByteBuffer data) {
+    byte loc = data.get();
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    s.loc = loc;
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 
@@ -222,9 +226,30 @@ class CTF implements Gamemode {
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
     victim_s.p.TCP_SEND(NOTIFY_RESPAWN());
   }
+  void INTERPRET_TOUCHED_BASE(Player p, ByteBuffer data) {
+    byte team_id = data.get();
+    if (startgame_countdown > 0) return;
+    Team team = teams[team_id];
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    if (team_id == s.team) {
+      // Back home: flags captured
+      for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
+        t.flag_at_home = true;
+      }
+      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    } else {
+      // Capture other teams' flags
+      if (!team.flag_at_home) return;
+      team.flag_at_home = false;
+      team.flag_bearer_UUID = p.UUID;
+      println("TOUCHED KLDFMJKDLM");
+      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    }
+  }
 
   ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
-    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 8*NUM_TEAMS + 4+21*status.size());
+    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 13*NUM_TEAMS + 4+21*status.size());
     data.put((byte)8);
     byte mask = 0;
     if (ready) mask += 1;
@@ -236,6 +261,8 @@ class CTF implements Gamemode {
     for (Team t : teams) {
       data.putFloat(t.x);
       data.putFloat(t.y);
+      data.put(t.flag_at_home ? (byte)1 : (byte)0);
+      data.putInt(t.flag_bearer_UUID);
     }
 
     data.putInt(status.size());
@@ -267,6 +294,13 @@ class CTF implements Gamemode {
     TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
   }
   void respawn(Player p) {
+    if (startgame_countdown > 0) return;
+    PlayerStatus s = status.get(p.UUID);
+    if (s == null) return;
+    for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
+      t.flag_at_home = true;
+    }
+    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 }
 

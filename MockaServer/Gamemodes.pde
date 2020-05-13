@@ -112,7 +112,7 @@ class CTF implements Gamemode {
     }
   }
   int PlayerStatus_PACKET_SIZE() {
-    return 4 + 1+16;
+    return 4 + 1+1+16;
   }
 
   byte GAME_ID() {
@@ -143,6 +143,7 @@ class CTF implements Gamemode {
     for (PlayerStatus s : status.values()) {
       data.putInt(s.p.UUID);
       data.put(s.team);
+      data.put(s.loc);
       data.putInt(s.capture_count);
       data.putInt(s.protected_count);
       data.putInt(s.jailed_count);
@@ -191,10 +192,10 @@ class CTF implements Gamemode {
   }
 
   void INTERPRET_THEFT(Player p, ByteBuffer data) {
-    int theif_UUID = data.getInt();
+    int perpetrator_UUID = data.getInt();
     int victim_UUID = data.getInt();
-    if (p.UUID != theif_UUID && p.UUID != theif_UUID)  return;
-    PlayerStatus theif_s = status.get(theif_UUID);
+    if (p.UUID != perpetrator_UUID && p.UUID != perpetrator_UUID)  return;
+    PlayerStatus theif_s = status.get(perpetrator_UUID);
     PlayerStatus victim_s = status.get(victim_UUID);
     if (theif_s == null || victim_s == null) return;
     boolean valid = false;
@@ -203,28 +204,33 @@ class CTF implements Gamemode {
     if (!valid) return;
     for (Team t : teams) {
       if (t.flag_at_home) continue;
-      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = theif_UUID;
+      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = perpetrator_UUID;
     }
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
   void INTERPRET_MURDER(Player p, ByteBuffer data) {
-    int murderer_UUID = data.getInt();
-    int victim_UUID = data.getInt();
-    if (p.UUID != murderer_UUID && p.UUID != murderer_UUID)  return;
-    PlayerStatus murderer_s = status.get(murderer_UUID);
-    PlayerStatus victim_s = status.get(victim_UUID);
-    if (murderer_s == null || victim_s == null) return;
-    Team murderer_t = teams[murderer_s.team];
-    boolean valid = false;
-    if (!murderer_t.flag_at_home && murderer_t.flag_bearer_UUID == victim_UUID) valid = true;
-    if (victim_s.loc == murderer_s.team) valid = true;
-    if (!valid) return;
+    int perpetratorUUID = data.getInt();
+    int victimUUID = data.getInt();
+    if (p.UUID != perpetratorUUID && p.UUID != perpetratorUUID)  return;
+
+    PlayerStatus perpetratorStatus = status.get(perpetratorUUID);
+    PlayerStatus victimStatus = status.get(victimUUID);
+    if (perpetratorStatus == null || victimStatus == null) return;
+    Team perpetratorTeam = teams[perpetratorStatus.team];
+    Team victimTeam = teams[victimStatus.team];
+    boolean perpetratorHasVictimFlag = !victimTeam.flag_at_home && victimTeam.flag_bearer_UUID == perpetratorUUID;
+    boolean victimHasPerpetratorFlag = !perpetratorTeam.flag_at_home && perpetratorTeam.flag_bearer_UUID == victimUUID;
+    boolean victimInPerpetratorTerritory = victimStatus.loc == perpetratorStatus.team;
+    boolean perpetratorInVictimTerritory = perpetratorStatus.loc == victimStatus.team;
+    int victimVulnerability = (victimHasPerpetratorFlag ? 2 : 0) + (victimInPerpetratorTerritory ? 1 : 0);
+    int perpetratorVulnerability = (perpetratorHasVictimFlag ? 2 : 0) + (perpetratorInVictimTerritory ? 1 : 0);
+    if (perpetratorVulnerability >= victimVulnerability) return;
     for (Team t : teams) {
       if (t.flag_at_home) continue;
-      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = murderer_UUID;
+      if (t.flag_bearer_UUID == victimUUID) t.flag_bearer_UUID = perpetratorUUID;
     }
     TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
-    victim_s.p.TCP_SEND(NOTIFY_RESPAWN());
+    victimStatus.p.TCP_SEND(NOTIFY_RESPAWN());
   }
   void INTERPRET_TOUCHED_BASE(Player p, ByteBuffer data) {
     byte team_id = data.get();
@@ -249,7 +255,7 @@ class CTF implements Gamemode {
   }
 
   ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
-    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 13*NUM_TEAMS + 4+21*status.size());
+    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 13*NUM_TEAMS + 4+22*status.size());
     data.put((byte)8);
     byte mask = 0;
     if (ready) mask += 1;
@@ -269,6 +275,7 @@ class CTF implements Gamemode {
     for (PlayerStatus s : status.values()) {
       data.putInt(s.p.UUID);
       data.put(s.team);
+      data.put(s.loc);
       data.putInt(s.capture_count);
       data.putInt(s.protected_count);
       data.putInt(s.jailed_count);

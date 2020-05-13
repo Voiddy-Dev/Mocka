@@ -21,6 +21,7 @@ void drawChat() {
   textSize(20);
 
   float w = max(100, textWidth(chat_txt_entry));
+  noStroke();
   fill(128, 130);
   rect(X_CHAT_OFFSET, -Y_CHAT_OFFSET-LINE_HEIGHT, w+6, LINE_HEIGHT);
   fill(0);

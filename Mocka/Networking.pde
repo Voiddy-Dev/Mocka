@@ -70,6 +70,7 @@ void interpretNetwork() {
     if (PACKET_ID == 6) INTERPRET_GAMEMODE_START();
     if (PACKET_ID == 7) INTERPRET_CHAT();
     if (PACKET_ID == 8) INTERPRET_GAMEMODE_UPDATE();
+    if (PACKET_ID == 9) INTERPRET_RESPAWN();
   }
 }
 
@@ -128,6 +129,10 @@ void INTERPRET_CHAT() {
 
 void INTERPRET_GAMEMODE_UPDATE() {
   gamemode.INTERPRET(network_data);
+}
+
+void INTERPRET_RESPAWN() {
+  respawnRocket();
 }
 
 int SERVER_UDP_PORT;

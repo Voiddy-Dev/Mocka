@@ -113,12 +113,13 @@ class CTF implements Gamemode {
   class PlayerStatus {
     Rocket r;
 
-    byte team;
+    byte team, loc;
     int capture_count, protected_count, jailed_count, jailing_count;
 
     PlayerStatus(int UUID, ByteBuffer data) {
       r = getRocket(UUID);
       team = data.get();
+      loc = data.get();
       capture_count = data.getInt();
       protected_count = data.getInt();
       jailed_count = data.getInt();
@@ -129,14 +130,12 @@ class CTF implements Gamemode {
   byte loc = -1, loc_ = -1;
 
   void update() {
-    if (startgame_countdown > 0) {
-      if (myRocket.x < WIDTH/2) loc = 0;
-      else loc = 1;
-      if (loc != loc_) {
-        loc_ = loc;
-        if (startgame_countdown > 0) NOTIFY_MYTEAM(loc);
-        else NOTIFY_LOC(loc);
-      }
+    if (myRocket.x < WIDTH/2) loc = 0;
+    else loc = 1;
+    if (loc != loc_) {
+      loc_ = loc;
+      if (startgame_countdown > 0) NOTIFY_MYTEAM(loc);
+      else NOTIFY_LOC(loc);
     }
 
     if (!ready) return;
@@ -178,8 +177,58 @@ class CTF implements Gamemode {
     if (other instanceof Team) {
       Team t = (Team)other;
       client.write(new byte[]{2, GAME_ID(), 0, 2, 5, t.id});
+    } else if (other instanceof EnemyRocket) {
+      EnemyRocket enemy = (EnemyRocket)other;
+      PlayerStatus myStatus = status.get(myRocket.UUID);
+      PlayerStatus enemyStatus = status.get(enemy.UUID);
+      if (myStatus == null || enemyStatus == null) return;
+      if (myStatus.team == enemyStatus.team) {
+        // same team, maybe steal
+        int myFlagcount = 0, enemyFlagcount = 0;
+        for (Team t : teams) {
+          if (t.flag_at_home) continue;
+          if (t.flag_bearer_UUID == myRocket.UUID) myFlagcount++;
+          if (t.flag_bearer_UUID == enemy.UUID) enemyFlagcount++;
+        }
+        if (myFlagcount < enemyFlagcount) NOTIFY_THEFT(myRocket.UUID, enemy.UUID);
+      } else {
+        // Different team! steal or kill!
+        Team myTeam = teams[myStatus.team];
+        Team enemyTeam = teams[enemyStatus.team];
+        boolean enemyHasMyFlag = !myTeam.flag_at_home && myTeam.flag_bearer_UUID == enemy.UUID;
+        boolean meHasEnemyFlag = !enemyTeam.flag_at_home && enemyTeam.flag_bearer_UUID == myRocket.UUID;
+        boolean meInEnemyTerritory = myStatus.loc == enemyStatus.team;
+        boolean enemyInMyTerritory = enemyStatus.loc == myStatus.team;
+        int myVulnerability = (meHasEnemyFlag ? 2 : 0) + (meInEnemyTerritory ? 1 : 0);
+        int enemyVulnerability = (enemyHasMyFlag ? 2 : 0) + (enemyInMyTerritory ? 1 : 0);
+        if (myVulnerability > enemyVulnerability) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
+        if (myVulnerability < enemyVulnerability) NOTIFY_MURDER(myRocket.UUID, enemy.UUID);
+      }
     }
   }
+
+  void NOTIFY_THEFT(int theif_UUID, int victim_UUID) {
+    ByteBuffer data = ByteBuffer.allocate(13);
+    data.put((byte)2);       // GAMEMODE_UPDATE packet ID
+    data.put(GAME_ID());     // gamemode ID
+    data.putShort((short)8); // message length
+    data.put((byte)3);       // message ID (NOTIFY_THEFT)
+    data.putInt(theif_UUID);
+    data.putInt(victim_UUID);
+    client.write(data.array());
+  }
+
+  void NOTIFY_MURDER(int murderer_UUID, int victim_UUID) {
+    ByteBuffer data = ByteBuffer.allocate(13);
+    data.put((byte)2);       // GAMEMODE_UPDATE packet ID
+    data.put(GAME_ID());     // gamemode ID
+    data.putShort((short)8); // message length
+    data.put((byte)4);       // message ID (NOTIFY_THEFT)
+    data.putInt(murderer_UUID);
+    data.putInt(victim_UUID);
+    client.write(data.array());
+  }
+
   void endContact(Contact cp) {
   }
   void INTERPRET(ByteBuffer data) {
@@ -230,6 +279,16 @@ class CTF implements Gamemode {
   void decoratePre(Rocket r) {
     PlayerStatus s = status.get(r.UUID);
     if (s == null) return;
+
+    // for debugging
+    /*
+    color loccol = teams[s.loc].col;
+     noStroke();
+     stroke(loccol);
+     fill(loccol, 50);
+     ellipse(0, 0, 640, 640);
+     */
+
     color col = teams[s.team].col;
     strokeWeight(15);
     stroke(col);

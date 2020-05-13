@@ -95,6 +95,8 @@ class CTF implements Gamemode {
       bd.position.set(box2d.coordPixelsToWorld(x, y));
       body = box2d.createBody(bd);
       body.createFixture(sd, 1);
+      body.getFixtureList().setSensor(true);
+
       body.setUserData(this);
     }
     void INTERPRET(ByteBuffer data) {
@@ -102,12 +104,45 @@ class CTF implements Gamemode {
       y = data.getFloat();
       body.setTransform(box2d.coordPixelsToWorld(x, y), 0);
     }
+    int activecount = 0;
     public void show() {
-      strokeWeight(4);
+      pushMatrix();
+      translate(x, y);
+      if (flag_at_home) activecount++;
+      scale(1 + 0.01*sin(activecount/18.));
+      noStroke();
+      if (flag_at_home) fill(col, 120);
+      else fill(col, 30);
+      ellipse(0, 0, 2*BASE_RADIUS, 2*BASE_RADIUS);
+
+      if (flag_at_home) {
+        pushMatrix();
+        scale(0.18);
+        //fill(255);
+        //ellipse(0, 0, 320, 320);
+        fill(col);
+        noStroke();
+        translate(0, 65); // center of hublot
+        //rotate(radians(30)*sin(degrees(30*activecount)+frameCount/18.));
+        rectMode(CENTER);
+        rect(50, -160+40-4, 100, 80);
+        stroke(0);
+        strokeWeight(20);
+        line(0, 0, 0, -160);
+        popMatrix();
+      }
+
+      rotate(activecount/180.);
+      int ARC_COUNT = 9;
+      float ARC_SIZE = PI / ARC_COUNT;
+      noFill();
       stroke(col);
-      if (flag_at_home) fill(col);
-      else fill(col, 200);
-      ellipse(x, y, 2*BASE_RADIUS, 2*BASE_RADIUS);
+      strokeWeight(4);
+      for (int i = 0; i < ARC_COUNT; i++) { // make this a PShape preferably?
+        arc(0, 0, 2*BASE_RADIUS, 2*BASE_RADIUS, 0, ARC_SIZE);
+        rotate(2*ARC_SIZE);
+      }
+      popMatrix();
     }
   }
   class PlayerStatus {
@@ -199,6 +234,7 @@ class CTF implements Gamemode {
         boolean meHasEnemyFlag = !enemyTeam.flag_at_home && enemyTeam.flag_bearer_UUID == myRocket.UUID;
         boolean meInEnemyTerritory = myStatus.loc == enemyStatus.team;
         boolean enemyInMyTerritory = enemyStatus.loc == myStatus.team;
+        //boolean meHasOwnFlag = !myTeam.flag_at_home && myTeam.flag_bearer_UUID == myRocket.UUID;
         int myVulnerability = (meHasEnemyFlag ? 2 : 0) + (meInEnemyTerritory ? 1 : 0);
         int enemyVulnerability = (enemyHasMyFlag ? 2 : 0) + (enemyInMyTerritory ? 1 : 0);
         if (myVulnerability > enemyVulnerability) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
@@ -255,10 +291,13 @@ class CTF implements Gamemode {
   void hud() {
     rectMode(CORNER);
     noStroke();
-    fill(teams[0].col, 20);
+    fill(teams[0].col, 10);
     rect(0, 0, WIDTH/2, HEIGHT);
-    fill(teams[1].col, 20);
+    fill(teams[1].col, 10);
     rect(WIDTH/2, 0, WIDTH/2, HEIGHT);
+    strokeWeight(5);
+    stroke(128, 50);
+    line(WIDTH/2, 0, WIDTH/2, HEIGHT);
 
     for (Team t : teams) t.show();
 
@@ -279,15 +318,6 @@ class CTF implements Gamemode {
   void decoratePre(Rocket r) {
     PlayerStatus s = status.get(r.UUID);
     if (s == null) return;
-
-    // for debugging
-    /*
-    color loccol = teams[s.loc].col;
-     noStroke();
-     stroke(loccol);
-     fill(loccol, 50);
-     ellipse(0, 0, 640, 640);
-     */
 
     color col = teams[s.team].col;
     strokeWeight(15);

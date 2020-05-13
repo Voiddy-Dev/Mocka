@@ -70,7 +70,7 @@ class CTF implements Gamemode {
   HashMap<Integer, PlayerStatus> status;
 
   CTF(int NUM_TEAMS, color[] TEAM_COLORS) {
-    startgame_countdown = 2; //THREE_SECONDS;
+    startgame_countdown = THREE_SECONDS;
     this.NUM_TEAMS = NUM_TEAMS;
     teams = new Team[NUM_TEAMS];
     for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(TEAM_COLORS[i]);

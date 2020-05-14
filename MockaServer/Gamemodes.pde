@@ -73,7 +73,7 @@ class CTF implements Gamemode {
     startgame_countdown = THREE_SECONDS;
     this.NUM_TEAMS = NUM_TEAMS;
     teams = new Team[NUM_TEAMS];
-    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(TEAM_COLORS[i]);
+    for (int i = 0; i < NUM_TEAMS; i++) teams[i] = new Team(i, TEAM_COLORS[i]);
     //teams[0].x = random(WIDTH/2);
     //teams[1].x = random(WIDTH/2) + WIDTH/2;
 
@@ -88,13 +88,15 @@ class CTF implements Gamemode {
   }
 
   class Team {
+    byte id;
     boolean ready = false;
     color col;
     boolean flag_at_home;
     int flag_bearer_UUID;
     float x, y;
 
-    Team(color col) {
+    Team(int id, color col) {
+      this.id = (byte)id;
       this.col = col;
       x = -999; //random(WIDTH);
       y = -999; //random(HEIGHT);
@@ -150,6 +152,81 @@ class CTF implements Gamemode {
       data.putInt(s.jailing_count);
     }
   }
+
+  ByteBuffer NOTIFY_P_TEAM(PlayerStatus s) {
+    ByteBuffer data = ByteBuffer.allocate(7);
+    data.put((byte)8);
+    data.put((byte)0);
+    data.putInt(s.p.UUID);
+    data.put(s.team);
+    return data;
+  }
+  ByteBuffer NOTIFY_T_LOC(Team t) {
+    ByteBuffer data = ByteBuffer.allocate(11);
+    data.put((byte)8);
+    data.put((byte)1);
+    data.put(t.id);
+    data.putFloat(t.x);
+    data.putFloat(t.y);
+    return data;
+  }
+  ByteBuffer NOTIFY_P_LOC(PlayerStatus s) {
+    ByteBuffer data = ByteBuffer.allocate(7);
+    data.put((byte)8);
+    data.put((byte)2);
+    data.putInt(s.p.UUID);
+    data.put(s.loc);
+    return data;
+  }
+  ByteBuffer NOTIFY_T_FLAG(Team t) {
+    ByteBuffer data = ByteBuffer.allocate(8);
+    data.put((byte)8);
+    data.put((byte)3);
+    data.put(t.id);
+    data.put(t.flag_at_home ? (byte)1 : (byte)0);
+    data.putInt(t.flag_bearer_UUID);
+    return data;
+  }
+  ByteBuffer NOTIFY_CTF_READY() {
+    ByteBuffer data = ByteBuffer.allocate(7);
+    data.put((byte)8);
+    data.put((byte)4);
+    data.put(ready ? (byte)1 : (byte)0);
+    data.putInt(startgame_countdown);
+    return data;
+  }
+
+
+  /*ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
+   ByteBuffer data = ByteBuffer.allocate(1+1+4 + 13*NUM_TEAMS + 4+22*status.size());
+   data.put((byte)8);
+   byte mask = 0;
+   if (ready) mask += 1;
+   if (DO_FLAG_THEFT) mask += 2;
+   if (DO_FLAG_RELAY) mask += 4;
+   data.put(mask);
+   data.putInt(startgame_countdown);
+   
+   for (Team t : teams) {
+   data.putFloat(t.x);
+   data.putFloat(t.y);
+   data.put(t.flag_at_home ? (byte)1 : (byte)0);
+   data.putInt(t.flag_bearer_UUID);
+   }
+   
+   data.putInt(status.size());
+   for (PlayerStatus s : status.values()) {
+   data.putInt(s.p.UUID);
+   data.put(s.team);
+   data.put(s.loc);
+   data.putInt(s.capture_count);
+   data.putInt(s.protected_count);
+   data.putInt(s.jailed_count);
+   data.putInt(s.jailing_count);
+   }
+   return data;
+   }*/
+
   void INTERPRET(Player p, ByteBuffer data) {
     byte MSG_ID = data.get();
     if (MSG_ID == 0) INTERPRET_MYTEAM(p, data);
@@ -166,7 +243,7 @@ class CTF implements Gamemode {
     if (s == null) return;
     s.team = team;
     s.loc = team;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    TCP_SEND_ALL_CLIENTS(NOTIFY_P_TEAM(s));
   }
 
   void INTERPRET_BASE_LOC(Player p, ByteBuffer data) {
@@ -180,7 +257,8 @@ class CTF implements Gamemode {
     t.ready = true;
     ready = true;
     for (Team tt : teams) if (!tt.ready) ready = false;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    TCP_SEND_ALL_CLIENTS(NOTIFY_T_LOC(t));
+    TCP_SEND_ALL_CLIENTS(NOTIFY_CTF_READY());
   }
 
   void INTERPRET_LOC(Player p, ByteBuffer data) {
@@ -188,7 +266,7 @@ class CTF implements Gamemode {
     PlayerStatus s = status.get(p.UUID);
     if (s == null) return;
     s.loc = loc;
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+    TCP_SEND_ALL_CLIENTS(NOTIFY_P_LOC(s));
   }
 
   void INTERPRET_THEFT(Player p, ByteBuffer data) {
@@ -202,11 +280,10 @@ class CTF implements Gamemode {
     if (DO_FLAG_RELAY && theif_s.team == victim_s.team) valid = true;
     if (DO_FLAG_THEFT && theif_s.team != victim_s.team) valid = true;
     if (!valid) return;
-    for (Team t : teams) {
-      if (t.flag_at_home) continue;
-      if (t.flag_bearer_UUID == victim_UUID) t.flag_bearer_UUID = perpetrator_UUID;
+    for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == victim_UUID) {
+      t.flag_bearer_UUID = perpetrator_UUID;
+      TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));
     }
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
   void INTERPRET_MURDER(Player p, ByteBuffer data) {
     int perpetratorUUID = data.getInt();
@@ -216,20 +293,20 @@ class CTF implements Gamemode {
     PlayerStatus perpetratorStatus = status.get(perpetratorUUID);
     PlayerStatus victimStatus = status.get(victimUUID);
     if (perpetratorStatus == null || victimStatus == null) return;
-    Team perpetratorTeam = teams[perpetratorStatus.team];
-    Team victimTeam = teams[victimStatus.team];
-    boolean perpetratorHasVictimFlag = !victimTeam.flag_at_home && victimTeam.flag_bearer_UUID == perpetratorUUID;
-    boolean victimHasPerpetratorFlag = !perpetratorTeam.flag_at_home && perpetratorTeam.flag_bearer_UUID == victimUUID;
-    boolean victimInPerpetratorTerritory = victimStatus.loc == perpetratorStatus.team;
-    boolean perpetratorInVictimTerritory = perpetratorStatus.loc == victimStatus.team;
-    int victimVulnerability = (victimHasPerpetratorFlag ? 2 : 0) + (victimInPerpetratorTerritory ? 1 : 0);
-    int perpetratorVulnerability = (perpetratorHasVictimFlag ? 2 : 0) + (perpetratorInVictimTerritory ? 1 : 0);
-    if (perpetratorVulnerability >= victimVulnerability) return;
-    for (Team t : teams) {
-      if (t.flag_at_home) continue;
-      if (t.flag_bearer_UUID == victimUUID) t.flag_bearer_UUID = perpetratorUUID;
+    //Team perpetratorTeam = teams[perpetratorStatus.team];
+    //Team victimTeam = teams[victimStatus.team];
+    //int victimVulnerability = 
+    //boolean perpetratorHasVictimFlag = !victimTeam.flag_at_home && victimTeam.flag_bearer_UUID == perpetratorUUID;
+    //boolean victimHasPerpetratorFlag = !perpetratorTeam.flag_at_home && perpetratorTeam.flag_bearer_UUID == victimUUID;
+    //boolean victimInPerpetratorTerritory = victimStatus.loc == perpetratorStatus.team;
+    //boolean perpetratorInVictimTerritory = perpetratorStatus.loc == victimStatus.team;
+    //int victimVulnerability = (victimHasPerpetratorFlag ? 2 : 0) + (victimInPerpetratorTerritory ? 1 : 0);
+    //int perpetratorVulnerability = (perpetratorHasVictimFlag ? 2 : 0) + (perpetratorInVictimTerritory ? 1 : 0);
+    //if (perpetratorVulnerability >= victimVulnerability) return;
+    for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == victimUUID) {
+      t.flag_bearer_UUID = perpetratorUUID;
+      TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));
     }
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
     victimStatus.p.TCP_SEND(NOTIFY_RESPAWN());
   }
   void INTERPRET_TOUCHED_BASE(Player p, ByteBuffer data) {
@@ -242,46 +319,16 @@ class CTF implements Gamemode {
       // Back home: flags captured
       for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
         t.flag_at_home = true;
+        TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));
       }
-      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
     } else {
       // Capture other teams' flags
       if (!team.flag_at_home) return;
       team.flag_at_home = false;
       team.flag_bearer_UUID = p.UUID;
       println("TOUCHED KLDFMJKDLM");
-      TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
+      TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(team));
     }
-  }
-
-  ByteBuffer NOTIFY_GAMEMODE_UPDATE() {
-    ByteBuffer data = ByteBuffer.allocate(1+1+4 + 13*NUM_TEAMS + 4+22*status.size());
-    data.put((byte)8);
-    byte mask = 0;
-    if (ready) mask += 1;
-    if (DO_FLAG_THEFT) mask += 2;
-    if (DO_FLAG_RELAY) mask += 4;
-    data.put(mask);
-    data.putInt(startgame_countdown);
-
-    for (Team t : teams) {
-      data.putFloat(t.x);
-      data.putFloat(t.y);
-      data.put(t.flag_at_home ? (byte)1 : (byte)0);
-      data.putInt(t.flag_bearer_UUID);
-    }
-
-    data.putInt(status.size());
-    for (PlayerStatus s : status.values()) {
-      data.putInt(s.p.UUID);
-      data.put(s.team);
-      data.put(s.loc);
-      data.putInt(s.capture_count);
-      data.putInt(s.protected_count);
-      data.putInt(s.jailed_count);
-      data.putInt(s.jailing_count);
-    }
-    return data;
   }
 
   void update() {
@@ -297,6 +344,7 @@ class CTF implements Gamemode {
       setGamemode(new Freeplay());
       return;
     }
+    for (Team t : teams) if (t.flag_bearer_UUID == p.UUID) t.flag_at_home = true;
     status.remove(p.UUID);
     TCP_SEND_ALL_CLIENTS(NOTIFY_START_GAMEMODE());
   }
@@ -306,8 +354,8 @@ class CTF implements Gamemode {
     if (s == null) return;
     for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
       t.flag_at_home = true;
+      TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));
     }
-    TCP_SEND_ALL_CLIENTS(NOTIFY_GAMEMODE_UPDATE());
   }
 }
 
@@ -571,7 +619,7 @@ class TagGame implements Gamemode {
   TagGame(int startLife) {
     this.startLife = startLife;
     startgame_countdown = STARTGAME_COUNTDOWN;
-    UUID_it = randomPlayer().UUID;
+    UUID_it = lastPlayer().UUID;
     scores = new HashMap<Integer, PlayerStatus>();
     for (Player p : players.values()) scores.put(p.UUID, new PlayerStatus(startLife, (p.UUID != UUID_it) ? IMMUNE_TIME : 0, (p.UUID == UUID_it) ? INACTIVE_TIME : 0));
   }

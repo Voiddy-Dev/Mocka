@@ -153,7 +153,7 @@ class EnemyRocket extends Rocket {
           latest_packet = receive;
         }
         catch (Exception e) {
-          println(latest_time+" "+e);
+          if (DEBUG_PACKETS) println(latest_time+" "+e);
           try {
             Thread.sleep(1);
           } 

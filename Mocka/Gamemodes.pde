@@ -34,6 +34,8 @@ class CTF implements Gamemode {
   int NUM_TEAMS;
   Team[] teams;
 
+  PlayerStatus myStatus;
+
   HashMap<Integer, PlayerStatus> status;
 
   byte GAME_ID() {
@@ -57,6 +59,8 @@ class CTF implements Gamemode {
       int UUID = data.getInt();
       status.put(UUID, new PlayerStatus(UUID, data));
     }
+    myStatus = status.get(myRocket.UUID);
+    updateRelations();
     setRespawnPoint();
   }
   void setRespawnPoint() {
@@ -99,9 +103,9 @@ class CTF implements Gamemode {
 
       body.setUserData(this);
     }
-    void INTERPRET(ByteBuffer data) {
-      x = data.getFloat();
-      y = data.getFloat();
+    void setPos(float x, float y) {
+      this.x = x;
+      this.y = y;
       body.setTransform(box2d.coordPixelsToWorld(x, y), 0);
     }
     int activecount = 0;
@@ -122,7 +126,7 @@ class CTF implements Gamemode {
         //ellipse(0, 0, 320, 320);
         fill(col);
         noStroke();
-        translate(0, 65); // center of hublot
+        translate(-50, 65); // center of hublot
         //rotate(radians(30)*sin(degrees(30*activecount)+frameCount/18.));
         rectMode(CENTER);
         rect(50, -160+40-4, 100, 80);
@@ -151,6 +155,15 @@ class CTF implements Gamemode {
     byte team, loc;
     int capture_count, protected_count, jailed_count, jailing_count;
 
+    boolean hasOwnFlag, isAtHome;
+    byte flagCount;
+    byte relation = 0;
+    // -2: they'll murder us (don't collide)
+    // -1: they'll steal from us
+    //  0: nothing - just neutral
+    //  1: we'll steal from them
+    //  2: we'll murder them (don't collide)
+
     PlayerStatus(int UUID, ByteBuffer data) {
       r = getRocket(UUID);
       team = data.get();
@@ -160,6 +173,47 @@ class CTF implements Gamemode {
       jailed_count = data.getInt();
       jailing_count = data.getInt();
     }
+
+    void updateStatus() {
+      hasOwnFlag = !teams[team].flag_at_home && teams[team].flag_bearer_UUID == r.UUID;
+      isAtHome = loc == team;
+      flagCount = 0;
+      for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == r.UUID) flagCount++;
+      if (DEBUG_GAMEMODE) println("client: CTF: Updated status for player "+r.UUID+" hasOwnFlag = "+hasOwnFlag+"  isAtHome = "+isAtHome+"   flagCount = "+flagCount);
+    }
+    void updateRelation() {
+      if (myStatus == null) return;
+      if (myStatus == this) return;
+      Team myTeam = teams[myStatus.team];
+      Team oTeam = teams[this.team];
+      int myVulnerability = 0;
+      int oVulnerability = 0;
+      if (this.hasOwnFlag) oVulnerability += 8;
+      if (myStatus.hasOwnFlag) myVulnerability += 8;
+      if (!myTeam.flag_at_home && myTeam.flag_bearer_UUID == this.r.UUID) oVulnerability += 4;
+      if (!oTeam.flag_at_home && oTeam.flag_bearer_UUID == myStatus.r.UUID) myVulnerability += 4;
+      if (this.loc == myStatus.team) oVulnerability += 2;
+      if (myStatus.loc == this.team) myVulnerability += 2;
+      if (!this.isAtHome) oVulnerability ++;
+      if (!myStatus.isAtHome) myVulnerability ++;
+      if (myVulnerability > oVulnerability) this.relation = (byte)-2;
+      else if (myVulnerability < oVulnerability) this.relation = (byte)2;
+      else {
+        if (this.flagCount < myStatus.flagCount) this.relation = (byte)-1;
+        else if (this.flagCount > myStatus.flagCount) this.relation = (byte)-1;
+        else this.relation = (byte)0;
+      }
+      if (this.relation == (byte)-2) r.body.getFixtureList().setSensor(true);
+      if (DEBUG_GAMEMODE) println("client: CTF: Updated relation for player "+r.UUID+" relation = "+relation);
+      if (DEBUG_GAMEMODE) println("RELATION: myVuln = "+myVulnerability+"      oVuln = "+oVulnerability);
+    }
+  }
+
+  void updateRelations() {
+    PlayerStatus myStatus = status.get(myRocket.UUID);
+    if (myStatus == null) return;
+    if (DEBUG_GAMEMODE) println("clinet: CTF: updating relations");
+    for (PlayerStatus oStatus : status.values()) oStatus.updateRelation();
   }
 
   byte loc = -1, loc_ = -1;
@@ -170,7 +224,7 @@ class CTF implements Gamemode {
     if (loc != loc_) {
       loc_ = loc;
       if (startgame_countdown > 0) NOTIFY_MYTEAM(loc);
-      else NOTIFY_LOC(loc);
+      NOTIFY_LOC(loc);
     }
 
     if (!ready) return;
@@ -228,17 +282,9 @@ class CTF implements Gamemode {
         if (myFlagcount < enemyFlagcount) NOTIFY_THEFT(myRocket.UUID, enemy.UUID);
       } else {
         // Different team! steal or kill!
-        Team myTeam = teams[myStatus.team];
-        Team enemyTeam = teams[enemyStatus.team];
-        boolean enemyHasMyFlag = !myTeam.flag_at_home && myTeam.flag_bearer_UUID == enemy.UUID;
-        boolean meHasEnemyFlag = !enemyTeam.flag_at_home && enemyTeam.flag_bearer_UUID == myRocket.UUID;
-        boolean meInEnemyTerritory = myStatus.loc == enemyStatus.team;
-        boolean enemyInMyTerritory = enemyStatus.loc == myStatus.team;
-        //boolean meHasOwnFlag = !myTeam.flag_at_home && myTeam.flag_bearer_UUID == myRocket.UUID;
-        int myVulnerability = (meHasEnemyFlag ? 2 : 0) + (meInEnemyTerritory ? 1 : 0);
-        int enemyVulnerability = (enemyHasMyFlag ? 2 : 0) + (enemyInMyTerritory ? 1 : 0);
-        if (myVulnerability > enemyVulnerability) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
-        if (myVulnerability < enemyVulnerability) NOTIFY_MURDER(myRocket.UUID, enemy.UUID);
+        if (enemyStatus.relation == (byte)-2) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
+        if (enemyStatus.relation == (byte)2) NOTIFY_MURDER(myRocket.UUID, enemy.UUID);
+        if (DEBUG_GAMEMODE) println("client: CTF: Contact with enemy: relation : "+enemyStatus.relation);
       }
     }
   }
@@ -267,26 +313,78 @@ class CTF implements Gamemode {
 
   void endContact(Contact cp) {
   }
+
   void INTERPRET(ByteBuffer data) {
-    byte mask = data.get();
-    ready = (mask & 1) != 0;
-    DO_FLAG_STEALING = (mask & 2) != 0;
-    DO_FLAG_RELAY = (mask & 3) != 0;
-    startgame_countdown = data.getInt();
-
-    for (int i = 0; i < NUM_TEAMS; i++) {
-      teams[i].INTERPRET(data);
-      teams[i].flag_at_home = data.get() != 0;
-      teams[i].flag_bearer_UUID = data.getInt();
-    }
-
-    int size = data.getInt();
-    for (int i = 0; i < size; i++) {
-      int UUID = data.getInt();
-      status.put(UUID, new PlayerStatus(UUID, data));
-    }
-    setRespawnPoint();
+    byte MSG_ID = data.get();
+    if (MSG_ID == 0) INTERPRET_P_TEAM(data);
+    else if (MSG_ID == 1) INTERPRET_T_LOC(data);
+    else if (MSG_ID == 2) INTERPRET_P_LOC(data);
+    else if (MSG_ID == 3) INTERPRET_T_FLAG(data);
+    else if (MSG_ID == 4) INTERPRET_CTF_READY(data);
   }
+  void INTERPRET_P_TEAM(ByteBuffer data) {
+    int UUID = data.getInt();
+    PlayerStatus s = status.get(UUID);
+    s.team = data.get();
+    s.updateStatus();
+    if (s == myStatus) updateRelations();
+    else s.updateRelation();
+  }
+  void INTERPRET_T_LOC(ByteBuffer data) {
+    Team team = teams[data.get()];
+    float x = data.getFloat();
+    float y = data.getFloat();
+    team.setPos(x, y);
+    if (DEBUG_GAMEMODE) println("client: CTF: team "+team.id+"'s base is now at "+x+","+y);
+  }
+  void INTERPRET_P_LOC(ByteBuffer data) {
+    int UUID = data.getInt();
+    PlayerStatus s = status.get(UUID);
+    s.loc = data.get();
+    if (DEBUG_GAMEMODE) println("client: CTF: "+UUID+" is now loc = "+s.loc);
+    s.updateStatus();
+    if (s == myStatus) updateRelations();
+    else s.updateRelation();
+  }
+  void INTERPRET_T_FLAG(ByteBuffer data) {
+    Team team = teams[data.get()];
+    PlayerStatus old_bearer = !team.flag_at_home ? status.get(team.flag_bearer_UUID) : null;
+    team.flag_at_home = data.get() != 0;
+    team.flag_bearer_UUID = data.getInt();
+    PlayerStatus new_bearer = !team.flag_at_home ? status.get(team.flag_bearer_UUID) : null;
+    if (old_bearer != null) old_bearer.updateStatus();
+    if (new_bearer != null) new_bearer.updateStatus();
+    if (old_bearer == myStatus ||new_bearer == myStatus) updateRelations();
+    else {
+      if (old_bearer != null) old_bearer.updateRelation();
+      if (new_bearer != null) new_bearer.updateRelation();
+    }
+  }
+  void INTERPRET_CTF_READY(ByteBuffer data) {
+    ready = data.get() != 0;
+    startgame_countdown = data.getInt();
+  }
+
+  /*void INTERPRET(ByteBuffer data) {
+   byte mask = data.get();
+   ready = (mask & 1) != 0;
+   DO_FLAG_STEALING = (mask & 2) != 0;
+   DO_FLAG_RELAY = (mask & 3) != 0;
+   startgame_countdown = data.getInt();
+   
+   for (int i = 0; i < NUM_TEAMS; i++) {
+   teams[i].INTERPRET(data);
+   teams[i].flag_at_home = data.get() != 0;
+   teams[i].flag_bearer_UUID = data.getInt();
+   }
+   
+   int size = data.getInt();
+   for (int i = 0; i < size; i++) {
+   int UUID = data.getInt();
+   status.put(UUID, new PlayerStatus(UUID, data));
+   }
+   setRespawnPoint();
+   }*/
 
   void hud() {
     rectMode(CORNER);

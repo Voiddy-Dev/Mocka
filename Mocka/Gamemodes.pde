@@ -140,7 +140,8 @@ class CTF implements Gamemode {
       int ARC_COUNT = 9;
       float ARC_SIZE = PI / ARC_COUNT;
       noFill();
-      stroke(col);
+      if (flag_at_home) stroke(col);
+      else stroke(col, 80);
       strokeWeight(4);
       for (int i = 0; i < ARC_COUNT; i++) { // make this a PShape preferably?
         arc(0, 0, 2*BASE_RADIUS, 2*BASE_RADIUS, 0, ARC_SIZE);
@@ -149,8 +150,32 @@ class CTF implements Gamemode {
       popMatrix();
     }
   }
+
+  byte computeRelation(PlayerStatus myStatus, PlayerStatus oStatus) {
+    if (myStatus == null) return (byte)0;
+    if (myStatus == oStatus) return (byte)0;
+    Team myTeam = teams[myStatus.team];
+    Team oTeam = teams[oStatus.team];
+    int myVulnerability = 0;
+    int oVulnerability = 0;
+    if (oStatus.hasOwnFlag) oVulnerability += 8;
+    if (myStatus.hasOwnFlag) myVulnerability += 8;
+    if (!myTeam.flag_at_home && myTeam.flag_bearer_UUID == oStatus.UUID) oVulnerability += 4;
+    if (!oTeam.flag_at_home && oTeam.flag_bearer_UUID == myStatus.UUID) myVulnerability += 4;
+    if (oStatus.loc == myStatus.team) oVulnerability += 2;
+    if (myStatus.loc == oStatus.team) myVulnerability += 2;
+    if (!oStatus.isAtHome) oVulnerability ++;
+    if (!myStatus.isAtHome) myVulnerability ++;
+    if (myVulnerability > oVulnerability) return (byte)-2;
+    if (myVulnerability < oVulnerability) return (byte)2;
+    if (oStatus.flagCount < myStatus.flagCount) return (byte)-1;
+    if (oStatus.flagCount > myStatus.flagCount) return (byte)1;
+    return (byte)0;
+  }
+
   class PlayerStatus {
-    Rocket r;
+    //Rocket r;
+    int UUID;
 
     byte team, loc;
     int capture_count, protected_count, jailed_count, jailing_count;
@@ -165,7 +190,8 @@ class CTF implements Gamemode {
     //  2: we'll murder them (don't collide)
 
     PlayerStatus(int UUID, ByteBuffer data) {
-      r = getRocket(UUID);
+      this.UUID = UUID;
+      //r = getRocket(UUID);
       team = data.get();
       loc = data.get();
       capture_count = data.getInt();
@@ -175,37 +201,20 @@ class CTF implements Gamemode {
     }
 
     void updateStatus() {
-      hasOwnFlag = !teams[team].flag_at_home && teams[team].flag_bearer_UUID == r.UUID;
+      hasOwnFlag = !teams[team].flag_at_home && teams[team].flag_bearer_UUID == UUID;
       isAtHome = loc == team;
       flagCount = 0;
-      for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == r.UUID) flagCount++;
-      if (DEBUG_GAMEMODE) println("client: CTF: Updated status for player "+r.UUID+" hasOwnFlag = "+hasOwnFlag+"  isAtHome = "+isAtHome+"   flagCount = "+flagCount);
+      for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == UUID) flagCount++;
+      if (DEBUG_GAMEMODE) println("client: CTF: Updated status for player "+UUID+" hasOwnFlag = "+hasOwnFlag+"  isAtHome = "+isAtHome+"   flagCount = "+flagCount);
     }
     void updateRelation() {
-      if (myStatus == null) return;
-      if (myStatus == this) return;
-      Team myTeam = teams[myStatus.team];
-      Team oTeam = teams[this.team];
-      int myVulnerability = 0;
-      int oVulnerability = 0;
-      if (this.hasOwnFlag) oVulnerability += 8;
-      if (myStatus.hasOwnFlag) myVulnerability += 8;
-      if (!myTeam.flag_at_home && myTeam.flag_bearer_UUID == this.r.UUID) oVulnerability += 4;
-      if (!oTeam.flag_at_home && oTeam.flag_bearer_UUID == myStatus.r.UUID) myVulnerability += 4;
-      if (this.loc == myStatus.team) oVulnerability += 2;
-      if (myStatus.loc == this.team) myVulnerability += 2;
-      if (!this.isAtHome) oVulnerability ++;
-      if (!myStatus.isAtHome) myVulnerability ++;
-      if (myVulnerability > oVulnerability) this.relation = (byte)-2;
-      else if (myVulnerability < oVulnerability) this.relation = (byte)2;
-      else {
-        if (this.flagCount < myStatus.flagCount) this.relation = (byte)-1;
-        else if (this.flagCount > myStatus.flagCount) this.relation = (byte)-1;
-        else this.relation = (byte)0;
-      }
-      if (this.relation == (byte)-2) r.body.getFixtureList().setSensor(true);
-      if (DEBUG_GAMEMODE) println("client: CTF: Updated relation for player "+r.UUID+" relation = "+relation);
-      if (DEBUG_GAMEMODE) println("RELATION: myVuln = "+myVulnerability+"      oVuln = "+oVulnerability);
+      relation = computeRelation(myStatus, this);
+      if (DEBUG_GAMEMODE) println("client: CTF: Updated relation for player "+UUID+" relation = "+relation);
+      //if (DEBUG_GAMEMODE) println("RELATION: myVuln = "+myVulnerability+"      oVuln = "+oVulnerability);
+
+      Rocket r = getRocket(UUID);
+      if (r == null) return;
+      r.body.getFixtureList().setSensor(relation == (byte)2);
     }
   }
 
@@ -219,8 +228,9 @@ class CTF implements Gamemode {
   byte loc = -1, loc_ = -1;
 
   void update() {
-    if (myRocket.x < WIDTH/2) loc = 0;
-    else loc = 1;
+    loc = 0;
+    if (myRocket.x >= WIDTH/2) loc++;
+    if (NUM_TEAMS == 4 && myRocket.y >= HEIGHT/2) loc += 2;
     if (loc != loc_) {
       loc_ = loc;
       if (startgame_countdown > 0) NOTIFY_MYTEAM(loc);
@@ -271,21 +281,11 @@ class CTF implements Gamemode {
       PlayerStatus myStatus = status.get(myRocket.UUID);
       PlayerStatus enemyStatus = status.get(enemy.UUID);
       if (myStatus == null || enemyStatus == null) return;
-      if (myStatus.team == enemyStatus.team) {
-        // same team, maybe steal
-        int myFlagcount = 0, enemyFlagcount = 0;
-        for (Team t : teams) {
-          if (t.flag_at_home) continue;
-          if (t.flag_bearer_UUID == myRocket.UUID) myFlagcount++;
-          if (t.flag_bearer_UUID == enemy.UUID) enemyFlagcount++;
-        }
-        if (myFlagcount < enemyFlagcount) NOTIFY_THEFT(myRocket.UUID, enemy.UUID);
-      } else {
-        // Different team! steal or kill!
-        if (enemyStatus.relation == (byte)-2) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
-        if (enemyStatus.relation == (byte)2) NOTIFY_MURDER(myRocket.UUID, enemy.UUID);
-        if (DEBUG_GAMEMODE) println("client: CTF: Contact with enemy: relation : "+enemyStatus.relation);
-      }
+      if (DEBUG_GAMEMODE) println("client: CTF: Contact with enemy: relation : "+enemyStatus.relation);
+      if (enemyStatus.relation == (byte)-1) NOTIFY_THEFT(enemy.UUID, myRocket.UUID);
+      if (enemyStatus.relation == (byte)1) NOTIFY_THEFT(myRocket.UUID, enemy.UUID);
+      if (enemyStatus.relation == (byte)-2) NOTIFY_MURDER(enemy.UUID, myRocket.UUID);
+      if (enemyStatus.relation == (byte)2) NOTIFY_MURDER(myRocket.UUID, enemy.UUID);
     }
   }
 
@@ -365,37 +365,28 @@ class CTF implements Gamemode {
     startgame_countdown = data.getInt();
   }
 
-  /*void INTERPRET(ByteBuffer data) {
-   byte mask = data.get();
-   ready = (mask & 1) != 0;
-   DO_FLAG_STEALING = (mask & 2) != 0;
-   DO_FLAG_RELAY = (mask & 3) != 0;
-   startgame_countdown = data.getInt();
-   
-   for (int i = 0; i < NUM_TEAMS; i++) {
-   teams[i].INTERPRET(data);
-   teams[i].flag_at_home = data.get() != 0;
-   teams[i].flag_bearer_UUID = data.getInt();
-   }
-   
-   int size = data.getInt();
-   for (int i = 0; i < size; i++) {
-   int UUID = data.getInt();
-   status.put(UUID, new PlayerStatus(UUID, data));
-   }
-   setRespawnPoint();
-   }*/
-
   void hud() {
     rectMode(CORNER);
     noStroke();
-    fill(teams[0].col, 10);
-    rect(0, 0, WIDTH/2, HEIGHT);
-    fill(teams[1].col, 10);
-    rect(WIDTH/2, 0, WIDTH/2, HEIGHT);
+    if (NUM_TEAMS == 2) {
+      fill(teams[0].col, 10);
+      rect(0, 0, WIDTH/2, HEIGHT);
+      fill(teams[1].col, 10);
+      rect(WIDTH/2, 0, WIDTH/2, HEIGHT);
+    } else {
+      fill(teams[0].col, 10);
+      rect(0, 0, WIDTH/2, HEIGHT/2);
+      fill(teams[1].col, 10);
+      rect(WIDTH/2, 0, WIDTH/2, HEIGHT/2);
+      fill(teams[2].col, 10);
+      rect(0, HEIGHT/2, WIDTH/2, HEIGHT/2);
+      fill(teams[3].col, 10);
+      rect(WIDTH/2, HEIGHT/2, WIDTH/2, HEIGHT/2);
+    }
     strokeWeight(5);
     stroke(128, 50);
     line(WIDTH/2, 0, WIDTH/2, HEIGHT);
+    if (NUM_TEAMS == 4) line(0, HEIGHT/2, WIDTH, HEIGHT/2);
 
     for (Team t : teams) t.show();
 

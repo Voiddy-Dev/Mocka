@@ -143,7 +143,7 @@ public class CTF implements Gamemode {
     if (myVulnerability > oVulnerability) return (byte)-2;
     if (myVulnerability < oVulnerability) return (byte)2;
     if (oStatus.flagCount < myStatus.flagCount) return (byte)-1;
-    if (oStatus.flagCount > myStatus.flagCount) return (byte)-1;
+    if (oStatus.flagCount > myStatus.flagCount) return (byte)1;
     return (byte)0;
   }
   class PlayerStatus {
@@ -251,6 +251,7 @@ public class CTF implements Gamemode {
 
   void INTERPRET(Player p, ByteBuffer data) {
     byte MSG_ID = data.get();
+    println("SERVER: CTF: received message of type "+MSG_ID);
     if (MSG_ID == 0) INTERPRET_MYTEAM(p, data);
     else if (MSG_ID == 1) INTERPRET_BASE_LOC(p, data);
     else if (MSG_ID == 2) INTERPRET_LOC(p, data);
@@ -294,9 +295,10 @@ public class CTF implements Gamemode {
   }
 
   void INTERPRET_THEFT(Player p, ByteBuffer data) {
+    println("SERVER: CTF: Theft packet received");
     int perpetrator_UUID = data.getInt();
     int victim_UUID = data.getInt();
-    if (p.UUID != perpetrator_UUID && p.UUID != perpetrator_UUID)  return;
+    if (p.UUID != perpetrator_UUID && p.UUID != victim_UUID)  return;
     PlayerStatus theif_s = status.get(perpetrator_UUID);
     PlayerStatus victim_s = status.get(victim_UUID);
     if (theif_s == null || victim_s == null) return;

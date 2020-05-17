@@ -2,39 +2,13 @@
 The rocket class encapsulates a BOX2D object.
  */
 
-
-import processing.svg.*;
-
-float ROCKET_ICON_SCALE = 0.15;
-PShape rocketShape;
-PShape rocketIcon;// = loadShape("rocket.svg");
-
-PShape createRocketShape() {
-  //Geometry of rocket body imported from talky.io JS
-  float mult = 30.0 * (10.0 / 36);
-  PShape shape = createShape();
-  shape.beginShape();
-  //shape.vertex( -.6 * mult, -1.3 * mult);
-  shape.vertex( -.5 * mult, -1.5 * mult);
-  shape.vertex(   0 * mult, -1.8 * mult);
-  shape.vertex(  .5 * mult, -1.5 * mult);
-  //shape.vertex(  .6 * mult, -1.3 * mult);
-  shape.vertex( 1.2 * mult, .7   * mult);
-  shape.vertex(  .9 * mult, 1.8  * mult);
-  shape.vertex( -.9 * mult, 1.8  * mult);
-  shape.vertex(-1.2 * mult, .7   * mult);
-  shape.endShape(CLOSE);
-  shape.scale(10);
-  return shape;
-}
-
 public class Rocket {
   Body body; // Box2d body
   ParticleSystem exhaust;
   boolean INPUT_up, INPUT_right, INPUT_left;
   color col;
   int UUID = -1;
-  float x, y;
+  float x, y, angle;
 
   String name = "";
 
@@ -82,7 +56,7 @@ public class Rocket {
     Vec2 pos = box2d.getBodyPixelCoord(body);
     x = pos.x;
     y = pos.y;
-    float a = body.getAngle();
+    angle = body.getAngle();
 
     fill(col);
     noStroke();
@@ -99,7 +73,7 @@ public class Rocket {
       text(name, 0, -43, 100, 30);
     }
 
-    rotate(-a);
+    rotate(-angle);
     scale(1.0/10);
 
     pushMatrix();

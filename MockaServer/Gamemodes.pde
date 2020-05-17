@@ -268,6 +268,7 @@ public class CTF implements Gamemode {
     s.loc = team;
     s.updateStatus();
     TCP_SEND_ALL_CLIENTS(NOTIFY_P_TEAM(s));
+    s.p.INTERPRET_SET_COLOR_ALL(teams[team].col);
   }
 
   void INTERPRET_BASE_LOC(Player p, ByteBuffer data) {

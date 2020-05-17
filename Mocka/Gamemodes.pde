@@ -415,6 +415,7 @@ class CTF implements Gamemode {
     ellipse(0, 0, 320, 320);
   }
   void decoratePost(Rocket r) {
+    // Overlay flags on rocket
     int count = 0; // offset flags if carrying multiples
     for (Team t : teams) {
       if (t.flag_at_home) continue;
@@ -431,6 +432,16 @@ class CTF implements Gamemode {
       popMatrix();
       count ++;
     }
+
+    PlayerStatus s = status.get(r.UUID);
+    if (s == null) return;
+    // visual representation of relation
+    rotate(r.angle);
+    float timeAngle = frameCount/30. + r.UUID;
+    float angle = radians(15)*sin(timeAngle);
+    rotate(angle);
+    if (s.relation == (byte)2) shape(targetShape);
+    if (s.relation == (byte)-2) shape(angerShape);
   }
 }
 

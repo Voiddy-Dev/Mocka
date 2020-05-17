@@ -17,8 +17,8 @@ void setup() {
   //size(901, 593, FX2D);
   fullScreen(FX2D);
 
+  loadAssets();
   setGamemode(new Disconnected());
-  rocketShape = createRocketShape();
   setupBox2D();
   setupNetworking();
   myRocket = new MyRocket(1, -2);

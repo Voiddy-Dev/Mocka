@@ -11,6 +11,7 @@ final int STARTGAME_COUNTDOWN = SHORT_ROUNDS ? 30 : THREE_SECONDS;
 final int DEFAULT_LIFE = SHORT_ROUNDS ? 30 : TWO_MINUTES;
 
 // CTF
+final boolean CTF_DO_DEADLOCK = true;
 final boolean CTF_DO_FLAG_THEFT = true;
 final boolean CTF_DO_FLAG_RELAY = true;
 final boolean CTF_DO_AUTO_PLACE_BASES = true;
@@ -343,6 +344,7 @@ public class CTF implements Gamemode {
     if (s == null) return;
     if (team_id == s.team) {
       // Back home: flags captured
+      if (CTF_DO_DEADLOCK) if (!team.flag_at_home && team.flag_bearer_UUID != p.UUID) return;
       for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
         t.flag_at_home = true;
         TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));

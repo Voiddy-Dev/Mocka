@@ -14,6 +14,7 @@ final int DEFAULT_LIFE = SHORT_ROUNDS ? 30 : TWO_MINUTES;
 final boolean CTF_DO_FLAG_THEFT = true;
 final boolean CTF_DO_FLAG_RELAY = true;
 final boolean CTF_DO_AUTO_PLACE_BASES = true;
+final int CTF_THEFT_COOLDOWN = 40;
 
 color[] TEAM_COLORS_GLOBAL = {
   #F01818, #3655FF, #0ACE22, #FFCC24
@@ -154,6 +155,8 @@ public class CTF implements Gamemode {
 
     boolean hasOwnFlag, isAtHome;
     byte flagCount;
+
+    int theft_cooldown = 0;
 
     PlayerStatus(Player p) {
       this.p = p;
@@ -304,6 +307,7 @@ public class CTF implements Gamemode {
     PlayerStatus victim_s = status.get(victim_UUID);
     if (theif_s == null || victim_s == null) return;
     println("SERVER: CTF: theft claim: perpetrator: "+theif_s.p.name+" victim: "+victim_s.p.name);
+    if (victim_s.theft_cooldown > 0) return;
     println("SERVER: CTF: relation: "+computeRelation(victim_s, theif_s));
     if (computeRelation(victim_s, theif_s) != (byte)-1) return;
     for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == victim_UUID) {
@@ -312,6 +316,7 @@ public class CTF implements Gamemode {
     }
     theif_s.updateStatus();
     victim_s.updateStatus();
+    victim_s.theft_cooldown = CTF_THEFT_COOLDOWN;
   }
   void INTERPRET_MURDER(Player p, ByteBuffer data) {
     int perpetratorUUID = data.getInt();
@@ -357,6 +362,7 @@ public class CTF implements Gamemode {
     if (!ready) return;
     if (startgame_countdown > 0) startgame_countdown--;
     else {
+      for (PlayerStatus s : status.values()) if (s.theft_cooldown > 0) s.theft_cooldown--;
     }
   }
   void playerAdd(Player p) {

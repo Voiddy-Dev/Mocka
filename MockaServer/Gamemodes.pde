@@ -16,6 +16,8 @@ final boolean CTF_DO_FLAG_THEFT = true;
 final boolean CTF_DO_FLAG_RELAY = true;
 final boolean CTF_DO_AUTO_PLACE_BASES = true;
 final int CTF_THEFT_COOLDOWN = 40;
+final int CTF_POINTS_FOR_CAPTURE = 5;
+final int CTF_POINTS_FOR_RETURN = 1;
 
 color[] TEAM_COLORS_GLOBAL = {
   #F01818, #3655FF, #0ACE22, #FFCC24
@@ -67,7 +69,12 @@ CTF startCTF(String[] args) {
   if (args.length == 0) return new CTF(2);
   else {
     int teams = int(args[0]);
-    return new CTF(teams);
+    if (args.length < 3) return new CTF(teams);
+    else {
+      int points_for_capture = int(args[1]);
+      int points_for_return = int(args[1]);
+      return new CTF(teams, points_for_capture, points_for_return);
+    }
   }
 }
 
@@ -80,7 +87,12 @@ public class CTF implements Gamemode {
 
   HashMap<Integer, PlayerStatus> status;
 
-  CTF(int NUM_TEAMS, color[] TEAM_COLORS) {
+  int points_for_capture, points_for_return;
+
+  CTF(int NUM_TEAMS, int points_for_capture, int points_for_return) {
+    color[] TEAM_COLORS = subset(TEAM_COLORS_GLOBAL, 0, NUM_TEAMS);
+    this.points_for_capture = points_for_capture;
+    this.points_for_return = points_for_return;
     startgame_countdown = THREE_SECONDS;
     this.NUM_TEAMS = NUM_TEAMS;
     teams = new Team[NUM_TEAMS];
@@ -108,7 +120,7 @@ public class CTF implements Gamemode {
     for (Player p : players.values()) status.put(p.UUID, new PlayerStatus(p));
   }
   CTF(int NUM_TEAMS) {
-    this(NUM_TEAMS, subset(TEAM_COLORS_GLOBAL, 0, NUM_TEAMS));
+    this(NUM_TEAMS, CTF_POINTS_FOR_CAPTURE, CTF_POINTS_FOR_RETURN);
   }
 
   class Team {
@@ -119,9 +131,12 @@ public class CTF implements Gamemode {
     int flag_bearer_UUID;
     float x, y;
 
+    int points;
+
     Team(int id, color col) {
       this.id = (byte)id;
       this.col = col;
+      points = 0;
       x = -999; //random(WIDTH);
       y = -999; //random(HEIGHT);
       flag_at_home = true;
@@ -346,6 +361,7 @@ public class CTF implements Gamemode {
       // Back home: flags captured
       if (CTF_DO_DEADLOCK) if (!team.flag_at_home && team.flag_bearer_UUID != p.UUID) return;
       for (Team t : teams) if (!t.flag_at_home && t.flag_bearer_UUID == p.UUID) {
+        team.points += (team == t) ? CTF_POINTS_FOR_RETURN : CTF_POINTS_FOR_CAPTURE;
         t.flag_at_home = true;
         TCP_SEND_ALL_CLIENTS(NOTIFY_T_FLAG(t));
       }

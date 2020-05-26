@@ -4,6 +4,16 @@ void mousePressed() {
   if (current_scene == Scene.color_palette) {
     GAME_COLOR_ = myRocket.col;
     setScene(Scene.game);
+  } else {
+    if (gamemode instanceof Editor) {
+      ((Editor)gamemode).mousePressed();
+    }
+  }
+}
+
+void mouseDragged() {
+  if (gamemode instanceof Editor) {
+    ((Editor)gamemode).mouseDragged();
   }
 }
 
@@ -86,6 +96,11 @@ void keyTyped_GAME() {
       standupAngle = angle;
     }
     standupCounter = 0;
+  }
+  if (key == TAB) {
+    if (gamemode instanceof Editor) {
+      ((Editor)gamemode).tab();
+    }
   }
   if (keyCode == 27) key = ESC;
 }

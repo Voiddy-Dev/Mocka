@@ -14,8 +14,8 @@ void setup() {
   //size(480, 320, FX2D);
   //size(960, 640, FX2D);
   //size(1200, 790, FX2D);
-  //size(901, 593, FX2D);
-  fullScreen(FX2D);
+  size(901, 593, FX2D);
+  //fullScreen(FX2D);
 
   loadAssets();
   setGamemode(new Disconnected());

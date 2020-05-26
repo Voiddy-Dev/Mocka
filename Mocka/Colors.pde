@@ -1,5 +1,4 @@
-//color myRocket_col; // Random color that can be used throughout the code
-color GAME_COLOR_; //old
+color GAME_COLOR_; // Color, before a change is confirmed - used if change is not confirmed
 
 color[][] color_matrix = new color[][] {
   new color[]{#F23F3C, #F5A250, #F6CD56}, 

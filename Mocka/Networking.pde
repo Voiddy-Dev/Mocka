@@ -10,8 +10,8 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 //String SERVER_IP = "localhost";
-//String SERVER_IP = "91.160.183.12";
-String SERVER_IP = "lmhleetmcgang.ddns.net";
+String SERVER_IP = "91.160.183.12";
+//String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;
@@ -120,6 +120,7 @@ void INTERPRET_GAMEMODE_START() {
   if (MODE_ID == 3) setGamemode(new Leaderboard(network_data));
   if (MODE_ID == 4) setGamemode(new FloatGame(network_data));
   if (MODE_ID == 5) setGamemode(new CTF(network_data));
+  if (MODE_ID == 6) setGamemode(new Editor(network_data));
 }
 
 void INTERPRET_CHAT() {

@@ -111,6 +111,7 @@ class Player {
         if (split[0].equals("/terrain")) randomizeTerrain(int(split[1]));
         if (split[0].equals("/color")) INTERPRET_SET_COLOR_ALL(COLORIFY(split[1]));
         if (split[0].equals("/ctf")) setGamemode(startCTF(args));
+        if (split[0].equals("/editor")) setGamemode(new Editor());
       } 
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");

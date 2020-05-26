@@ -50,6 +50,9 @@ interface Platform {
   void killBody();
   void putData(ByteBuffer data);
   int size();
+
+  boolean isTouching(float x, float y);
+  void mouseBy(float x, float y);
 }
 
 class Circle implements Platform {
@@ -99,6 +102,16 @@ class Circle implements Platform {
   // display the platform
   public void show() {
     ellipse(x, y, 2*r, 2*r);
+  }
+
+  boolean isTouching(float x, float y) {
+    return dist(x, y, this.x, this.y) < r;
+  }
+  void mouseBy(float x, float y) {
+    this.x += x;
+    this.y += y;
+    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
+    body.setTransform(new_pos, 0);
   }
 }
 
@@ -160,10 +173,23 @@ class Rectangle implements Platform {
 
   // display the platform
   public void show() {
+    // note - rectMode(CENTER);
     pushMatrix();
     translate(x, y);
     rotate(angle);
     rect(0, 0, w, h);
     popMatrix();
+  }
+
+  boolean isTouching(float x, float y) {
+    PVector relpos = new PVector(x - this.x, y - this.y);
+    relpos.rotate(-angle);
+    return abs(relpos.x) < w/2 && abs(relpos.y) < h/2;
+  }
+  void mouseBy(float x, float y) {
+    this.x += x;
+    this.y += y;
+    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
+    body.setTransform(new_pos, -angle);
   }
 }

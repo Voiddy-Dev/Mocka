@@ -46,8 +46,8 @@ class Editor implements Gamemode {
       if (p.isTouching(MOUSEX, MOUSEY)) {
         if (p instanceof Circle) {
           Circle c = (Circle)p;
-          float mdist = dist(MOUSEX, MOUSEY, c.x, c.y);
-          if (mdist > c.r - 8) mode = EditMode.radius;
+          float mdist = dist(MOUSEX, MOUSEY, c.lx, c.ly);
+          if (mdist > c.lr - 8) mode = EditMode.radius;
           else mode = EditMode.move;
         } else mode = EditMode.move;
       } else mode = EditMode.move;
@@ -65,7 +65,7 @@ class Editor implements Gamemode {
     case radius:
       Circle c = (Circle)p;
       stroke(255, 0, 0);
-      line(c.x, c.y, MOUSEX, MOUSEY);
+      line(c.lx, c.ly, MOUSEX, MOUSEY);
     }
   }
   float PMOUSEX, PMOUSEY;
@@ -78,16 +78,31 @@ class Editor implements Gamemode {
     if (platform_selected == null) return;
     switch (mode) {
     case move:
-      platform_selected.mouseBy(MOUSEX - PMOUSEX, MOUSEY - PMOUSEY);
+      platform_selected.moveBy(MOUSEX - PMOUSEX, MOUSEY - PMOUSEY);
+      if (frameCount % 5 == 0) madeLocalChange(platform_selected);
       break;
 
     case radius:
       Circle c = (Circle)platform_selected;
-      float mdist = 3+dist(MOUSEX, MOUSEY, c.x, c.y);
-      c.r = mdist;
+      float mdist = 3+dist(MOUSEX, MOUSEY, c.lx, c.ly);
+      c.lr = mdist;
+      if (frameCount % 5 == 0) madeLocalChange(platform_selected);
     }
     PMOUSEX = MOUSEX;
     PMOUSEY = MOUSEY;
+  }
+  void mouseReleased() {
+    if (platform_selected != null) {
+      madeLocalChange(platform_selected);
+      platform_selected.noteUnchanges();
+    }
+  }
+  void madeLocalChange(Platform p) {
+    p.noteChanges();
+    int plat_id = 0;
+    for (; plat_id < platforms.length; plat_id++) if (platforms[plat_id] == p) break;
+    if (plat_id == platforms.length) return;
+    NOTIFY_MAP_CHANGE_REQUEST(plat_id);
   }
 
   void decoratePre(Rocket r) {

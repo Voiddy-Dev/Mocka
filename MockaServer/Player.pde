@@ -60,6 +60,7 @@ class Player {
       else if (PACKET_ID == 3) gamemode.respawn(this);
       else if (PACKET_ID == 4) INTERPRET_CHAT();
       else if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
+      else if (PACKET_ID == 6) INTERPRET_MAP_CHANGE_REQUEST(network_data);
     }
   }
 
@@ -117,6 +118,13 @@ class Player {
         println("SERVER: failed to interpret command from client");
       }
     }
+  }
+
+  void INTERPRET_MAP_CHANGE_REQUEST(ByteBuffer data) {
+    int plat_id = data.getInt();
+    Platform p = getPlatform(data);
+    platforms[plat_id] = p;
+    TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_UPDATE(plat_id));
   }
 
   void setName(String name) {

@@ -90,6 +90,15 @@ ByteBuffer NOTIFY_RESPAWN() {
   return data;
 }
 
+ByteBuffer NOTIFY_MAP_UPDATE(int plat_id) {
+  Platform p = platforms[plat_id];
+  ByteBuffer data = ByteBuffer.allocate(5 + p.size());
+  data.put((byte)10);
+  data.putInt(plat_id);
+  p.putData(data);
+  return data;
+}
+
 void putString(ByteBuffer data, String str) {
   data.putInt(str.length());
   for (int i = 0; i < str.length(); i++) data.putChar(str.charAt(i));

@@ -49,14 +49,38 @@ interface Platform {
   void show();
   void killBody();
   void putData(ByteBuffer data);
+  void putLocalData(ByteBuffer data);
+  void getChanges(ByteBuffer data);
   int size();
 
   boolean isTouching(float x, float y);
-  void mouseBy(float x, float y);
+  void moveBy(float x, float y);
+
+  void noteChanges(); // Hey! I've made some local changes, so please don't overwrite local vars!
+  void noteUnchanges(); // Ok, we're good now, please overwrite. It's 'getChanges' is likely being called because some other player is changing the map
 }
 
-class Circle implements Platform {
-  float x, y, r;
+abstract class ConcretePlatorm implements Platform {
+  protected float x, y;
+  float lx, ly; // Local variables - not 'true' (synced) but used for GUI to avoid latency
+
+  void moveBy(float x, float y) {
+    this.lx += x;
+    this.ly += y;
+  }
+
+  boolean changes = false;
+  void noteChanges() {
+    changes = true;
+  }
+  void noteUnchanges() {
+    changes = false;
+  }
+}
+
+class Circle extends ConcretePlatorm {
+  private float r;
+  float lr; // Local var
   Body body;
 
   // constructor and initialize the platform
@@ -64,10 +88,12 @@ class Circle implements Platform {
     this(data.getFloat(), data.getFloat(), data.getFloat());
   }
   Circle(float x, float y, float r) {
-    this.x = x;
-    this.y = y;
-    this.r = r;
-
+    this.lx = this.x = x;
+    this.ly = this.y = y;
+    this.lr = this.r = r;
+    makeBody();
+  }
+  void makeBody() {
     // Define the polygon
     CircleShape sd = new CircleShape();
     // We're just a circle
@@ -91,6 +117,25 @@ class Circle implements Platform {
     data.putFloat(y);
     data.putFloat(r);
   }
+  void putLocalData(ByteBuffer data) {
+    data.put((byte)1);
+    data.putFloat(lx);
+    data.putFloat(ly);
+    data.putFloat(lr);
+  }
+  void getChanges(ByteBuffer data) {
+    byte useless = data.get(); // big phat bodge
+    this.x = data.getFloat();
+    this.y = data.getFloat();
+    this.r = data.getFloat();
+    killBody();
+    makeBody();
+    if (!changes) {
+      lx = x;
+      ly = y;
+      lr = r;
+    }
+  }
   int size() {
     return 13;
   }
@@ -101,23 +146,18 @@ class Circle implements Platform {
 
   // display the platform
   public void show() {
-    ellipse(x, y, 2*r, 2*r);
+    ellipse(lx, ly, 2*lr, 2*lr);
   }
 
   boolean isTouching(float x, float y) {
-    return dist(x, y, this.x, this.y) < r;
-  }
-  void mouseBy(float x, float y) {
-    this.x += x;
-    this.y += y;
-    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
-    body.setTransform(new_pos, 0);
+    return dist(x, y, this.lx, this.ly) < lr;
   }
 }
 
 
-class Rectangle implements Platform {
-  float x, y, w, h, angle;
+class Rectangle extends ConcretePlatorm {
+  private float w, h, angle;
+  float lw, lh, langle;
   Body body;
 
   // constructor and initialize the platform
@@ -128,12 +168,14 @@ class Rectangle implements Platform {
     this(x, y, w, h, 0);
   }
   Rectangle(float x, float y, float w, float h, float angle) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.angle = angle;
-
+    this.lx = this.x = x;
+    this.ly = this.y = y;
+    this.lw = this.w = w;
+    this.lh = this.h = h;
+    this.langle = this.angle = angle;
+    makeBody();
+  }
+  void makeBody() {
     // Define the polygon
     PolygonShape sd = new PolygonShape();
     // Figure out the box2d coordinates
@@ -163,6 +205,38 @@ class Rectangle implements Platform {
     data.putFloat(h);
     data.putFloat(angle);
   }
+  void putLocalData(ByteBuffer data) {
+    data.put((byte)0);
+    data.putFloat(lx);
+    data.putFloat(ly);
+    data.putFloat(lw);
+    data.putFloat(lh);
+    data.putFloat(langle);
+  }
+  void getChanges(ByteBuffer data) {
+    byte useless = data.get(); // big phat bodge
+    this.x = data.getFloat();
+    this.y = data.getFloat();
+    float w = data.getFloat();
+    float h = data.getFloat();
+    this.angle = data.getFloat();
+    if (w != this.w || h != this.h) {
+      //resized - need to change fixture
+
+      //  killBody();
+      //makeBody();
+    } else {
+    }
+    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
+    body.setTransform(new_pos, -angle);
+    if (!changes) {
+      lx = x;
+      ly = y;
+      lw = w;
+      lh = h;
+      langle = angle;
+    }
+  }
   int size() {
     return 21;
   }
@@ -175,21 +249,15 @@ class Rectangle implements Platform {
   public void show() {
     // note - rectMode(CENTER);
     pushMatrix();
-    translate(x, y);
-    rotate(angle);
-    rect(0, 0, w, h);
+    translate(lx, ly);
+    rotate(langle);
+    rect(0, 0, lw, lh);
     popMatrix();
   }
 
   boolean isTouching(float x, float y) {
-    PVector relpos = new PVector(x - this.x, y - this.y);
-    relpos.rotate(-angle);
-    return abs(relpos.x) < w/2 && abs(relpos.y) < h/2;
-  }
-  void mouseBy(float x, float y) {
-    this.x += x;
-    this.y += y;
-    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
-    body.setTransform(new_pos, -angle);
+    PVector relpos = new PVector(x - this.lx, y - this.ly);
+    relpos.rotate(-langle);
+    return abs(relpos.x) < lw/2 && abs(relpos.y) < lh/2;
   }
 }

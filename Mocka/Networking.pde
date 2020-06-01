@@ -10,8 +10,8 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 //String SERVER_IP = "localhost";
-String SERVER_IP = "91.160.183.12";
-//String SERVER_IP = "lmhleetmcgang.ddns.net";
+//String SERVER_IP = "91.160.183.12";
+String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;
@@ -49,6 +49,15 @@ void NOTIFY_PUNCHING_FAILED(int UUID) {
   client.write(data.array());
 }
 
+void NOTIFY_MAP_CHANGE_REQUEST(int plat_id) {
+  Platform p = platforms[plat_id];
+  ByteBuffer data = ByteBuffer.allocate(5 + p.size());
+  data.put((byte)6);
+  data.putInt(plat_id);
+  p.putLocalData(data);
+  client.write(data.array());
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -71,6 +80,7 @@ void interpretNetwork() {
     if (PACKET_ID == 7) INTERPRET_CHAT();
     if (PACKET_ID == 8) INTERPRET_GAMEMODE_UPDATE();
     if (PACKET_ID == 9) INTERPRET_RESPAWN();
+    if (PACKET_ID == 10) INTERPRET_MAP_UPDATE();
   }
 }
 
@@ -134,6 +144,12 @@ void INTERPRET_GAMEMODE_UPDATE() {
 
 void INTERPRET_RESPAWN() {
   respawnRocket();
+}
+
+void INTERPRET_MAP_UPDATE() {
+  int plat_id = network_data.getInt();
+  platforms[plat_id].getChanges(network_data);
+  myRocket.body.applyTorque(0); // wake
 }
 
 int SERVER_UDP_PORT;

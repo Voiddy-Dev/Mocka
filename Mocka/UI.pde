@@ -10,6 +10,11 @@ void mousePressed() {
     }
   }
 }
+void mouseReleased() {
+  if (gamemode instanceof Editor) {
+    ((Editor)gamemode).mouseReleased();
+  }
+}
 
 void mouseDragged() {
   if (gamemode instanceof Editor) {

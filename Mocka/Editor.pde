@@ -1,5 +1,7 @@
 enum EditMode {
-  move, radius;
+  move, 
+    radius, 
+    rectLeft, rectRight, rectTop, rectBottom;
 }
 
 class Editor implements Gamemode {
@@ -41,13 +43,25 @@ class Editor implements Gamemode {
     Platform p = (platform_hovered == null) ? platform_selected : platform_hovered;
     if (p == null) return;
 
+    Circle c = null;
+    Rectangle r = null;
+    if (p instanceof Circle) c = (Circle)p;
+    if (p instanceof Rectangle) r = (Rectangle)p;
     // Figure out if we should switch to any EditMode
     if (!mousePressed) {
       if (p.isTouching(MOUSEX, MOUSEY)) {
         if (p instanceof Circle) {
-          Circle c = (Circle)p;
+          c = (Circle)p;
           float mdist = dist(MOUSEX, MOUSEY, c.lx, c.ly);
           if (mdist > c.lr - 8) mode = EditMode.radius;
+          else mode = EditMode.move;
+        } else if (p instanceof Rectangle) {
+          r = (Rectangle)p;
+          PVector mouse = new PVector(MOUSEX - r.lx, MOUSEY - r.ly).rotate(-r.langle);
+          if (mouse.x > r.lw/2 - 8) mode = EditMode.rectRight;
+          else if (mouse.x < -r.lw/2 + 8) mode = EditMode.rectLeft;
+          else if (mouse.y > r.lh/2 - 8) mode = EditMode.rectBottom;
+          else if (mouse.y < -r.lh/2 + 8) mode = EditMode.rectTop;
           else mode = EditMode.move;
         } else mode = EditMode.move;
       } else mode = EditMode.move;
@@ -55,18 +69,49 @@ class Editor implements Gamemode {
 
     strokeWeight(4);
 
+    pushMatrix();
     switch (mode) {
     case move:
-      noFill();
-      stroke(255, 0, 0);
+      //noFill();
+      //stroke(255, 0, 0);
+      fill(255, 0, 0, 120);
+      noStroke();
       p.show();
       break;
 
     case radius:
-      Circle c = (Circle)p;
-      stroke(255, 0, 0);
+      noFill();
+      stroke(255, 0, 0, 240);
       line(c.lx, c.ly, MOUSEX, MOUSEY);
+      ellipse(c.lx, c.ly, c.lr*2, c.lr*2);
+      break;
+
+    case rectRight:
+      stroke(255, 0, 0, 240);
+      translate(r.lx, r.ly);
+      rotate(r.langle);
+      line(r.lw/2, -r.lh/2, r.lw/2, r.lh/2);
+      break;
+    case rectLeft:
+      stroke(255, 0, 0, 240);
+      translate(r.lx, r.ly);
+      rotate(r.langle);
+      line(-r.lw/2, -r.lh/2, -r.lw/2, r.lh/2);
+      break;
+    case rectTop:
+      stroke(255, 0, 0, 240);
+      translate(r.lx, r.ly);
+      rotate(r.langle);
+      line(-r.lw/2, -r.lh/2, r.lw/2, -r.lh/2);
+      break;
+    case rectBottom:
+      stroke(255, 0, 0, 240);
+      translate(r.lx, r.ly);
+      rotate(r.langle);
+      line(-r.lw/2, r.lh/2, r.lw/2, r.lh/2);
+      break;
     }
+    popMatrix();
   }
   float PMOUSEX, PMOUSEY;
   void mousePressed() {
@@ -87,9 +132,33 @@ class Editor implements Gamemode {
       float mdist = 3+dist(MOUSEX, MOUSEY, c.lx, c.ly);
       c.lr = mdist;
       if (frameCount % 5 == 0) madeLocalChange(platform_selected);
+      break;
+
+    case rectRight:
+      resizeRect(0, 1);
+      break;
+    case rectLeft:
+      resizeRect(0, -1);
+      break;
+    case rectBottom:
+      resizeRect(HALF_PI, 1);
+      break;
+    case rectTop:
+      resizeRect(HALF_PI, -1);
+      break;
     }
     PMOUSEX = MOUSEX;
     PMOUSEY = MOUSEY;
+  }
+  void resizeRect(float angle, int mult) {
+    Rectangle r = (Rectangle)platform_selected;
+    PVector delta = new PVector(new PVector(MOUSEX - PMOUSEX, MOUSEY - PMOUSEY).rotate(-r.langle - angle).x, 0).rotate(angle).mult(mult);
+    r.lw += delta.x;
+    r.lh += delta.y;
+    PVector translate = delta.rotate(r.langle).mult(mult);
+    r.lx += translate.x/2;
+    r.ly += translate.y/2;
+    if (frameCount % 5 == 0) madeLocalChange(platform_selected);
   }
   void mouseReleased() {
     if (platform_selected != null) {

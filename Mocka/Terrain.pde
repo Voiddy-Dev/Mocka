@@ -222,19 +222,27 @@ class Rectangle extends ConcretePlatorm {
     this.angle = data.getFloat();
     if (w != this.w || h != this.h) {
       //resized - need to change fixture
-
-      //  killBody();
-      //makeBody();
+      this.w = w;
+      this.h = h;
+      killBody();
+      makeBody();
+      if (!changes) {
+        lx = x;
+        ly = y;
+        lw = w;
+        lh = h;
+        langle = angle;
+      }
     } else {
-    }
-    Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
-    body.setTransform(new_pos, -angle);
-    if (!changes) {
-      lx = x;
-      ly = y;
-      lw = w;
-      lh = h;
-      langle = angle;
+      Vec2 new_pos = box2d.coordPixelsToWorld(this.x, this.y);
+      body.setTransform(new_pos, -angle);
+      if (!changes) {
+        lx = x;
+        ly = y;
+        lw = w;
+        lh = h;
+        langle = angle;
+      }
     }
   }
   int size() {

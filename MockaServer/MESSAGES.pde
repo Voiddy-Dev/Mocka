@@ -51,7 +51,7 @@ ByteBuffer NOTIFY_YOUR_UUID(int UUID) {
   return data;
 }
 
-ByteBuffer NOTIFY_TERRAIN(Platform[] platforms) {
+ByteBuffer NOTIFY_TERRAIN(HashMap<Integer, Platform> platforms) {
   ByteBuffer data = ByteBuffer.allocate(1+sizePlatforms(platforms));
   data.put((byte)4);
   putPlatforms(data, platforms);
@@ -91,7 +91,7 @@ ByteBuffer NOTIFY_RESPAWN() {
 }
 
 ByteBuffer NOTIFY_MAP_UPDATE(int plat_id) {
-  Platform p = platforms[plat_id];
+  Platform p = platforms.get(plat_id);
   ByteBuffer data = ByteBuffer.allocate(5 + p.size());
   data.put((byte)10);
   data.putInt(plat_id);

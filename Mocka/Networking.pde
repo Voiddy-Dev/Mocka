@@ -50,7 +50,7 @@ void NOTIFY_PUNCHING_FAILED(int UUID) {
 }
 
 void NOTIFY_MAP_CHANGE_REQUEST(int plat_id) {
-  Platform p = platforms[plat_id];
+  Platform p = platforms.get(plat_id);
   ByteBuffer data = ByteBuffer.allocate(5 + p.size());
   data.put((byte)6);
   data.putInt(plat_id);
@@ -148,7 +148,7 @@ void INTERPRET_RESPAWN() {
 
 void INTERPRET_MAP_UPDATE() {
   int plat_id = network_data.getInt();
-  platforms[plat_id].getChanges(network_data);
+  platforms.get(plat_id).getChanges(network_data);
   myRocket.body.applyTorque(0); // wake
 }
 

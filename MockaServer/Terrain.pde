@@ -1,21 +1,21 @@
-Platform[] platforms;
+HashMap<Integer, Platform> platforms;
 
 void randomizeTerrain(int num_platforms) {
   platforms = randomTerrain(num_platforms);
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
 }
 
-Platform[] randomTerrain(int num_platforms) {
-  Platform[] platforms = new Platform[num_platforms+4];
+HashMap<Integer, Platform> randomTerrain(int num_platforms) {
+  HashMap<Integer, Platform> platforms = new HashMap<Integer, Platform>(4+num_platforms);
 
   // BORDERS
-  platforms[0] = new Rectangle(WIDTH/2, HEIGHT - 25, WIDTH, 50); // base platform
-  platforms[1] = new Rectangle(1, HEIGHT/2, 2, HEIGHT); // left 
-  platforms[2] = new Rectangle(WIDTH-1, HEIGHT/2, 2, HEIGHT); // right
-  platforms[3] = new Rectangle(WIDTH/2, 1, WIDTH, 2); // top 
+  platforms.put(0, new Rectangle(WIDTH/2, HEIGHT - 25, WIDTH, 50)); // base platform
+  platforms.put(1, new Rectangle(1, HEIGHT/2, 2, HEIGHT)); // left 
+  platforms.put(2, new Rectangle(WIDTH-1, HEIGHT/2, 2, HEIGHT)); // right
+  platforms.put(3, new Rectangle(WIDTH/2, 1, WIDTH, 2)); // top 
 
   for (int i = 0; i < num_platforms; i++) {
-    platforms[i+4] = randomPlatform();
+    platforms.put(i+4, randomPlatform());
   }
   return platforms;
 }
@@ -27,21 +27,27 @@ Platform randomPlatform() {
   else return new Circle(random(WIDTH), random(HEIGHT), random(40, 100));
 }
 
-int sizePlatforms(Platform[] plats) {
-  int total = 4;
-  for (Platform p : plats) total += p.size();
+int sizePlatforms(HashMap<Integer, Platform> plats) {
+  int total = 4 + 4*plats.size();
+  for (Platform p : plats.values()) total += p.size();
   return total;
 }
 
-void putPlatforms(ByteBuffer data, Platform[] plats) {
-  data.putInt(plats.length);
-  for (Platform p : plats) p.putData(data);
+void putPlatforms(ByteBuffer data, HashMap<Integer, Platform> plats) {
+  data.putInt(plats.size());
+  for (Map.Entry<Integer, Platform> e : plats.entrySet()) {
+    data.putInt(e.getKey());
+    e.getValue().putData(data);
+  }
 }
 
-Platform[] getPlatforms(ByteBuffer data) {
+HashMap<Integer, Platform> getPlatforms(ByteBuffer data) {
   int size = data.getInt();
-  Platform[] plats = new Platform[size];
-  for (int i = 0; i < size; i++) plats[i] = getPlatform(data);
+  HashMap<Integer, Platform> plats = new HashMap<Integer, Platform>(size);
+  for (int i = 0; i < size; i++) {
+    int id = data.getInt();
+    plats.put(id, getPlatform(data));
+  }
   return plats;
 }
 

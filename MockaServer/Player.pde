@@ -123,7 +123,7 @@ class Player {
   void INTERPRET_MAP_CHANGE_REQUEST(ByteBuffer data) {
     int plat_id = data.getInt();
     Platform p = getPlatform(data);
-    platforms[plat_id] = p;
+    platforms.put(plat_id, p);
     TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_UPDATE(plat_id));
   }
 

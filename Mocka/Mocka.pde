@@ -21,6 +21,7 @@ void setup() {
   setGamemode(new Disconnected());
   setupBox2D();
   setupNetworking();
+  platforms = randomTerrain(10);
   myRocket = new MyRocket(1, -2);
 }
 

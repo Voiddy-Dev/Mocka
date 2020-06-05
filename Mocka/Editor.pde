@@ -38,7 +38,7 @@ class Editor implements Gamemode {
 
     if (!editing) return;
     platform_hovered = null;
-    if (!mousePressed) for (Platform p : platforms) if (p.isTouching(MOUSEX, MOUSEY)) platform_hovered = p;
+    if (!mousePressed) for (Platform p : platforms.values()) if (p.isTouching(MOUSEX, MOUSEY)) platform_hovered = p;
 
     Platform p = (platform_hovered == null) ? platform_selected : platform_hovered;
     if (p == null) return;
@@ -192,9 +192,12 @@ class Editor implements Gamemode {
   }
   void madeLocalChange(Platform p) {
     p.noteChanges();
-    int plat_id = 0;
-    for (; plat_id < platforms.length; plat_id++) if (platforms[plat_id] == p) break;
-    if (plat_id == platforms.length) return;
+    int plat_id = -1;
+    for (Map.Entry<Integer, Platform> e : platforms.entrySet()) if (e.getValue() == p) {
+      plat_id = e.getKey();
+      break;
+    }
+    if (plat_id == -1) return;
     NOTIFY_MAP_CHANGE_REQUEST(plat_id);
   }
 

@@ -1,7 +1,7 @@
 enum EditMode {
   move, 
     radius, 
-    rectLeft, rectRight, rectTop, rectBottom;
+    rectLeft, rectRight, rectTop, rectBottom, rectRotate;
 }
 
 class Editor implements Gamemode {
@@ -62,7 +62,11 @@ class Editor implements Gamemode {
           else if (mouse.x < -r.lw/2 + 8) mode = EditMode.rectLeft;
           else if (mouse.y > r.lh/2 - 8) mode = EditMode.rectBottom;
           else if (mouse.y < -r.lh/2 + 8) mode = EditMode.rectTop;
-          else mode = EditMode.move;
+          else {
+            float distToRotate = dist(mouse.x, mouse.y, 0, -r.h/4);
+            if (distToRotate < 6) mode = EditMode.rectRotate;
+            else mode = EditMode.move;
+          }
         } else mode = EditMode.move;
       } else mode = EditMode.move;
     }
@@ -77,6 +81,11 @@ class Editor implements Gamemode {
       fill(255, 0, 0, 120);
       noStroke();
       p.show();
+      if (p instanceof Rectangle) {
+        translate(r.lx, r.ly);
+        rotate(r.langle);
+        ellipse(0, -r.lh/4, 12, 12);
+      }
       break;
 
     case radius:
@@ -84,6 +93,13 @@ class Editor implements Gamemode {
       stroke(255, 0, 0, 240);
       line(c.lx, c.ly, MOUSEX, MOUSEY);
       ellipse(c.lx, c.ly, c.lr*2, c.lr*2);
+      break;
+    case rectRotate:
+      noStroke();
+      fill(255, 0, 0, 240);
+      translate(r.lx, r.ly);
+      rotate(r.langle);
+      ellipse(0, -r.lh/4, 12, 12);
       break;
 
     case rectRight:
@@ -131,6 +147,14 @@ class Editor implements Gamemode {
       Circle c = (Circle)platform_selected;
       float mdist = 3+dist(MOUSEX, MOUSEY, c.lx, c.ly);
       c.lr = mdist;
+      if (frameCount % 5 == 0) madeLocalChange(platform_selected);
+      break;
+
+    case rectRotate:
+      Rectangle r = (Rectangle)platform_selected;
+      r.langle = new PVector(MOUSEX - r.lx, MOUSEY - r.ly).heading()+HALF_PI;
+      int deg_inc = 5;
+      if (keyPressed) r.langle = radians(deg_inc*round(degrees(r.langle)/deg_inc));
       if (frameCount % 5 == 0) madeLocalChange(platform_selected);
       break;
 

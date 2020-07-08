@@ -24,9 +24,11 @@ void mouseDragged() {
 
 void keyPressed() {
   char ckey = (""+key).toUpperCase().charAt(0);
+  //println(ckey, keyCode);
   if (keyCode == UP || ckey == 'Z' || ckey == 'I') INPUT_up = true;
   if (keyCode == LEFT || ckey == 'Q' || ckey == 'J') INPUT_left = true;
   if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') INPUT_right = true;
+  if (keyCode == DELETE || keyCode == 8) if (gamemode instanceof Editor) ((Editor)gamemode).keyPressedDelete();
   if (keyCode == 27 || key == ESC) { 
     if (current_scene != Scene.game) {
       setScene(Scene.game);

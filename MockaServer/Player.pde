@@ -61,6 +61,7 @@ class Player {
       else if (PACKET_ID == 4) INTERPRET_CHAT();
       else if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
       else if (PACKET_ID == 6) INTERPRET_MAP_CHANGE_REQUEST(network_data);
+      else if (PACKET_ID == 7) INTERPRET_MAP_DELETE_REQUEST(network_data);
     }
   }
 
@@ -125,6 +126,12 @@ class Player {
     Platform p = getPlatform(data);
     platforms.put(plat_id, p);
     TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_UPDATE(plat_id));
+  }
+
+  void INTERPRET_MAP_DELETE_REQUEST(ByteBuffer data) {
+    int plat_id = data.getInt();
+    platforms.remove(plat_id);
+    TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_DELETE(plat_id));
   }
 
   void setName(String name) {

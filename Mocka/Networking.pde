@@ -9,9 +9,9 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-//String SERVER_IP = "localhost";
+String SERVER_IP = "localhost";
 //String SERVER_IP = "91.160.183.12";
-String SERVER_IP = "lmhleetmcgang.ddns.net";
+//String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
 Client client;
@@ -58,6 +58,13 @@ void NOTIFY_MAP_CHANGE_REQUEST(int plat_id) {
   client.write(data.array());
 }
 
+void NOTIFY_MAP_DELETE_REQUEST(int plat_id) {
+  ByteBuffer data = ByteBuffer.allocate(5);
+  data.put((byte)7);
+  data.putInt(plat_id);
+  client.write(data.array());
+}
+
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -81,6 +88,7 @@ void interpretNetwork() {
     if (PACKET_ID == 8) INTERPRET_GAMEMODE_UPDATE();
     if (PACKET_ID == 9) INTERPRET_RESPAWN();
     if (PACKET_ID == 10) INTERPRET_MAP_UPDATE();
+    if (PACKET_ID == 11) INTERPRET_MAP_DELETE();
   }
 }
 
@@ -150,6 +158,15 @@ void INTERPRET_MAP_UPDATE() {
   int plat_id = network_data.getInt();
   platforms.get(plat_id).getChanges(network_data);
   myRocket.body.applyTorque(0); // wake
+}
+
+void INTERPRET_MAP_DELETE() {
+  int plat_id = network_data.getInt();
+  Platform p = platforms.get(plat_id);
+  p.killBody();
+  platforms.remove(plat_id);
+  myRocket.body.applyTorque(0); // wake
+  if (gamemode instanceof Editor) ((Editor)gamemode).NOTIFY_platform_deleted(p);
 }
 
 int SERVER_UDP_PORT;

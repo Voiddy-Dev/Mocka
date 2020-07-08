@@ -200,6 +200,19 @@ class Editor implements Gamemode {
     if (plat_id == -1) return;
     NOTIFY_MAP_CHANGE_REQUEST(plat_id);
   }
+  void keyPressedDelete() {
+    if (platform_selected == null) return;
+    int plat_id = -1;
+    for (Map.Entry<Integer, Platform> e : platforms.entrySet()) if (e.getValue() == platform_selected) {
+      plat_id = e.getKey();
+      break;
+    }
+    if (plat_id == -1) return;
+    NOTIFY_MAP_DELETE_REQUEST(plat_id);
+  }
+  void NOTIFY_platform_deleted(Platform p) {
+    if (platform_selected == p) platform_selected = null;
+  }
 
   void decoratePre(Rocket r) {
   }

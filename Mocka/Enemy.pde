@@ -156,7 +156,7 @@ class EnemyRocket extends Rocket {
           if (DEBUG_PACKETS) println(latest_time+" "+e);
           try {
             Thread.sleep(1);
-          } 
+          }
           catch(Exception e1) {
           }
         }

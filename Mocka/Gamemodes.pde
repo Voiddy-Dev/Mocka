@@ -972,7 +972,7 @@ class TagGame implements Gamemode {
   }
 
   void NOTIFY_TAGGED_OTHER(int UUID) {
-    ByteBuffer data = ByteBuffer.allocate(7);
+    ByteBuffer data = ByteBuffer.allocate(9);
     data.put((byte)2);
     data.put(GAME_ID());
     data.putShort((short)5);

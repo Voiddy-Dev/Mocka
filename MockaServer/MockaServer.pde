@@ -22,7 +22,7 @@ final int SERVER_UDP_PORT_B_LAN = 16441;
 final int SERVER_UDP_PORT_B_WAN = 16441;
 
 final InetAddress[] GATEWAYS = {
-  InetAddressByName("192.168.0.1"), 
+  InetAddressByName("192.168.0.1"),
   InetAddressByName("192.168.1.1")
 };
 boolean isIPaGateway(InetAddress ip) {
@@ -36,7 +36,7 @@ void keyPressed() {
 }
 
 void setup() {
-  size(0, 0); 
+  size(0, 0);
 
   randomizeTerrain(8);
   setGamemode(new Freeplay());
@@ -73,7 +73,7 @@ void serverEvent(Server serv, Client myClient) {
 InetAddress InetAddressByName(String ip) {
   try {
     return InetAddress.getByName(ip);
-  } 
+  }
   catch(Exception e) {
     return null;
   }

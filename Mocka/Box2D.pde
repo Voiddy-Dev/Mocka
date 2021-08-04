@@ -18,6 +18,7 @@ void setupBox2D() {
 int TOUCHING_PLATFORMS = 0;
 
 void beginContact(Contact cp) {
+  //if (cp.getFixtureA().getBody().getUserData() == null || cp.getFixtureB().getBody().getUserData() == null) return;
   if (contactIsWithPlatform(cp)) TOUCHING_PLATFORMS++;
   gamemode.beginContact(cp);
 }

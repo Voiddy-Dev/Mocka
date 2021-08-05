@@ -15,22 +15,13 @@ void setupBox2D() {
   box2d.listenForCollisions();
 }
 
-int TOUCHING_PLATFORMS = 0;
-
 void beginContact(Contact cp) {
   //if (cp.getFixtureA().getBody().getUserData() == null || cp.getFixtureB().getBody().getUserData() == null) return;
-  if (contactIsWithPlatform(cp)) TOUCHING_PLATFORMS++;
+  if (myRocket.contactIsWithPlatform(cp)) myRocket.TOUCHING_PLATFORMS++;
   gamemode.beginContact(cp);
 }
 
 void endContact(Contact cp) {
-  if (contactIsWithPlatform(cp)) TOUCHING_PLATFORMS = max(0, TOUCHING_PLATFORMS-1);
+  if (myRocket.contactIsWithPlatform(cp)) myRocket.TOUCHING_PLATFORMS = max(0, myRocket.TOUCHING_PLATFORMS-1);
   gamemode.endContact(cp);
-}
-
-boolean contactIsWithPlatform(Contact cp) {
-  Object o1 = cp.getFixtureA().getBody().getUserData();
-  Object o2 = cp.getFixtureB().getBody().getUserData();
-  if (o1 != myRocket && o2 != myRocket) return false; // does not concern us (ie our player-local simulation)
-  return o1 instanceof Platform || o2 instanceof Platform;
 }

@@ -729,7 +729,7 @@ class FloatGame implements Gamemode {
     PlayerStatus prev = null;
     for (int i = 0; i < size; i++) scores.put(data.getInt(), prev = new PlayerStatus(prev, data));
     if (DEBUG_GAMEMODE) println("client: finished setting up Taggame!");
-    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+    NOTIFY_TOUCHING_PLATFORMS(myRocket.TOUCHING_PLATFORMS);
   }
 
   class PlayerStatus {
@@ -762,14 +762,14 @@ class FloatGame implements Gamemode {
   }
 
   void respawn() {
-    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+    NOTIFY_TOUCHING_PLATFORMS(myRocket.TOUCHING_PLATFORMS);
   }
 
   void beginContact(Contact cp) {
-    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+    NOTIFY_TOUCHING_PLATFORMS(myRocket.TOUCHING_PLATFORMS);
   }
   void endContact(Contact cp) {
-    NOTIFY_TOUCHING_PLATFORMS(TOUCHING_PLATFORMS);
+    NOTIFY_TOUCHING_PLATFORMS(myRocket.TOUCHING_PLATFORMS);
   }
 
   void NOTIFY_TOUCHING_PLATFORMS(int count) {

@@ -151,7 +151,7 @@ void INTERPRET_GAMEMODE_UPDATE() {
 }
 
 void INTERPRET_RESPAWN() {
-  respawnRocket();
+  myRocket.respawnRocket();
 }
 
 void INTERPRET_MAP_UPDATE() {

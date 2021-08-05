@@ -68,6 +68,7 @@ void keyTyped_GAME() {
     setScene(Scene.chat);
   }
   if (ckey == 'Y') current_scene = Scene.color_palette;
+  if (ckey == 'A') myRocket.AP_ACTIVE = !myRocket.AP_ACTIVE;
   if (key == ' ') myRocket.initiateStandup();
   if (key == TAB) {
     if (gamemode instanceof Editor) {

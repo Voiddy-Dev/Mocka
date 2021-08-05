@@ -145,6 +145,10 @@ class MyRocket extends Rocket {
 
   int TOUCHING_PLATFORMS = 0;
 
+  boolean AP_ACTIVE = true;
+  float AP_P_COEF = 10;
+  float AP_D_COEF = 1.5;
+
   MyRocket(float x, float y) {
     super(x, y);
   }
@@ -153,14 +157,27 @@ class MyRocket extends Rocket {
     super.setColor(col);
   }
   public void interactions() {
-    INPUT_up = KEY_up;
-    INPUT_right = KEY_right;
-    INPUT_left = KEY_left;
+    float angle = myRocket.body.getAngle();
+    angle = ((angle % TAU) + TAU) % TAU;
+    float angle_vel = myRocket.body.getAngularVelocity();
     if (!doingStandingProcedure()) {
+      INPUT_up = KEY_up;
+      INPUT_right = KEY_right;
+      INPUT_left = KEY_left;
+      if (AP_ACTIVE && !KEY_right && !KEY_left) {
+        float angle2 = angle;
+        if (angle2 > PI) angle2 -= TAU;
+        float sum = AP_P_COEF * angle2 + angle_vel * AP_D_COEF;
+        println(sum);
+        if (abs(sum) > 2) {
+          INPUT_right = sum > 0;
+          INPUT_left = sum < 0;
+        } else {
+          INPUT_right = INPUT_left = false;
+        }
+      }
     } else {
       standupCounter++;
-      float angle = myRocket.body.getAngle();
-      angle = ((angle % TAU) + TAU) % TAU;
       if (angle > PI) angle -= TAU;
       int dir = standupDirection ? -1 : 1;
       standupAngle += (angle - standupAngle) * 0.2;

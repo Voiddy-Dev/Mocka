@@ -168,7 +168,6 @@ class MyRocket extends Rocket {
         float angle2 = angle;
         if (angle2 > PI) angle2 -= TAU;
         float sum = AP_P_COEF * angle2 + angle_vel * AP_D_COEF;
-        println(sum);
         if (abs(sum) > 2) {
           INPUT_right = sum > 0;
           INPUT_left = sum < 0;

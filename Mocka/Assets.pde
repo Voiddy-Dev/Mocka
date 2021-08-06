@@ -24,8 +24,8 @@ PShape createAngerShape() {
 PShape createLigthning() {
   PShape lightning = createShape();
   lightning.setStroke(false);
-  //lightning.setFill(#F7F702);
-  lightning.setFill(0);
+  lightning.setFill(#F7F702); // Yellow lightning
+  //lightning.setFill(0);
   lightning.beginShape();
   lightning.vertex(0, 10);
   lightning.vertex(30, 80);

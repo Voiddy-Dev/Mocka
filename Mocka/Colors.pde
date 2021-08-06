@@ -25,7 +25,7 @@ void drawColors() {
   strokeWeight(3);
   stroke(0);
 
-  fill(128, 200);
+  fill(128, 200); // I guess this color is fine? I don't see much wrong 
   rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
   final float BOX_WIDTH = (WINDOW_WIDTH / w) * 1.0;
@@ -51,7 +51,7 @@ void drawColors() {
   float x = map(my_i, 0, w, 0, WINDOW_WIDTH);
   float y = map(my_j, 0, h, 0, WINDOW_HEIGHT);
   noFill();
-  stroke(0);
+  stroke(0); // I think a black outline is fine
   rect(x, y, BOX_WIDTH, BOX_HEIGHT);
 
   popStyle();

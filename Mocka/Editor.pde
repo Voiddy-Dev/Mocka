@@ -30,7 +30,7 @@ class Editor implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
-    fill(0);
+    fill(255); // White text on black background
     textSize(50);
     textAlign(LEFT, TOP);
     text("Editor", 0, 0);
@@ -91,7 +91,7 @@ class Editor implements Gamemode {
     case radius:
       noFill();
       stroke(255, 0, 0, 240);
-      line(c.lx, c.ly, MOUSEX, MOUSEY);
+      line(c.lx, c.ly,  MOUSEX, MOUSEY);
       ellipse(c.lx, c.ly, c.lr*2, c.lr*2);
       break;
     case rectRotate:

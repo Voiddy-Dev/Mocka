@@ -7,7 +7,7 @@ void killTerrain() {
 
 void showTerrain() {
   noStroke();
-  fill(0);
+  fill(255); // bright terrain
   rectMode(CENTER);
   for (Platform p : platforms.values()) p.show();
 }

@@ -66,7 +66,7 @@ public class Rocket {
     translate(pos.x, pos.y);
 
     if (this.name != null) {
-      fill(0);
+      fill(255); // White text on black background
       textSize(18);
       textAlign(CENTER, CENTER);
       rectMode(CENTER);

@@ -22,9 +22,9 @@ void drawChat() {
 
   float w = max(100, textWidth(chat_txt_entry));
   noStroke();
-  fill(128, 130);
+  fill(128, 130); // Gray chat box
   rect(X_CHAT_OFFSET, -Y_CHAT_OFFSET-LINE_HEIGHT, w+6, LINE_HEIGHT);
-  fill(0);
+  fill(255); // White chat text
   text(chat_txt_entry, X_CHAT_OFFSET+3, -Y_CHAT_OFFSET-3);
 
   popStyle();

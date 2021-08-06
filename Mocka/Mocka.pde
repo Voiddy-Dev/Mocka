@@ -69,7 +69,7 @@ void drawGame() {
   gamemode.update();
   informEnemies();
 
-  background(255); // white background
+  background(0); // BLACK background
 
   float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   translate(width/2, height/2);

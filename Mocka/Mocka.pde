@@ -25,6 +25,7 @@ void setup() {
   setupNetworking();
   platforms = randomTerrain(10);
   myRocket = new MyRocket(1, -2);
+  setupBackground();
 }
 
 void draw() {
@@ -69,7 +70,7 @@ void drawGame() {
   gamemode.update();
   informEnemies();
 
-  background(0); // BLACK background
+  drawBackground();
 
   float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   translate(width/2, height/2);

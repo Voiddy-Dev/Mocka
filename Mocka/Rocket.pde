@@ -8,7 +8,7 @@ public class Rocket {
   boolean INPUT_up, INPUT_right, INPUT_left;
   color col;
   int UUID = -1;
-  float x, y, angle;
+  float x = 0, y = 0, angle, px = 0, py = 0;
 
   String name = "";
 
@@ -54,6 +54,8 @@ public class Rocket {
   // method to display the rocket 
   public void show() {
     Vec2 pos = box2d.getBodyPixelCoord(body);
+    px = x;
+    py = y;
     x = pos.x;
     y = pos.y;
     angle = body.getAngle();

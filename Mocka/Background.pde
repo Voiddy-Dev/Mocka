@@ -11,6 +11,15 @@ void setupBackground() {
 void drawBackground() {
   backgroundGraphics.beginDraw();
 
+  backgroundGraphics.blendMode(LIGHTEST);
+  int fc = frameCount % 16;
+  backgroundGraphics.tint(255);
+  if (fc == 0)backgroundGraphics.image(backgroundGraphics, 0, 1);
+  if (fc == 4)backgroundGraphics.image(backgroundGraphics, 0, -1);
+  if (fc == 8)backgroundGraphics.image(backgroundGraphics, 1, 0);
+  if (fc == 12)backgroundGraphics.image(backgroundGraphics, -1, 0);
+  backgroundGraphics.blendMode(BLEND);
+
   float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   backgroundGraphics.pushMatrix();
   backgroundGraphics.translate(width/2, height/2);

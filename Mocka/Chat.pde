@@ -39,10 +39,11 @@ void addToChatHistory(String msg) {
 
 void keyTyped_CHAT() {
   //if (key == ESC || keyCode == 567890987) setScene(Scene.game);
-  //else 
+  char ckey = (""+key).toUpperCase().charAt(0);
+  //println("KtCHAT", key, keyCode, int(key));
   if (key == BACKSPACE || int(key) == 65535) {
     if (chat_txt_entry.length() > 0) chat_txt_entry = chat_txt_entry.substring(0, chat_txt_entry.length()-1);
-  } else if (key == ENTER || key == RETURN) {
+  } else if (key == ENTER || key == RETURN || ckey == 10) {
     NOTIFY_CHAT(chat_txt_entry);
     setScene(Scene.game);
   } else if (char_allowed(key)) {

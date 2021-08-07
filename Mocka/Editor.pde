@@ -1,6 +1,6 @@
 enum EditMode {
-  move, 
-    radius, 
+  move,
+    radius,
     rectLeft, rectRight, rectTop, rectBottom, rectRotate;
 }
 
@@ -15,7 +15,7 @@ class Editor implements Gamemode {
     return 6;
   }
 
-  boolean editing = true; 
+  boolean editing = true;
   void tab() {
     editing = !editing;
   }
@@ -91,7 +91,7 @@ class Editor implements Gamemode {
     case radius:
       noFill();
       stroke(255, 0, 0, 240);
-      line(c.lx, c.ly,  MOUSEX, MOUSEY);
+      line(c.lx, c.ly, MOUSEX, MOUSEY);
       ellipse(c.lx, c.ly, c.lr*2, c.lr*2);
       break;
     case rectRotate:

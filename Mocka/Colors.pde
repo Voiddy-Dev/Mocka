@@ -1,9 +1,9 @@
 color GAME_COLOR_; // Color, before a change is confirmed - used if change is not confirmed
 
 color[][] color_matrix = new color[][] {
-  new color[]{#F23F3C, #F5A250, #F6CD56}, 
-  new color[]{#6C081B, #B173D2, #FC28FC}, 
-  new color[]{#022246, #4290F4, #29E2E1}, 
+  new color[]{#F23F3C, #F5A250, #F6CD56},
+  new color[]{#6C081B, #B173D2, #FC28FC},
+  new color[]{#022246, #4290F4, #29E2E1},
   new color[]{#0D6C61, #56CE67, #21D626}
 };
 
@@ -25,7 +25,7 @@ void drawColors() {
   strokeWeight(3);
   stroke(0);
 
-  fill(128, 200); // I guess this color is fine? I don't see much wrong 
+  fill(128, 200); // I guess this color is fine? I don't see much wrong
   rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
   final float BOX_WIDTH = (WINDOW_WIDTH / w) * 1.0;

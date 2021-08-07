@@ -48,7 +48,7 @@ PShape createTargetShape() {
   lines.setStroke(0);
   lines.setStrokeWeight(40);
   float r1 = 250;
-  float r2 = 200; 
+  float r2 = 200;
   lines.beginShape(LINES);
   lines.vertex(0, r1);
   lines.vertex(0, r2);

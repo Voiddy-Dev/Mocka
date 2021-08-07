@@ -16,8 +16,10 @@ void setup() {
   //size(480, 320, FX2D);
   //size(960, 640, FX2D);
   //size(1200, 790, FX2D);
-  size(901, 593, FX2D);
+  //size(901, 593, P2D);
   //fullScreen(FX2D);
+  pixelDensity(1);
+  fullScreen(P2D);
 
   loadAssets();
   setGamemode(new Disconnected());
@@ -71,6 +73,7 @@ void drawGame() {
   informEnemies();
 
   drawBackground();
+  //background(0);
 
   float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   translate(width/2, height/2);

@@ -396,7 +396,7 @@ class CTF implements Gamemode {
       fill(100); // start game counter is gray
       String text;
       if (ready) text = ""+(1+(startgame_countdown/60));
-      else { 
+      else {
         text = "Place all bases to begin";
         textSize(30);
       }
@@ -506,13 +506,13 @@ class Leaderboard implements Gamemode {
     pushMatrix();
     translate(WIDTH/2, HEIGHT/2);
 
-    // outer box 
+    // outer box
     rectMode(CENTER);
     //color of background
     fill(0, 255, 0, 30);
     stroke(0); // surround it
     strokeWeight(2);
-    rect(0, 0, 400, 50 * earnings.length); 
+    rect(0, 0, 400, 50 * earnings.length);
 
     // boxes inside big box
     for (int i = 0; i < earnings.length; i++) {
@@ -564,7 +564,7 @@ class Leaderboard implements Gamemode {
 
       stroke(0);
 
-      // Adding Points and scores 
+      // Adding Points and scores
       fill(255);
       rect(155, 0, 75, 40, 40); // added rounded rectangle
       textSize(25);
@@ -574,7 +574,7 @@ class Leaderboard implements Gamemode {
       if (e.points_won > 0) text("+" + String.valueOf(e.points_won), 170, -3, 50, 40);
       else text(String.valueOf(e.points_won), 170, -3, 50, 40);
 
-      // Adding name 
+      // Adding name
       textSize(30);
       text(e.r.name, -10, -4, 100, 50);
 
@@ -627,6 +627,7 @@ class Freeplay implements Gamemode {
     fill(255); // White text on black background
     textAlign(LEFT, TOP);
     text("Freeplay", 0, 0);
+    text(round(frameRate), 0, 20);
   }
   void decoratePre(Rocket r) {
   }
@@ -701,9 +702,9 @@ class Crowning implements Gamemode {
 
 
 
-//  ______ _             _    _____                      
-// |  ____| |           | |  / ____|                     
-// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___ 
+//  ______ _             _    _____
+// |  ____| |           | |  / ____|
+// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___
 // |  __| | |/ _ \ / _` | __| | |_ |/ _` | '_ ` _ \ / _ \
 // | |    | | (_) | (_| | |_| |__| | (_| | | | | | |  __/
 // |_|    |_|\___/ \__,_|\__|\_____|\__,_|_| |_| |_|\___|
@@ -713,7 +714,7 @@ class FloatGame implements Gamemode {
   byte GAME_ID() {
     return 4;
   }
-  int life_goal; 
+  int life_goal;
   int startgame_countdown;
 
   HashMap<Integer, PlayerStatus> scores;
@@ -839,7 +840,7 @@ class FloatGame implements Gamemode {
         status.next = status_prev;
         if (status_prev_prev != null) status_prev_prev.next = status;
         // vertical pos
-        status.pos -= 1;  
+        status.pos -= 1;
         status_prev.pos += 1;
         // place
         status.place = status_prev.place;
@@ -867,7 +868,7 @@ class FloatGame implements Gamemode {
       translate(80, 0);
       noStroke();
       fill(r.col);
-      float w = map(status.life, 0, life_goal, 0, 100 - 2*gap); 
+      float w = map(status.life, 0, life_goal, 0, 100 - 2*gap);
       rect(gap, gap, w, 24 - 2*gap);
       fill(255); // Again white text I guess
       text(status.life/60, 6, textvertcenter);
@@ -878,14 +879,14 @@ class FloatGame implements Gamemode {
   }
 }
 
-// _______           _____                      
-//|__   __|         / ____|                     
-//   | | __ _  __ _| |  __  __ _ _ __ ___   ___ 
+// _______           _____
+//|__   __|         / ____|
+//   | | __ _  __ _| |  __  __ _ _ __ ___   ___
 //   | |/ _` |/ _` | | |_ |/ _` | '_ ` _ \ / _ \
 //   | | (_| | (_| | |__| | (_| | | | | | |  __/
 //   |_|\__,_|\__, |\_____|\__,_|_| |_| |_|\___|
-//             __/ |                            
-//            |___/                             
+//             __/ |
+//            |___/
 
 class TagGame implements Gamemode {
   byte GAME_ID() {
@@ -937,7 +938,7 @@ class TagGame implements Gamemode {
   void update() {
     if (startgame_countdown > 0) startgame_countdown--;
     else {
-      PlayerStatus status_it = scores.get(UUID_it); 
+      PlayerStatus status_it = scores.get(UUID_it);
       if (status_it != null && status_it.life > 0) status_it.life--;
       for (PlayerStatus status : scores.values()) {
         if (status.immune > 0) status.immune--;
@@ -962,7 +963,7 @@ class TagGame implements Gamemode {
     if (myStatus == null) return;
     PlayerStatus otherStatus = scores.get(enemy.UUID);
     if (otherStatus == null) return;
-    if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID); 
+    if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
     else if (enemy.UUID == UUID_it && otherStatus.inactive == 0 && myStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
   }
   void endContact(Contact cp) {
@@ -1061,7 +1062,7 @@ class TagGame implements Gamemode {
         status.next = status_prev;
         if (status_prev_prev != null) status_prev_prev.next = status;
         // vertical pos
-        status.pos -= 1;  
+        status.pos -= 1;
         status_prev.pos += 1;
         // place
         status.place = status_prev.place;
@@ -1089,7 +1090,7 @@ class TagGame implements Gamemode {
       translate(80, 0);
       noStroke();
       fill(r.col);
-      float w = map(status.life, 0, startLife, 0, 100 - 2*gap); 
+      float w = map(status.life, 0, startLife, 0, 100 - 2*gap);
       rect(gap, gap, w, 24 - 2*gap);
       fill(255); // White text
       text(status.life/60, 6, textvertcenter);

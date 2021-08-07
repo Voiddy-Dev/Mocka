@@ -24,7 +24,7 @@ void mouseDragged() {
 
 void keyPressed() {
   char ckey = (""+key).toUpperCase().charAt(0);
-  println("KyP", ckey, keyCode, key);
+  //println("KyP", ckey, keyCode, key);
   if (keyCode == UP || ckey == 'Z' || ckey == 'I') KEY_up = true;
   if (keyCode == LEFT || ckey == 'Q' || ckey == 'J') KEY_left = true;
   if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') KEY_right = true;
@@ -56,7 +56,7 @@ void updateUI() {
 
 void keyTyped() {
   char ckey = (""+key).toUpperCase().charAt(0);
-  println("KeyTyped", ckey, keyCode, key);
+  //println("KeyTyped", ckey, keyCode, key);
   if (current_scene == Scene.game) keyTyped_GAME();
   else if (current_scene == Scene.chat) keyTyped_CHAT();
 }

@@ -95,7 +95,7 @@ void drawGame() {
   showTerrain(); // terrain
 
   anaglyphShader.set("WindowSize", float(backgroundGraphics.width), float(backgroundGraphics.height));
-  //filter(anaglyphShader);
+  filter(anaglyphShader);
 
   gamemode.hud();
 }

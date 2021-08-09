@@ -13,10 +13,6 @@ uniform sampler2D texture;
 varying vec4 vertColor;
 varying vec4 vertTexCoord;
 
-// float rand(vec2 co){
-//   return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-// }
-
 void main() {
   vec2 off1 = vec2(1.0, 0) / WindowSize;
   vec2 off2 = vec2(0, 1.0) / WindowSize;
@@ -27,12 +23,12 @@ void main() {
   color += texture2D(texture, vertTexCoord.st + off2) * 0.0702702703;
   color += texture2D(texture, vertTexCoord.st - off2) * 0.0702702703;
   // color = texture2D(texture, vertTexCoord.st);
-  if (do1){ //rand(vertTexCoord.st + color.xy) > 0.4) {
+  if (do1){
     color = max(texture2D(texture, vertTexCoord.st + off1), color);
     color = max(texture2D(texture, vertTexCoord.st - off1), color);
     color = max(texture2D(texture, vertTexCoord.st + off2), color);
     color = max(texture2D(texture, vertTexCoord.st - off2), color);
-    if (do2){//rand(vertTexCoord.st + color.xy) > 0.4) {
+    if (do2){
       color = max(texture2D(texture, vertTexCoord.st + off1 + off2), color);
       color = max(texture2D(texture, vertTexCoord.st - off1 + off2), color);
       color = max(texture2D(texture, vertTexCoord.st + off1 - off2), color);

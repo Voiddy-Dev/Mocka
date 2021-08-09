@@ -112,9 +112,11 @@ void punch_hole() {
     println();
     println("SERVER: A private: "+A_PRIVATE_IPS_STRING+":"+A_PRIVATE_PORT);
     println("SERVER: A public:  "+A_PUBLIC_IP+":"+A_PUBLIC_PORT);
+    println("SERVER: A_IS_LOCAL: "+A_IS_LOCAL);
     println();
     println("SERVER: B private: "+B_PRIVATE_IPS_STRING+":"+B_PRIVATE_PORT);
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
+    println("SERVER: B_IS_LOCAL: "+B_IS_LOCAL);
     println();
 
     String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT_ADVERTISED + "-" + A_PRIVATE_IPS_STRING + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";

@@ -147,7 +147,7 @@ class Circle extends ConcretePlatorm {
     data.putFloat(lr);
   }
   void getChanges(ByteBuffer data) {
-    byte useless = data.get(); // big phat bodge // Why is this here again?
+    byte useless = data.get(); // big phat bodge // Why is this here again? // Oh because we're just restating the ID of the platform, which we already know
     this.x = data.getFloat();
     this.y = data.getFloat();
     this.r = data.getFloat();
@@ -351,7 +351,12 @@ class Polygon implements Platform {
   }
   void getChanges(ByteBuffer data) {
     // To Implement
-    println("BAD BAD BAD: getChanges not implemented");
+    vertexCount = (int) data.get();
+    vertices = new PVector[vertexCount];
+    lvertices = new PVector[vertexCount];
+    for (int i = 0; i < vertexCount; i++) vertices[i] = new PVector(data.getFloat(), data.getFloat());
+    killBody();
+    makeBody();
   }
   int size() {
     return 2 + 8 * vertexCount;
@@ -362,7 +367,8 @@ class Polygon implements Platform {
   }
   void show() {
     beginShape();
-    for (PVector v : vertices)vertex(v.x, v.y);
+    if (changes)for (PVector v : lvertices)vertex(v.x, v.y);
+    else for (PVector v : vertices)vertex(v.x, v.y);
     endShape();
   }
 

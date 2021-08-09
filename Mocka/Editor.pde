@@ -198,7 +198,7 @@ class Editor implements Gamemode {
       break;
     }
     if (plat_id == -1) return;
-    NOTIFY_MAP_CHANGE_REQUEST(plat_id);
+    //NOTIFY_MAP_CHANGE_REQUEST(plat_id);
   }
   void keyPressedDelete() {
     if (platform_selected == null) return;

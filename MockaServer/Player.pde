@@ -53,7 +53,7 @@ class Player {
   void interpretNetwork() {
     if (network_data.remaining()>0) {
       byte PACKET_ID = network_data.get();
-      println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
+      println("SERVER: Reading packet from player; UUID: "+UUID+" PACKET_ID: "+PACKET_ID);
       if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
       //else if (PACKET_ID == 1) randomizeTerrain();
       else if (PACKET_ID == 2) INTERPRET_GAMEMODE_UPDATE();

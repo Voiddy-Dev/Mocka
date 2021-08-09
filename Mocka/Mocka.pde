@@ -24,7 +24,7 @@ void setup() {
   //size(960, 640, P2D);
   //size(1200, 790, P2D);
   size(901, 593, P2D);
-  fullScreen(P2D);
+  //fullScreen(P2D);
   //pixelDensity(1);
 
   loadAssets();

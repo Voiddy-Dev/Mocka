@@ -19,7 +19,7 @@ void drawBackground() {
   backgroundGraphics.pushMatrix();
   backgroundGraphics.translate(width/2, height/2);
   backgroundGraphics.scale(computeScale());
-  backgroundGraphics.translate(-WIDTH/2, -HEIGHT/2);
+  backgroundGraphics.translate(-cam_x_pos_smooth, -cam_y_pos_smooth);
 
   backgroundGraphics.strokeWeight(10);
   Iterator<Rocket> rockets = allRockets();
@@ -30,6 +30,13 @@ void drawBackground() {
     backgroundGraphics.line(r.x, r.y, r.px, r.py);
   }
   backgroundGraphics.popMatrix();
+
+  backgroundGraphics.stroke(0);
+  backgroundGraphics.strokeWeight(1);
+  backgroundGraphics.line(0, 0, backgroundGraphics.width, 0);
+  backgroundGraphics.line(backgroundGraphics.width, 0, backgroundGraphics.width, backgroundGraphics.height);
+  backgroundGraphics.line(backgroundGraphics.width, backgroundGraphics.height, 0, backgroundGraphics.height);
+  backgroundGraphics.line(0, backgroundGraphics.height, 0, 0);
 
   neonShader.set("WindowSize", float(backgroundGraphics.width), float(backgroundGraphics.height));
   neonShader.set("do1", frameCount % 8 == 0);

@@ -64,6 +64,13 @@ void NOTIFY_MAP_DELETE_REQUEST(int plat_id) {
   client.write(data.array());
 }
 
+void NOTIFY_POS() {
+  ByteBuffer data = ByteBuffer.allocate(9);
+  data.put((byte)8);
+  data.putFloat(myRocket.x);
+  data.putFloat(myRocket.y);
+  client.write(data.array());
+}
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -88,6 +95,7 @@ void interpretNetwork() {
     if (PACKET_ID == 9) INTERPRET_RESPAWN();
     if (PACKET_ID == 10) INTERPRET_MAP_UPDATE();
     if (PACKET_ID == 11) INTERPRET_MAP_DELETE();
+    if (PACKET_ID == 12) INTERPRET_CAM_POS();
   }
 }
 
@@ -166,6 +174,11 @@ void INTERPRET_MAP_DELETE() {
   platforms.remove(plat_id);
   myRocket.body.applyTorque(0); // wake
   if (gamemode instanceof Editor) ((Editor)gamemode).NOTIFY_platform_deleted(p);
+}
+
+void INTERPRET_CAM_POS() {
+  cam_x_pos = network_data.getFloat();
+  cam_y_pos = network_data.getFloat();
 }
 
 int SERVER_UDP_PORT;

@@ -9,6 +9,9 @@ class Player {
   int points, points_;
   int place, place_;
 
+  float x_pos;
+  float y_pos;
+
   Player(Client client_, int UUID_) {
     name = randomName();
     col = color(random(0, 255), random(0, 255), random(0, 255));
@@ -62,6 +65,7 @@ class Player {
       else if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
       else if (PACKET_ID == 6) INTERPRET_MAP_CHANGE_REQUEST(network_data);
       else if (PACKET_ID == 7) INTERPRET_MAP_DELETE_REQUEST(network_data);
+      else if (PACKET_ID == 8) INTERPRET_INFORM_POS(network_data);
     }
   }
 
@@ -132,6 +136,11 @@ class Player {
     int plat_id = data.getInt();
     platforms.remove(plat_id);
     TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_DELETE(plat_id));
+  }
+
+  void INTERPRET_INFORM_POS(ByteBuffer data) {
+    this.x_pos = data.getFloat();
+    this.y_pos = data.getFloat();
   }
 
   void setName(String name) {

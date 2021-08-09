@@ -54,6 +54,7 @@ void draw() {
     stop();
   }
   gamemode.update();
+  updateCamPos();
   removeInactivePlayers();
   updatePlayers();
   updateHoles();
@@ -77,4 +78,10 @@ InetAddress InetAddressByName(String ip) {
   catch(Exception e) {
     return null;
   }
+}
+
+void updateCamPos() {
+  cam_x_pos++;
+  if (cam_x_pos>WIDTH*3.0/4)cam_x_pos = WIDTH/4.0;
+  if (frameCount%5==0)TCP_SEND_ALL_CLIENTS(NOTIFY_CAM_POS());
 }

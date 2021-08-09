@@ -82,15 +82,17 @@ void drawGame() {
   myRocket.interactions();
   updateEnemies();
   box2d.step();
+  if (frameCount % 10 == 0)NOTIFY_POS();
   gamemode.update();
   informEnemies();
 
   if (SETTING_DO_NEON_BACKGROUND) drawBackground();
   else background(0);
 
+  updateCameraPos();
   translate(width/2, height/2);
   scale(computeScale());
-  translate(-WIDTH/2, -HEIGHT/2);
+  translate(-cam_x_pos_smooth, -cam_y_pos_smooth);
   MOUSEX = (mouseX - width/2) / computeScale() + WIDTH/2;
   MOUSEY = (mouseY - height/2) / computeScale() + HEIGHT/2;
   box2d.setScaleFactor(10);
@@ -106,4 +108,9 @@ void drawGame() {
   if (SETTING_DO_ANAGLYPH_FILTER) filter(anaglyphShader);
 
   gamemode.hud();
+}
+
+void updateCameraPos() {
+  cam_x_pos_smooth += (cam_x_pos - cam_x_pos_smooth) * 0.1;
+  cam_y_pos_smooth += (cam_y_pos - cam_y_pos_smooth) * 0.1;
 }

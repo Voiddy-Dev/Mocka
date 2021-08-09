@@ -1,5 +1,10 @@
 HashMap<Integer, Platform> platforms;
 
+float cam_x_pos = WIDTH/2;
+float cam_y_pos = HEIGHT/2;
+float cam_x_pos_smooth = cam_x_pos;
+float cam_y_pos_smooth = cam_y_pos;
+
 void killTerrain() {
   for (Platform p : platforms.values()) p.killBody();
   platforms = new HashMap<Integer, Platform>(0);

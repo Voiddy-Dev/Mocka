@@ -1,5 +1,8 @@
 HashMap<Integer, Platform> platforms;
 
+float cam_x_pos = WIDTH/2;
+float cam_y_pos = HEIGHT/2;
+
 void randomizeTerrain(int num_platforms) {
   platforms = randomTerrain(num_platforms);
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));

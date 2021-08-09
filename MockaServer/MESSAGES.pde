@@ -107,6 +107,14 @@ ByteBuffer NOTIFY_MAP_DELETE(int plat_id) {
   return data;
 }
 
+ByteBuffer NOTIFY_CAM_POS() {
+  ByteBuffer data = ByteBuffer.allocate(9);
+  data.put((byte)12);
+  data.putFloat(cam_x_pos);
+  data.putFloat(cam_y_pos);
+  return data;
+}
+
 void putString(ByteBuffer data, String str) {
   data.putInt(str.length());
   for (int i = 0; i < str.length(); i++) data.putChar(str.charAt(i));

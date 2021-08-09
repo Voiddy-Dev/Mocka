@@ -70,6 +70,8 @@ Platform getPlatform(ByteBuffer data) {
   byte id = data.get();
   if (id == (byte) 0) return new Rectangle(data);
   if (id == (byte) 1) return new Circle(data);
+  if (id == (byte) 2) return new Polygon(data);
+  println("SERVER: YIKES: failed to interpret Platform from client");
   return null;
 }
 

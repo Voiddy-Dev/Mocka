@@ -302,13 +302,17 @@ class Polygon implements Platform {
     vertexCount = (int) data.get();
     vertices = new PVector[vertexCount];
     lvertices = new PVector[vertexCount];
-    for (int i = 0; i < vertexCount; i++) vertices[i] = new PVector(data.getFloat(), data.getFloat());
+    for (int i = 0; i < vertexCount; i++) {
+      vertices[i] = new PVector(data.getFloat(), data.getFloat());
+      lvertices[i] = vertices[i].copy();
+    }
     makeBody();
   }
   Polygon(int vertexCount, PVector[] vertices) {
     this.vertexCount = vertexCount;
     this.vertices = vertices;
-    this.lvertices = vertices = new PVector[vertexCount];
+    this.lvertices = new PVector[vertexCount];
+    for (int i = 0; i < vertexCount; i++) lvertices[i] = vertices[i].copy();
     makeBody();
   }
   void makeBody() {
@@ -350,10 +354,10 @@ class Polygon implements Platform {
     }
   }
   void getChanges(ByteBuffer data) {
-    // To Implement
+    byte useless = data.get(); // this again came to bite me
     vertexCount = (int) data.get();
     vertices = new PVector[vertexCount];
-    lvertices = new PVector[vertexCount];
+    //lvertices = new PVector[vertexCount]; // hum... I guess we should keep our own changes right // Yep, for sure. Testing confirms. Otherwise leads to drifting over time
     for (int i = 0; i < vertexCount; i++) vertices[i] = new PVector(data.getFloat(), data.getFloat());
     killBody();
     makeBody();
@@ -391,7 +395,7 @@ class Polygon implements Platform {
 
   boolean changes = false;
   void noteChanges() {
-    changes = true;
+    //changes = true; // Or not? seems to make this crash...
   }
   void noteUnchanges() {
     changes = false;

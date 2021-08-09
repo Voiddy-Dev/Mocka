@@ -297,6 +297,7 @@ class Polygon implements Platform {
   int vertexCount; // Sent as a byte
   PVector[] vertices;
   PVector[] lvertices;
+  Body body;
 
   Polygon(ByteBuffer data) {
     vertexCount = (int) data.get();
@@ -319,23 +320,21 @@ class Polygon implements Platform {
     // Define the polygon
     PolygonShape sd = new PolygonShape();
     // Figure out the box2d coordinates
-    //float box2dW = box2d.scalarPixelsToWorld(w/2);
-    //float box2dH = box2d.scalarPixelsToWorld(h/2);
-    // We're just a box
-    sd.setAsBox(0, 0);
-    //sd.
 
+    Vec2[] vecs = new Vec2[vertexCount];
+    for (int i = 0; i < vertexCount; i++) vecs[i] = box2d.coordPixelsToWorld(vertices[i]);
+    sd.set(vecs, vertexCount);
 
-    //    // Create the body
-    //    BodyDef bd = new BodyDef();
-    //    bd.type = BodyType.STATIC;
+    // Create the body
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.STATIC;
     //    bd.angle = -angle;
-    //    bd.position.set(box2d.coordPixelsToWorld(x, y));
-    //    body = box2d.createBody(bd);
+    //bd.position.set(box2d.coordPixelsToWorld(x, y));
+    body = box2d.createBody(bd);
 
-    //    // Attached the shape to the body using a Fixture
-    //    body.createFixture(sd, 1);
-    //    body.setUserData(this);
+    // Attached the shape to the body using a Fixture
+    body.createFixture(sd, 1);
+    body.setUserData(this);
   }
   void putData(ByteBuffer data) {
     data.put((byte)2);
@@ -367,7 +366,7 @@ class Polygon implements Platform {
   }
 
   void killBody() {
-    // To Implement
+    box2d.destroyBody(body);
   }
   void show() {
     beginShape();

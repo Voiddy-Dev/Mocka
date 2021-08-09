@@ -4,14 +4,14 @@ import java.util.Map;
 
 MyRocket myRocket;
 
-boolean SETTING_DO_ANAGLYPH_FILTER = false;
-boolean SETTING_DO_NEON_BACKGROUND = false;
+boolean SETTING_DO_ANAGLYPH_FILTER = true;
+boolean SETTING_DO_NEON_BACKGROUND = true;
 boolean SETTING_DEFAULT_AP_STATE = false;
 
 final boolean DEBUG_PUNCHING = false;
 final boolean DEBUG_PACKETS  = false;
 final boolean DEBUG_GAMEMODE = false;
-final boolean DEBUG_ZOOMOUT = true;
+final boolean DEBUG_ZOOMOUT = false;
 
 final int WIDTH = 1200;
 final int HEIGHT = 790;
@@ -23,8 +23,8 @@ void setup() {
   //size(480, 320, P2D);
   //size(960, 640, P2D);
   //size(1200, 790, P2D);
-  size(901, 593, P2D);
-  //fullScreen(P2D);
+  //size(901, 593, P2D);
+  fullScreen(P2D);
   //pixelDensity(1);
 
   loadAssets();

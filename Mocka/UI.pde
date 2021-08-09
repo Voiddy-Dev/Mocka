@@ -24,17 +24,21 @@ void mouseDragged() {
 
 void keyPressed() {
   char ckey = (""+key).toUpperCase().charAt(0);
-  //println(ckey, keyCode);
+  //println("KyP", ckey, keyCode, key);
   if (keyCode == UP || ckey == 'Z' || ckey == 'I') KEY_up = true;
   if (keyCode == LEFT || ckey == 'Q' || ckey == 'J') KEY_left = true;
   if (keyCode == RIGHT || ckey == 'D' || ckey == 'L') KEY_right = true;
-  if (keyCode == DELETE || keyCode == 8) if (gamemode instanceof Editor) ((Editor)gamemode).keyPressedDelete();
-  if (keyCode == 27 || key == ESC) { 
+  if (keyCode == DELETE || keyCode == 8) {
+    keyTyped();
+    if (gamemode instanceof Editor) ((Editor)gamemode).keyPressedDelete();
+  }
+  if (keyCode == 27 || key == ESC) {
     if (current_scene != Scene.game) {
       setScene(Scene.game);
       key = 0; // prevent esc to close
     } else exit();
   }
+  if (ckey == 10)keyTyped();
 }
 
 void keyReleased() {
@@ -51,6 +55,8 @@ void updateUI() {
 }
 
 void keyTyped() {
+  char ckey = (""+key).toUpperCase().charAt(0);
+  //println("KeyTyped", ckey, keyCode, key);
   if (current_scene == Scene.game) keyTyped_GAME();
   else if (current_scene == Scene.chat) keyTyped_CHAT();
 }

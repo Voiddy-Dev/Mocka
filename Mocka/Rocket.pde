@@ -8,7 +8,7 @@ public class Rocket {
   boolean INPUT_up, INPUT_right, INPUT_left;
   color col;
   int UUID = -1;
-  float x, y, angle;
+  float x = 0, y = 0, angle, px = 0, py = 0;
 
   String name = "";
 
@@ -51,9 +51,11 @@ public class Rocket {
     box2d.destroyBody(body);
   }
 
-  // method to display the rocket 
+  // method to display the rocket
   public void show() {
     Vec2 pos = box2d.getBodyPixelCoord(body);
+    px = x;
+    py = y;
     x = pos.x;
     y = pos.y;
     angle = body.getAngle();
@@ -66,7 +68,7 @@ public class Rocket {
     translate(pos.x, pos.y);
 
     if (this.name != null) {
-      fill(0);
+      fill(255); // White text on black background
       textSize(18);
       textAlign(CENTER, CENTER);
       rectMode(CENTER);
@@ -111,7 +113,7 @@ public class Rocket {
 
     // createExhaust
     float DIST_FROM_CENTER = 17;
-    PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle), 
+    PVector part_Pos = new PVector(pos.x + DIST_FROM_CENTER * sin(angle),
       pos.y + DIST_FROM_CENTER * cos(angle));
     Vec2 bodyvel = body.getLinearVelocity();
     PVector acc = new PVector(0, 0.1).rotate(-angle);
@@ -124,10 +126,10 @@ public class Rocket {
       body.applyForceToCenter(force);
 
       exhaust.turnOn(part_Pos, acc, vel);
-    } 
+    }
     if (INPUT_left) {
       body.applyTorque(35);
-    } 
+    }
     if (INPUT_right) {
       body.applyTorque(-35);
     }

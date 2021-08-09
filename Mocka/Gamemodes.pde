@@ -393,10 +393,10 @@ class CTF implements Gamemode {
     if (startgame_countdown > 0) {
       textAlign(CENTER, CENTER);
       textSize(100);
-      fill(100);
+      fill(100); // start game counter is gray
       String text;
       if (ready) text = ""+(1+(startgame_countdown/60));
-      else { 
+      else {
         text = "Place all bases to begin";
         textSize(30);
       }
@@ -461,7 +461,7 @@ class Disconnected implements Gamemode {
   }
   void hud() {
     pushMatrix();
-    fill(255, 0, 0);
+    fill(255, 0, 0); // Red error text
     textAlign(CENTER);
     translate(WIDTH/2, HEIGHT/2);
     text("Disconnected...\nServer is probably offline!", 0, 0);
@@ -506,13 +506,13 @@ class Leaderboard implements Gamemode {
     pushMatrix();
     translate(WIDTH/2, HEIGHT/2);
 
-    // outer box 
+    // outer box
     rectMode(CENTER);
     //color of background
     fill(0, 255, 0, 30);
     stroke(0); // surround it
     strokeWeight(2);
-    rect(0, 0, 400, 50 * earnings.length); 
+    rect(0, 0, 400, 50 * earnings.length);
 
     // boxes inside big box
     for (int i = 0; i < earnings.length; i++) {
@@ -564,7 +564,7 @@ class Leaderboard implements Gamemode {
 
       stroke(0);
 
-      // Adding Points and scores 
+      // Adding Points and scores
       fill(255);
       rect(155, 0, 75, 40, 40); // added rounded rectangle
       textSize(25);
@@ -574,7 +574,7 @@ class Leaderboard implements Gamemode {
       if (e.points_won > 0) text("+" + String.valueOf(e.points_won), 170, -3, 50, 40);
       else text(String.valueOf(e.points_won), 170, -3, 50, 40);
 
-      // Adding name 
+      // Adding name
       textSize(30);
       text(e.r.name, -10, -4, 100, 50);
 
@@ -624,9 +624,10 @@ class Freeplay implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
-    fill(0);
+    fill(255); // White text on black background
     textAlign(LEFT, TOP);
     text("Freeplay", 0, 0);
+    text(round(frameRate), 0, 20);
   }
   void decoratePre(Rocket r) {
   }
@@ -657,9 +658,6 @@ class Crowning implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
-    fill(0);
-    textAlign(LEFT, TOP);
-    //text("Winnnnnn", 0, 0);
   }
   int FRAMES = 0;
   void decoratePre(Rocket r) {
@@ -704,9 +702,9 @@ class Crowning implements Gamemode {
 
 
 
-//  ______ _             _    _____                      
-// |  ____| |           | |  / ____|                     
-// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___ 
+//  ______ _             _    _____
+// |  ____| |           | |  / ____|
+// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___
 // |  __| | |/ _ \ / _` | __| | |_ |/ _` | '_ ` _ \ / _ \
 // | |    | | (_) | (_| | |_| |__| | (_| | | | | | |  __/
 // |_|    |_|\___/ \__,_|\__|\_____|\__,_|_| |_| |_|\___|
@@ -716,7 +714,7 @@ class FloatGame implements Gamemode {
   byte GAME_ID() {
     return 4;
   }
-  int life_goal; 
+  int life_goal;
   int startgame_countdown;
 
   HashMap<Integer, PlayerStatus> scores;
@@ -809,7 +807,7 @@ class FloatGame implements Gamemode {
     if (startgame_countdown > 0) {
       textAlign(CENTER, CENTER);
       textSize(100);
-      fill(100);
+      fill(100); // Start game counter is gray
       text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
     }
 
@@ -817,7 +815,7 @@ class FloatGame implements Gamemode {
     textAlign(LEFT, CENTER);
     textSize(18);
 
-    fill(255, 64);
+    fill(255, 64); // I guess a transparent white background box is fine
     noStroke();
     rect(0, 0, 180, 24 * scores.size());
 
@@ -842,7 +840,7 @@ class FloatGame implements Gamemode {
         status.next = status_prev;
         if (status_prev_prev != null) status_prev_prev.next = status;
         // vertical pos
-        status.pos -= 1;  
+        status.pos -= 1;
         status_prev.pos += 1;
         // place
         status.place = status_prev.place;
@@ -861,7 +859,7 @@ class FloatGame implements Gamemode {
        fill(255, 0, 0, 32);
        rect(0, 0, 80 + 100, 24);
        }*/
-      fill(0);
+      fill(255); // White text I guess
       text(status.place, 3, textvertcenter);
       text(r.name, 20, textvertcenter);
       //if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
@@ -870,9 +868,9 @@ class FloatGame implements Gamemode {
       translate(80, 0);
       noStroke();
       fill(r.col);
-      float w = map(status.life, 0, life_goal, 0, 100 - 2*gap); 
+      float w = map(status.life, 0, life_goal, 0, 100 - 2*gap);
       rect(gap, gap, w, 24 - 2*gap);
-      fill(0);
+      fill(255); // Again white text I guess
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }
@@ -881,14 +879,14 @@ class FloatGame implements Gamemode {
   }
 }
 
-// _______           _____                      
-//|__   __|         / ____|                     
-//   | | __ _  __ _| |  __  __ _ _ __ ___   ___ 
+// _______           _____
+//|__   __|         / ____|
+//   | | __ _  __ _| |  __  __ _ _ __ ___   ___
 //   | |/ _` |/ _` | | |_ |/ _` | '_ ` _ \ / _ \
 //   | | (_| | (_| | |__| | (_| | | | | | |  __/
 //   |_|\__,_|\__, |\_____|\__,_|_| |_| |_|\___|
-//             __/ |                            
-//            |___/                             
+//             __/ |
+//            |___/
 
 class TagGame implements Gamemode {
   byte GAME_ID() {
@@ -940,7 +938,7 @@ class TagGame implements Gamemode {
   void update() {
     if (startgame_countdown > 0) startgame_countdown--;
     else {
-      PlayerStatus status_it = scores.get(UUID_it); 
+      PlayerStatus status_it = scores.get(UUID_it);
       if (status_it != null && status_it.life > 0) status_it.life--;
       for (PlayerStatus status : scores.values()) {
         if (status.immune > 0) status.immune--;
@@ -965,7 +963,7 @@ class TagGame implements Gamemode {
     if (myStatus == null) return;
     PlayerStatus otherStatus = scores.get(enemy.UUID);
     if (otherStatus == null) return;
-    if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID); 
+    if (myRocket.UUID == UUID_it && myStatus.inactive == 0 && otherStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
     else if (enemy.UUID == UUID_it && otherStatus.inactive == 0 && myStatus.immune == 0) NOTIFY_TAGGED_OTHER(enemy.UUID);
   }
   void endContact(Contact cp) {
@@ -1005,23 +1003,23 @@ class TagGame implements Gamemode {
     if (status == null) return;
     if (r.UUID == UUID_it) {
       strokeWeight(15);
-      stroke(255, 0, 0);
-      fill(255, 0, 0, 50);
+      stroke(255, 0, 0); // Red outline
+      fill(255, 0, 0, 50); // Red transparent fill - because this player is IT so show it with a menacing red color
       ellipse(0, 0, 320, 320);
       noStroke();
-      fill(255, 0, 0, 20);
+      fill(255, 0, 0, 20); // Again yet more red
       ellipse(0, 0, 520, 520);
       if (status.inactive > 0) {
         float angle = map(status.inactive, 0, inactiveTime, 0, PI);
         noFill();
-        stroke(0);
+        stroke(0); // Yeah I think this is good enough for now
         strokeWeight(3*10);
         arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
       }
     } else if (status.immune > 0) {
       float angle = map(status.immune, 0, immuneTime, 0, PI);
       noFill();
-      stroke(#66D62B);
+      stroke(#66D62B); // You're immune so you're green
       strokeWeight(3*10);
       arc(0, 0, 320, 320, -HALF_PI-angle, -HALF_PI+angle);
     }
@@ -1031,7 +1029,7 @@ class TagGame implements Gamemode {
     if (startgame_countdown > 0) {
       textAlign(CENTER, CENTER);
       textSize(100);
-      fill(100);
+      fill(100); // Again gray countdown
       text(1+(startgame_countdown/60), WIDTH/2, HEIGHT/2);
     }
 
@@ -1039,7 +1037,7 @@ class TagGame implements Gamemode {
     textAlign(LEFT, CENTER);
     textSize(18);
 
-    fill(255, 64);
+    fill(255, 64); // Fine I guess
     noStroke();
     rect(0, 0, 180, 24 * scores.size());
 
@@ -1064,7 +1062,7 @@ class TagGame implements Gamemode {
         status.next = status_prev;
         if (status_prev_prev != null) status_prev_prev.next = status;
         // vertical pos
-        status.pos -= 1;  
+        status.pos -= 1;
         status_prev.pos += 1;
         // place
         status.place = status_prev.place;
@@ -1083,7 +1081,7 @@ class TagGame implements Gamemode {
         fill(255, 0, 0, 32);
         rect(0, 0, 80 + 100, 24);
       }
-      fill(0);
+      fill(255); // White text on black background
       text(status.place, 3, textvertcenter);
       text(r.name, 20, textvertcenter);
       //if (status.prev != null) text(status.prev.pos, 220, textvertcenter);
@@ -1092,9 +1090,9 @@ class TagGame implements Gamemode {
       translate(80, 0);
       noStroke();
       fill(r.col);
-      float w = map(status.life, 0, startLife, 0, 100 - 2*gap); 
+      float w = map(status.life, 0, startLife, 0, 100 - 2*gap);
       rect(gap, gap, w, 24 - 2*gap);
-      fill(0);
+      fill(255); // White text
       text(status.life/60, 6, textvertcenter);
       popMatrix();
     }

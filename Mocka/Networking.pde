@@ -219,7 +219,7 @@ void punch_hole() {
     EnemyRocket enemy = enemies.get(INCOMING_ENEMY_UUID);
     DatagramSocket socket;
 
-    if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {   
+    if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {
       socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IPS_STRING, ENEMY_PRIVATE_IPS, ENEMY_PRIVATE_PORT, 30, 100);
       if (socket != null) {
         enemy.setSocket(socket);
@@ -240,16 +240,16 @@ void punch_hole() {
 
     //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
     //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
-  } 
+  }
   catch(Exception e) {
     println("client: failed to punch hole! (yikes) Notifying server...");
     println(e);
     NOTIFY_PUNCHING_FAILED(INCOMING_ENEMY_UUID);
-  } 
+  }
   finally {
     try {
       CLIENT_UDP_PRIVATE_SOCKET.close();
-    } 
+    }
     catch(Exception e) {
     }
   }
@@ -265,7 +265,7 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
       socket = new DatagramSocket(LOCAL_PORT);
       socket.setSoTimeout(TIMEOUT); // What is an acceptable ping on LAN? (Wifi?)
       //CLIENT_UDP_PRIVATE_SOCKET.connect(REMOTE_IP, REMOTE_PORT);
-    } 
+    }
     catch(Exception e) {
       println("client: failed to open local port "+LOCAL_PORT);
       throw new Exception();
@@ -315,7 +315,7 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
           }
           received = true;
           break;
-        } 
+        }
         catch(Exception e) {
           if (DEBUG_PUNCHING) print("-");
         }
@@ -331,7 +331,7 @@ DatagramSocket attempUDPconnection(String CONNECTION_NAME, int LOCAL_PORT, Strin
 
     if (DEBUG_PUNCHING) println("client: "+CONNECTION_NAME+" Hole successfully punched!");
     return socket;
-  } 
+  }
   catch(Exception e) {
     println("client: Failed to connect over "+CONNECTION_NAME);
     socket.close();
@@ -362,7 +362,7 @@ void readNetwork() {
 int getExternalPort(DatagramSocket socket) throws Exception {
   // Use a well know STUN server to discover what the external port of 'socket' is
   byte[] data = new byte[20];
-  data[0] = (byte) 0; // STUN Message Type 
+  data[0] = (byte) 0; // STUN Message Type
   data[1] = (byte) 1;
   data[2] = (byte) 0; // Message Length
   data[3] = (byte) 0;
@@ -370,7 +370,7 @@ int getExternalPort(DatagramSocket socket) throws Exception {
   try {
     STUNserver = InetAddress.getByName("stun.l.google.com");
     socket.setSoTimeout(1000);
-  } 
+  }
   catch (Exception e) {
     println("client: Could not resolve the address of stun.l.google.com!");
     println(e);
@@ -386,7 +386,7 @@ int getExternalPort(DatagramSocket socket) throws Exception {
       socket.receive(receive);
       int external_port = (receive.getData()[26] & 0xff) << 8 | (receive.getData()[27] & 0xff);
       return external_port;
-    } 
+    }
     catch(Exception e) { // retry
     }
   }
@@ -436,7 +436,7 @@ Object[] GET_PRIVATE_IP() {
       throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
     }
     return new InetAddress[]{jdkSuppliedAddress};
-  } 
+  }
   catch(Exception e) {
     return null;
   }

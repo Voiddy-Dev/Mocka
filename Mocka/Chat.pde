@@ -22,9 +22,9 @@ void drawChat() {
 
   float w = max(100, textWidth(chat_txt_entry));
   noStroke();
-  fill(128, 130);
+  fill(128, 130); // Gray chat box
   rect(X_CHAT_OFFSET, -Y_CHAT_OFFSET-LINE_HEIGHT, w+6, LINE_HEIGHT);
-  fill(0);
+  fill(255); // White chat text
   text(chat_txt_entry, X_CHAT_OFFSET+3, -Y_CHAT_OFFSET-3);
 
   popStyle();
@@ -39,10 +39,11 @@ void addToChatHistory(String msg) {
 
 void keyTyped_CHAT() {
   //if (key == ESC || keyCode == 567890987) setScene(Scene.game);
-  //else 
+  char ckey = (""+key).toUpperCase().charAt(0);
+  //println("KtCHAT", key, keyCode, int(key));
   if (key == BACKSPACE || int(key) == 65535) {
     if (chat_txt_entry.length() > 0) chat_txt_entry = chat_txt_entry.substring(0, chat_txt_entry.length()-1);
-  } else if (key == ENTER || key == RETURN) {
+  } else if (key == ENTER || key == RETURN || ckey == 10) {
     NOTIFY_CHAT(chat_txt_entry);
     setScene(Scene.game);
   } else if (char_allowed(key)) {

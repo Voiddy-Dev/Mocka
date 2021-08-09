@@ -62,8 +62,8 @@ public class Particle {
     this.vel = velocity.copy();
 
     //randomness spread
-    PVector random_downwards = new PVector(random(this.acc.x - around_value, this.acc.x + around_value), 
-      random(this.acc.y - around_value, this.acc.y + around_value));  
+    PVector random_downwards = new PVector(random(this.acc.x - around_value, this.acc.x + around_value),
+      random(this.acc.y - around_value, this.acc.y + around_value));
     this.acc.add(random_downwards.mult(0.05));
   }
 
@@ -77,11 +77,11 @@ public class Particle {
 
   //checking if particle system is out of bounds or not
   public boolean outOfBounds() {
-    return false; 
+    return false;
     //(pos.x > terrain_values[2]) || (pos.x < terrain_values[0]) || (pos.y > terrain_values[1]) || (pos.y < 0);
   }
 
-  // method to update the particle 
+  // method to update the particle
   // will change the size
   public void show(color c) {
     // physics stuff

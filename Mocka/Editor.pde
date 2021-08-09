@@ -1,6 +1,6 @@
 enum EditMode {
-  move, 
-    radius, 
+  move,
+    radius,
     rectLeft, rectRight, rectTop, rectBottom, rectRotate;
 }
 
@@ -15,7 +15,7 @@ class Editor implements Gamemode {
     return 6;
   }
 
-  boolean editing = true; 
+  boolean editing = true;
   void tab() {
     editing = !editing;
   }
@@ -30,7 +30,7 @@ class Editor implements Gamemode {
   void INTERPRET(ByteBuffer data) {
   }
   void hud() {
-    fill(0);
+    fill(255); // White text on black background
     textSize(50);
     textAlign(LEFT, TOP);
     text("Editor", 0, 0);

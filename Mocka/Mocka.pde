@@ -1,4 +1,4 @@
-import processing.javafx.*;
+//import processing.javafx.*;
 
 import java.util.Map;
 
@@ -10,6 +10,8 @@ final boolean DEBUG_GAMEMODE = false;
 
 final int WIDTH = 1200;
 final int HEIGHT = 790;
+
+PShader anaglyphShader;
 
 void setup() {
   //size(1200, 800, FX2D);
@@ -28,11 +30,13 @@ void setup() {
   platforms = randomTerrain(10);
   myRocket = new MyRocket(1, -2);
   setupBackground();
+
+  anaglyphShader = loadShader("anaglyph.glsl");
 }
 
 void draw() {
   updateUI();
-  if (current_scene == Scene.game) drawGame();
+  if (current_scene == Scene.game || current_scene == Scene.color_palette) drawGame();
   if (current_scene == Scene.color_palette) drawColors();
   if (current_scene == Scene.chat) drawChat();
 }
@@ -89,5 +93,9 @@ void drawGame() {
   showEnemies();
 
   showTerrain(); // terrain
+
+  anaglyphShader.set("WindowSize", float(backgroundGraphics.width), float(backgroundGraphics.height));
+  //filter(anaglyphShader);
+
   gamemode.hud();
 }

@@ -8,8 +8,6 @@ color[][] color_matrix = new color[][] {
 };
 
 void drawColors() {
-  drawGame();
-
   pushStyle();
   pushMatrix();
   translate(WIDTH/2, HEIGHT/2);

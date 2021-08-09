@@ -34,7 +34,7 @@ class Player {
       Player p = (Player)entry.getValue();
       if (p == this) continue;
       TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
-      TCP_SEND(NOTIFY_PLAYER_INFO(p)); 
+      TCP_SEND(NOTIFY_PLAYER_INFO(p));
       note_missing_hole(UUID, p.UUID);
     }
   }
@@ -65,11 +65,11 @@ class Player {
     }
   }
 
-  void INTERPRET_SET_COLOR(color col) { // 
+  void INTERPRET_SET_COLOR(color col) { //
     this.col = col;
     TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
   }
-  void INTERPRET_SET_COLOR_ALL(color col) { // 
+  void INTERPRET_SET_COLOR_ALL(color col) { //
     this.col = col;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
   }
@@ -90,7 +90,7 @@ class Player {
       String msg = getString(network_data);
       println("SERVER: CHAT "+msg);
       INTERPRET_msg(msg);
-    } 
+    }
     catch(Exception e) {
       println("Error while parsing input from chat (danger danger danger)");
       println(e);
@@ -114,7 +114,7 @@ class Player {
         if (split[0].equals("/color")) INTERPRET_SET_COLOR_ALL(COLORIFY(split[1]));
         if (split[0].equals("/ctf")) setGamemode(startCTF(args));
         if (split[0].equals("/editor")) setGamemode(new Editor());
-      } 
+      }
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");
       }

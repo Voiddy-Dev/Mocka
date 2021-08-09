@@ -490,9 +490,9 @@ class Crowning implements Gamemode {
 }
 
 
-//  ______ _             _    _____                      
-// |  ____| |           | |  / ____|                     
-// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___ 
+//  ______ _             _    _____
+// |  ____| |           | |  / ____|
+// | |__  | | ___   __ _| |_| |  __  __ _ _ __ ___   ___
 // |  __| | |/ _ \ / _` | __| | |_ |/ _` | '_ ` _ \ / _ \
 // | |    | | (_) | (_| | |_| |__| | (_| | | | | | |  __/
 // |_|    |_|\___/ \__,_|\__|\_____|\__,_|_| |_| |_|\___|
@@ -572,7 +572,7 @@ class FloatGame implements Gamemode {
 
     sortPlayers();
     Leaderboard leaderboard = new Leaderboard();
-    setGamemode(new Crowning(winner, leaderboard)); 
+    setGamemode(new Crowning(winner, leaderboard));
     println("SERVER: winner: "+winner.UUID+" "+winner);
   }
 
@@ -640,14 +640,14 @@ class FloatGame implements Gamemode {
 
 
 
-// _______           _____                      
-//|__   __|         / ____|                     
-//   | | __ _  __ _| |  __  __ _ _ __ ___   ___ 
+// _______           _____
+//|__   __|         / ____|
+//   | | __ _  __ _| |  __  __ _ _ __ ___   ___
 //   | |/ _` |/ _` | | |_ |/ _` | '_ ` _ \ / _ \
 //   | | (_| | (_| | |__| | (_| | | | | | |  __/
 //   |_|\__,_|\__, |\_____|\__,_|_| |_| |_|\___|
-//             __/ |                            
-//            |___/                             
+//             __/ |
+//            |___/
 
 
 
@@ -695,7 +695,7 @@ class TagGame implements Gamemode {
         if (status.immune > 0) status.immune--;
         if (status.inactive > 0) status.inactive--;
       }
-      PlayerStatus status_it = scores.get(UUID_it); 
+      PlayerStatus status_it = scores.get(UUID_it);
       if (status_it != null && status_it.life > 0) status_it.life--;
       else finishGame();
     }
@@ -737,7 +737,7 @@ class TagGame implements Gamemode {
 
     sortPlayers();
     Leaderboard leaderboard = new Leaderboard();
-    setGamemode(new Crowning(winner, leaderboard)); 
+    setGamemode(new Crowning(winner, leaderboard));
     println("SERVER: winner: "+winner.UUID+" "+winner);
   }
 

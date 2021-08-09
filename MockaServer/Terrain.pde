@@ -10,9 +10,9 @@ HashMap<Integer, Platform> randomTerrain(int num_platforms) {
 
   // BORDERS
   platforms.put(0, new Rectangle(WIDTH/2, HEIGHT - 25, WIDTH, 50)); // base platform
-  platforms.put(1, new Rectangle(1, HEIGHT/2, 2, HEIGHT)); // left 
+  platforms.put(1, new Rectangle(1, HEIGHT/2, 2, HEIGHT)); // left
   platforms.put(2, new Rectangle(WIDTH-1, HEIGHT/2, 2, HEIGHT)); // right
-  platforms.put(3, new Rectangle(WIDTH/2, 1, WIDTH, 2)); // top 
+  platforms.put(3, new Rectangle(WIDTH/2, 1, WIDTH, 2)); // top
 
   for (int i = 0; i < num_platforms; i++) {
     platforms.put(i+4, randomPlatform());

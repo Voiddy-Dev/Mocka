@@ -12,7 +12,7 @@ import java.util.Iterator;
 DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
-final int WIDTH = 1200;
+final int WIDTH = 1200; // Okay so I guess this is kind of locked in place now?
 final int HEIGHT = 790;
 
 final int SERVER_TCP_PORT = 25577;

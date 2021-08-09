@@ -147,7 +147,7 @@ class MyRocket extends Rocket {
 
   int TOUCHING_PLATFORMS = 0;
 
-  boolean AP_ACTIVE = true;
+  boolean AP_ACTIVE = SETTING_DEFAULT_AP_STATE;
   float AP_P_COEF = 10;
   float AP_D_COEF = 1.5;
 

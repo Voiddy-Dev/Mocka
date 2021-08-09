@@ -9,8 +9,7 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-//String SERVER_IP = "localhost";
-String SERVER_IP = "192.168.1.57";
+String SERVER_IP = "localhost";
 //String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 

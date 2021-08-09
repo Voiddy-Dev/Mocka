@@ -16,10 +16,9 @@ void drawBackground() {
 
   if (frameCount==1)backgroundGraphics.background(0);
 
-  float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   backgroundGraphics.pushMatrix();
   backgroundGraphics.translate(width/2, height/2);
-  backgroundGraphics.scale(scale);
+  backgroundGraphics.scale(computeScale());
   backgroundGraphics.translate(-WIDTH/2, -HEIGHT/2);
 
   backgroundGraphics.strokeWeight(10);

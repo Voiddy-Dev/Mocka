@@ -9,6 +9,9 @@ class Player {
   int points, points_;
   int place, place_;
 
+  float x_pos;
+  float y_pos;
+
   Player(Client client_, int UUID_) {
     name = randomName();
     col = color(random(0, 255), random(0, 255), random(0, 255));
@@ -34,7 +37,7 @@ class Player {
       Player p = (Player)entry.getValue();
       if (p == this) continue;
       TCP_SEND(NOTIFY_NEW_PLAYER(p.UUID));
-      TCP_SEND(NOTIFY_PLAYER_INFO(p)); 
+      TCP_SEND(NOTIFY_PLAYER_INFO(p));
       note_missing_hole(UUID, p.UUID);
     }
   }
@@ -53,7 +56,7 @@ class Player {
   void interpretNetwork() {
     if (network_data.remaining()>0) {
       byte PACKET_ID = network_data.get();
-      println("SERVER: Reading packet from "+UUID+" PACKET: "+PACKET_ID);
+      println("SERVER: Reading packet from player; UUID: "+UUID+" PACKET_ID: "+PACKET_ID);
       if (PACKET_ID == 0) INTERPRET_SET_COLOR(network_data.getInt());
       //else if (PACKET_ID == 1) randomizeTerrain();
       else if (PACKET_ID == 2) INTERPRET_GAMEMODE_UPDATE();
@@ -62,14 +65,15 @@ class Player {
       else if (PACKET_ID == 5) note_missing_hole(network_data.getInt(), UUID);
       else if (PACKET_ID == 6) INTERPRET_MAP_CHANGE_REQUEST(network_data);
       else if (PACKET_ID == 7) INTERPRET_MAP_DELETE_REQUEST(network_data);
+      else if (PACKET_ID == 8) INTERPRET_INFORM_POS(network_data);
     }
   }
 
-  void INTERPRET_SET_COLOR(color col) { // 
+  void INTERPRET_SET_COLOR(color col) { //
     this.col = col;
     TCP_SEND_ALL_CLIENTS_EXCEPT(NOTIFY_PLAYER_INFO(this), UUID);
   }
-  void INTERPRET_SET_COLOR_ALL(color col) { // 
+  void INTERPRET_SET_COLOR_ALL(color col) { //
     this.col = col;
     TCP_SEND_ALL_CLIENTS(NOTIFY_PLAYER_INFO(this));
   }
@@ -90,7 +94,7 @@ class Player {
       String msg = getString(network_data);
       println("SERVER: CHAT "+msg);
       INTERPRET_msg(msg);
-    } 
+    }
     catch(Exception e) {
       println("Error while parsing input from chat (danger danger danger)");
       println(e);
@@ -114,7 +118,8 @@ class Player {
         if (split[0].equals("/color")) INTERPRET_SET_COLOR_ALL(COLORIFY(split[1]));
         if (split[0].equals("/ctf")) setGamemode(startCTF(args));
         if (split[0].equals("/editor")) setGamemode(new Editor());
-      } 
+        if (split[0].equals("/runner")) setGamemode(new Runner());
+      }
       catch (Exception e) {
         println("SERVER: failed to interpret command from client");
       }
@@ -132,6 +137,11 @@ class Player {
     int plat_id = data.getInt();
     platforms.remove(plat_id);
     TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_DELETE(plat_id));
+  }
+
+  void INTERPRET_INFORM_POS(ByteBuffer data) {
+    this.x_pos = data.getFloat();
+    this.y_pos = data.getFloat();
   }
 
   void setName(String name) {

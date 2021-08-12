@@ -12,7 +12,7 @@ import java.util.Iterator;
 DatagramSocket SERVER_UDP_SOCKET;
 Server SERVER_TCP_SERVER;
 
-final int WIDTH = 1200;
+final int WIDTH = 1200; // Okay so I guess this is kind of locked in place now?
 final int HEIGHT = 790;
 
 final int SERVER_TCP_PORT = 25577;
@@ -40,6 +40,7 @@ void setup() {
 
   randomizeTerrain(8);
   setGamemode(new Freeplay());
+  //setGamemode(new Runner());
 
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
   println("SERVER: Starting server");
@@ -54,6 +55,7 @@ void draw() {
     stop();
   }
   gamemode.update();
+  updateCamPos();
   removeInactivePlayers();
   updatePlayers();
   updateHoles();
@@ -77,4 +79,8 @@ InetAddress InetAddressByName(String ip) {
   catch(Exception e) {
     return null;
   }
+}
+
+void updateCamPos() {
+  if (frameCount%3==0)TCP_SEND_ALL_CLIENTS(NOTIFY_CAM_POS());
 }

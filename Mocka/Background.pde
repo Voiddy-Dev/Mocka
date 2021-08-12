@@ -16,11 +16,10 @@ void drawBackground() {
 
   if (frameCount==1)backgroundGraphics.background(0);
 
-  float scale = min(float(width)/WIDTH, float(height)/HEIGHT);
   backgroundGraphics.pushMatrix();
   backgroundGraphics.translate(width/2, height/2);
-  backgroundGraphics.scale(scale);
-  backgroundGraphics.translate(-WIDTH/2, -HEIGHT/2);
+  backgroundGraphics.scale(computeScale());
+  backgroundGraphics.translate(-cam_x_pos_smooth, -cam_y_pos_smooth);
 
   backgroundGraphics.strokeWeight(10);
   Iterator<Rocket> rockets = allRockets();
@@ -32,6 +31,14 @@ void drawBackground() {
   }
   backgroundGraphics.popMatrix();
 
+  backgroundGraphics.stroke(0);
+  backgroundGraphics.strokeWeight(1);
+  backgroundGraphics.line(0, 0, backgroundGraphics.width, 0);
+  backgroundGraphics.line(backgroundGraphics.width, 0, backgroundGraphics.width, backgroundGraphics.height);
+  backgroundGraphics.line(backgroundGraphics.width, backgroundGraphics.height, 0, backgroundGraphics.height);
+  backgroundGraphics.line(0, backgroundGraphics.height, 0, 0);
+
+  updateCameraPos();
   neonShader.set("WindowSize", float(backgroundGraphics.width), float(backgroundGraphics.height));
   neonShader.set("do1", frameCount % 8 == 0);
   neonShader.set("do2", random(1) > 0.5);

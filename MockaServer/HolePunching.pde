@@ -4,6 +4,7 @@ void note_missing_hole(int UUID_a_, int UUID_b_) {
   int UUID_a = min(UUID_a_, UUID_b_);
   int UUID_b = max(UUID_a_, UUID_b_);
   long hole = ((long)UUID_a << 32) | (long)UUID_b;
+  println("SERVER: noting missing hole between players "+ UUID_a + " and "+UUID_b);
   pending_holes.add(hole);
 }
 
@@ -12,7 +13,7 @@ void updateHoles() {
   if (still_punching) return;
   long hole = pending_holes.iterator().next();
   pending_holes.remove(hole);
-  int UUID_a_ = (int) (hole >> 32) & 0xffffff; 
+  int UUID_a_ = (int) (hole >> 32) & 0xffffff;
   int UUID_b_ = (int) hole & 0xffffffff;
   int UUID_a, UUID_b;
   if (random(1) < 0.5) {
@@ -36,16 +37,19 @@ Player H_player_a, H_player_b;
 
 void punch_hole() {
   still_punching = true;
+  println("SERVER: starting a punching...");
   DatagramSocket UDP_SOCKET_A = null, UDP_SOCKET_B = null;
   try {
     try {
       UDP_SOCKET_A = new DatagramSocket(SERVER_UDP_PORT_A_LAN);
       UDP_SOCKET_B = new DatagramSocket(SERVER_UDP_PORT_B_LAN);
-    } 
+      UDP_SOCKET_A.setSoTimeout(3000);
+      UDP_SOCKET_B.setSoTimeout(3000);
+    }
     catch(Exception e) {
       println("SERVER: ERROR: failed to open port "+SERVER_UDP_PORT_A_LAN+" / "+SERVER_UDP_PORT_B_LAN);
       throw new Exception();
-    } 
+    }
     H_player_a.TCP_SEND(NOTIFY_OPEN_UDP(SERVER_UDP_PORT_A_WAN, H_player_b.UUID));
     H_player_b.TCP_SEND(NOTIFY_OPEN_UDP(SERVER_UDP_PORT_B_WAN, H_player_a.UUID));
 
@@ -54,7 +58,7 @@ void punch_hole() {
     try {
       UDP_SOCKET_A.receive(receivePacketA);
       UDP_SOCKET_B.receive(receivePacketB);
-    } 
+    }
     catch(Exception e) {
       println("SERVER: ERROR: could not receive... timeout?");
       throw new Exception();
@@ -90,7 +94,7 @@ void punch_hole() {
       B_PRIVATE_PORT = Integer.parseInt(splitResponseB[1]);
       A_PUBLIC_PORT_STUN = Integer.parseInt(splitResponseA[2]);
       B_PUBLIC_PORT_STUN = Integer.parseInt(splitResponseB[2]);
-    } 
+    }
     catch(Exception e) {
       println("SERVER: ERROR: could not convert private IP of player to InetAddress");
       println(e);
@@ -108,9 +112,11 @@ void punch_hole() {
     println();
     println("SERVER: A private: "+A_PRIVATE_IPS_STRING+":"+A_PRIVATE_PORT);
     println("SERVER: A public:  "+A_PUBLIC_IP+":"+A_PUBLIC_PORT);
+    println("SERVER: A_IS_LOCAL: "+A_IS_LOCAL);
     println();
     println("SERVER: B private: "+B_PRIVATE_IPS_STRING+":"+B_PRIVATE_PORT);
     println("SERVER: B public:  "+B_PUBLIC_IP+":"+B_PUBLIC_PORT);
+    println("SERVER: B_IS_LOCAL: "+B_IS_LOCAL);
     println();
 
     String locdataA = A_PUBLIC_IP_ + "-" + A_PUBLIC_PORT_ADVERTISED + "-" + A_PRIVATE_IPS_STRING + "-" + A_PRIVATE_PORT + "-" + (B_IS_LOCAL ? 1 : 0) + "-" + (A_IS_LOCAL ? 1 : 0) + "-";
@@ -122,26 +128,26 @@ void punch_hole() {
 
       UDP_SOCKET_A.close();
       UDP_SOCKET_B.close();
-    } 
+    }
     catch (Exception e) {
       println("SERVER: error: could not send data thru UDP when punching holes...");
       println(e);
       throw new Exception();
     }
     println("SERVER: punched A & B, socket closing");
-  } 
+  }
   catch(Exception e) {
     println("Server: Failed to punch hole :(");
-  } 
+  }
   finally {
     try {
       UDP_SOCKET_A.close();
-    } 
+    }
     catch (Exception e) {
     }
     try {
       UDP_SOCKET_B.close();
-    } 
+    }
     catch (Exception e) {
     }
   }

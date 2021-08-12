@@ -9,8 +9,7 @@ import java.net.UnknownHostException;
 
 import java.util.Enumeration;
 
-//String SERVER_IP = "localhost";
-String SERVER_IP = "192.168.1.57";
+String SERVER_IP = "localhost";
 //String SERVER_IP = "lmhleetmcgang.ddns.net";
 int SERVER_TCP_PORT = 25577;
 
@@ -65,6 +64,13 @@ void NOTIFY_MAP_DELETE_REQUEST(int plat_id) {
   client.write(data.array());
 }
 
+void NOTIFY_POS() {
+  ByteBuffer data = ByteBuffer.allocate(9);
+  data.put((byte)8);
+  data.putFloat(myRocket.x);
+  data.putFloat(myRocket.y);
+  client.write(data.array());
+}
 
 ByteBuffer network_data = ByteBuffer.allocate(0);
 
@@ -74,7 +80,7 @@ void updateNetwork() {
 }
 
 void interpretNetwork() {
-  if (network_data.remaining()>0) {
+  while (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
     if (DEBUG_PACKETS) println("client: received from tcp server PACKET_ID: "+PACKET_ID);
     if (PACKET_ID == 0) INTERPRET_NEW_PLAYER();
@@ -89,6 +95,7 @@ void interpretNetwork() {
     if (PACKET_ID == 9) INTERPRET_RESPAWN();
     if (PACKET_ID == 10) INTERPRET_MAP_UPDATE();
     if (PACKET_ID == 11) INTERPRET_MAP_DELETE();
+    if (PACKET_ID == 12) INTERPRET_CAM_POS();
   }
 }
 
@@ -139,6 +146,7 @@ void INTERPRET_GAMEMODE_START() {
   if (MODE_ID == 4) setGamemode(new FloatGame(network_data));
   if (MODE_ID == 5) setGamemode(new CTF(network_data));
   if (MODE_ID == 6) setGamemode(new Editor(network_data));
+  if (MODE_ID == 7) setGamemode(new Runner(network_data));
 }
 
 void INTERPRET_CHAT() {
@@ -156,7 +164,8 @@ void INTERPRET_RESPAWN() {
 
 void INTERPRET_MAP_UPDATE() {
   int plat_id = network_data.getInt();
-  platforms.get(plat_id).getChanges(network_data);
+  if (platforms.containsKey(plat_id)) platforms.get(plat_id).getChanges(network_data);
+  else platforms.put(plat_id, getPlatform(network_data));
   myRocket.body.applyTorque(0); // wake
 }
 
@@ -167,6 +176,11 @@ void INTERPRET_MAP_DELETE() {
   platforms.remove(plat_id);
   myRocket.body.applyTorque(0); // wake
   if (gamemode instanceof Editor) ((Editor)gamemode).NOTIFY_platform_deleted(p);
+}
+
+void INTERPRET_CAM_POS() {
+  cam_x_pos = network_data.getFloat();
+  cam_y_pos = network_data.getFloat();
 }
 
 int SERVER_UDP_PORT;
@@ -195,51 +209,60 @@ void punch_hole() {
     byte[] sendData = (CLIENT_UDP_PRIVATE_IPS_STRING+"-"+CLIENT_UDP_PRIVATE_PORT+"-"+CLIENT_UDP_PUBLIC_PORT+"-").getBytes();
     DatagramPacket SEND_PACKET = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(SERVER_IP), SERVER_UDP_PORT);
     CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    if (DEBUG_PUNCHING) println("client: Sent packet to "+SERVER_IP+" : "+SERVER_UDP_PORT+" containing "+new String(sendData));
 
-    DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
-    CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+    try {
+      DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
+      if (DEBUG_PUNCHING) println("client: Waiting to receive data packet...");
+      CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
 
-    String[] splitResponse = new String(receivePacket.getData()).split("-");
-    InetAddress ENEMY_PUBLIC_IP = InetAddress.getByName(splitResponse[0].substring(1));
-    String ENEMY_PRIVATE_IPS_STRING = splitResponse[2];
-    String[] ENEMY_PRIVATE_IPS_STRING_SPLIT = ENEMY_PRIVATE_IPS_STRING.split(";");
-    InetAddress[] ENEMY_PRIVATE_IPS = new InetAddress[ENEMY_PRIVATE_IPS_STRING_SPLIT.length];
-    for (int i = 0; i < ENEMY_PRIVATE_IPS.length; i++) ENEMY_PRIVATE_IPS[i] = InetAddress.getByName(ENEMY_PRIVATE_IPS_STRING_SPLIT[i].substring(1));
-    int ENEMY_PUBLIC_PORT = int(splitResponse[1]);
-    int ENEMY_PRIVATE_PORT = int(splitResponse[3]);
-    boolean CLIENT_IS_LOCAL = int(splitResponse[4]) == 1;
-    boolean ENEMY_IS_LOCAL = int(splitResponse[5]) == 1;
-    if (DEBUG_PUNCHING) println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
+      String[] splitResponse = new String(receivePacket.getData()).split("-");
+      InetAddress ENEMY_PUBLIC_IP = InetAddress.getByName(splitResponse[0].substring(1));
+      String ENEMY_PRIVATE_IPS_STRING = splitResponse[2];
+      String[] ENEMY_PRIVATE_IPS_STRING_SPLIT = ENEMY_PRIVATE_IPS_STRING.split(";");
+      InetAddress[] ENEMY_PRIVATE_IPS = new InetAddress[ENEMY_PRIVATE_IPS_STRING_SPLIT.length];
+      for (int i = 0; i < ENEMY_PRIVATE_IPS.length; i++) ENEMY_PRIVATE_IPS[i] = InetAddress.getByName(ENEMY_PRIVATE_IPS_STRING_SPLIT[i].substring(1));
+      int ENEMY_PUBLIC_PORT = int(splitResponse[1]);
+      int ENEMY_PRIVATE_PORT = int(splitResponse[3]);
+      boolean CLIENT_IS_LOCAL = int(splitResponse[4]) == 1;
+      boolean ENEMY_IS_LOCAL = int(splitResponse[5]) == 1;
+      if (DEBUG_PUNCHING) println("client: server has answered with enemy's location. btw, CLIENT_IS_LOCAL = "+CLIENT_IS_LOCAL);
 
-    if (DEBUG_PUNCHING) println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
-    if (DEBUG_PUNCHING) println("client: Enemy private at "+ENEMY_PRIVATE_IPS_STRING+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
+      if (DEBUG_PUNCHING) println("client: Enemy public  at "+ENEMY_PUBLIC_IP+" / "+ENEMY_PUBLIC_PORT);
+      if (DEBUG_PUNCHING) println("client: Enemy private at "+ENEMY_PRIVATE_IPS_STRING+" / "+ENEMY_PRIVATE_PORT+" / on server LAN: "+ENEMY_IS_LOCAL);
 
-    CLIENT_UDP_PRIVATE_SOCKET.close();
+      CLIENT_UDP_PRIVATE_SOCKET.close();
 
-    EnemyRocket enemy = enemies.get(INCOMING_ENEMY_UUID);
-    DatagramSocket socket;
+      EnemyRocket enemy = enemies.get(INCOMING_ENEMY_UUID);
+      DatagramSocket socket;
 
-    if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {
-      socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IPS_STRING, ENEMY_PRIVATE_IPS, ENEMY_PRIVATE_PORT, 30, 100);
-      if (socket != null) {
-        enemy.setSocket(socket);
-        return;
+      if (CLIENT_IS_LOCAL == ENEMY_IS_LOCAL) {
+        socket = attempUDPconnection("[LAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PRIVATE_IPS_STRING, ENEMY_PRIVATE_IPS, ENEMY_PRIVATE_PORT, 30, 100);
+        if (socket != null) {
+          enemy.setSocket(socket);
+          return;
+        }
+        socket = attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP.toString(), new InetAddress[]{ENEMY_PUBLIC_IP}, ENEMY_PUBLIC_PORT, 1000, 100);
+        if (socket != null) {
+          enemy.setSocket(socket);
+          return;
+        }
+      } else {
+        socket = attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP.toString(), new InetAddress[]{ENEMY_PUBLIC_IP}, ENEMY_PUBLIC_PORT, 1000, 100);
+        if (socket != null) {
+          enemy.setSocket(socket);
+          return;
+        }
       }
-      socket = attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP.toString(), new InetAddress[]{ENEMY_PUBLIC_IP}, ENEMY_PUBLIC_PORT, 1000, 100);
-      if (socket != null) {
-        enemy.setSocket(socket);
-        return;
-      }
-    } else {
-      socket = attempUDPconnection("[WAN]", CLIENT_UDP_PRIVATE_PORT, ENEMY_PUBLIC_IP.toString(), new InetAddress[]{ENEMY_PUBLIC_IP}, ENEMY_PUBLIC_PORT, 1000, 100);
-      if (socket != null) {
-        enemy.setSocket(socket);
-        return;
-      }
+
+      //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
+      //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
     }
-
-    //SEND_PACKET = new DatagramPacket(sendData, sendData.length, ENEMY_PUBLIC_IP, ENEMY_PUBLIC_PORT);
-    //CLIENT_UDP_PRIVATE_SOCKET.send(SEND_PACKET);
+    catch(Exception e) {
+      println("client: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+      println(e);
+      NOTIFY_PUNCHING_FAILED(INCOMING_ENEMY_UUID);
+    }
   }
   catch(Exception e) {
     println("client: failed to punch hole! (yikes) Notifying server...");

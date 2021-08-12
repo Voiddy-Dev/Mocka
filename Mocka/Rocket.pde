@@ -108,8 +108,8 @@ public class Rocket {
     Vec2 pos = box2d.getBodyPixelCoord(body);
     float angle = body.getAngle();
 
-    if (pos.x > WIDTH) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-WIDTH, pos.y)), angle);
-    if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+WIDTH, pos.y)), angle);
+    //if (pos.x > WIDTH) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x-WIDTH, pos.y)), angle);
+    //if (pos.x < 0) body.setTransform(box2d.coordPixelsToWorld(new Vec2(pos.x+WIDTH, pos.y)), angle);
 
     // createExhaust
     float DIST_FROM_CENTER = 17;
@@ -147,7 +147,7 @@ class MyRocket extends Rocket {
 
   int TOUCHING_PLATFORMS = 0;
 
-  boolean AP_ACTIVE = true;
+  boolean AP_ACTIVE = SETTING_DEFAULT_AP_STATE;
   float AP_P_COEF = 10;
   float AP_D_COEF = 1.5;
 

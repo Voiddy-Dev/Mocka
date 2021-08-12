@@ -1,5 +1,10 @@
 HashMap<Integer, Platform> platforms;
 
+float cam_x_pos = WIDTH/2;
+float cam_y_pos = HEIGHT/2;
+float cam_x_pos_smooth = cam_x_pos;
+float cam_y_pos_smooth = cam_y_pos;
+
 void killTerrain() {
   for (Platform p : platforms.values()) p.killBody();
   platforms = new HashMap<Integer, Platform>(0);
@@ -29,9 +34,24 @@ HashMap<Integer, Platform> randomTerrain(int num_platforms) {
 
 Platform randomPlatform() {
   float rand = random(1);
+  if (true) return randomPolygon();
   if (rand < 0.6) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100), 0);
   else if (rand < 0.8) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 100), random(40, 100), random(TAU));
   else return new Circle(random(WIDTH), random(HEIGHT), random(40, 100));
+}
+
+Polygon randomPolygon() {
+  float center_x = random(WIDTH);
+  float center_y = random(HEIGHT);
+  int vertex_count = round(random(3, 5));
+  PVector[] vertices = new PVector[vertex_count];
+  float average_dist = random(20, 70);
+  for (int i = 0; i < vertex_count; i++) {
+    float dist = average_dist + random(-10, 20);
+    float angle = TAU*i/vertex_count + random(TAU/vertex_count);
+    vertices[i] = new PVector(center_x+dist*cos(angle), center_y+dist*sin(angle));
+  }
+  return new Polygon(vertex_count, vertices);
 }
 
 int sizePlatforms(HashMap<Integer, Platform> plats) {
@@ -62,6 +82,9 @@ Platform getPlatform(ByteBuffer data) {
   byte id = data.get();
   if (id == (byte) 0) return new Rectangle(data);
   if (id == (byte) 1) return new Circle(data);
+  if (id == (byte) 2) return new Polygon(data);
+  println("client: Unkown platform type id: "+id+" - the server is likely running a more recent version!");
+  exit();
   return null;
 }
 
@@ -144,7 +167,7 @@ class Circle extends ConcretePlatorm {
     data.putFloat(lr);
   }
   void getChanges(ByteBuffer data) {
-    byte useless = data.get(); // big phat bodge
+    byte useless = data.get(); // big phat bodge // Why is this here again? // Oh because we're just restating the ID of the platform, which we already know
     this.x = data.getFloat();
     this.y = data.getFloat();
     this.r = data.getFloat();
@@ -287,5 +310,119 @@ class Rectangle extends ConcretePlatorm {
     PVector relpos = new PVector(x - this.lx, y - this.ly);
     relpos.rotate(-langle);
     return abs(relpos.x) < lw/2 && abs(relpos.y) < lh/2;
+  }
+}
+
+class Polygon implements Platform {
+  int vertexCount; // Sent as a byte
+  PVector[] vertices;
+  PVector[] lvertices;
+  Body body;
+
+  Polygon(ByteBuffer data) {
+    vertexCount = (int) data.get();
+    vertices = new PVector[vertexCount];
+    lvertices = new PVector[vertexCount];
+    for (int i = 0; i < vertexCount; i++) {
+      vertices[i] = new PVector(data.getFloat(), data.getFloat());
+      lvertices[i] = vertices[i].copy();
+    }
+    makeBody();
+  }
+  Polygon(int vertexCount, PVector[] vertices) {
+    this.vertexCount = vertexCount;
+    this.vertices = vertices;
+    this.lvertices = new PVector[vertexCount];
+    for (int i = 0; i < vertexCount; i++) lvertices[i] = vertices[i].copy();
+    makeBody();
+  }
+  void makeBody() {
+    // Define the polygon
+    PolygonShape sd = new PolygonShape();
+    // Figure out the box2d coordinates
+
+    Vec2[] vecs = new Vec2[vertexCount];
+    for (int i = 0; i < vertexCount; i++) vecs[i] = box2d.coordPixelsToWorld(vertices[i]);
+    sd.set(vecs, vertexCount);
+
+    // Create the body
+    BodyDef bd = new BodyDef();
+    bd.type = BodyType.STATIC;
+    //    bd.angle = -angle;
+    //bd.position.set(box2d.coordPixelsToWorld(x, y));
+    body = box2d.createBody(bd);
+
+    // Attached the shape to the body using a Fixture
+    body.createFixture(sd, 1);
+    body.setUserData(this);
+  }
+  void putData(ByteBuffer data) {
+    data.put((byte)2);
+    data.put((byte)vertexCount);
+    for (PVector v : vertices) {
+      data.putFloat(v.x);
+      data.putFloat(v.y);
+    }
+  }
+  void putLocalData(ByteBuffer data) {
+    data.put((byte)2);
+    data.put((byte)vertexCount);
+    for (PVector v : lvertices) {
+      data.putFloat(v.x);
+      data.putFloat(v.y);
+    }
+  }
+  void getChanges(ByteBuffer data) {
+    byte useless = data.get(); // this again came to bite me
+    vertexCount = (int) data.get();
+    vertices = new PVector[vertexCount];
+    //lvertices = new PVector[vertexCount]; // hum... I guess we should keep our own changes right // Yep, for sure. Testing confirms. Otherwise leads to drifting over time
+    for (int i = 0; i < vertexCount; i++) vertices[i] = new PVector(data.getFloat(), data.getFloat());
+    killBody();
+    makeBody();
+  }
+  int size() {
+    return 2 + 8 * vertexCount;
+  }
+
+  void killBody() {
+    box2d.destroyBody(body);
+  }
+  void show() {
+    beginShape();
+    if (changes)for (PVector v : lvertices)vertex(v.x, v.y);
+    else for (PVector v : vertices)vertex(v.x, v.y);
+    endShape();
+  }
+
+  boolean isTouching(float x, float y) {
+    PVector center = new PVector(0, 0); // This is the reference frame I guess
+    for (PVector v : vertices) center.add(v);
+    center.mult(1.0/vertexCount); // This is not a fool proof solution. Not all polygons are guarenteed to be convex. This will lead to glithes.
+    PVector m = new PVector(x, y).sub(center);
+    for (int i = 0; i < vertexCount; i++) {
+      PVector va = PVector.sub(vertices[i], center);
+      PVector vb = PVector.sub(vertices[(i+1)%vertexCount], center);
+      if (PVector.dot(va.copy().rotate(HALF_PI), m) < 0) continue;
+      if (PVector.dot(vb.copy().rotate(HALF_PI), m) > 0) continue;
+      if (PVector.dot(PVector.sub(vb, va).rotate(HALF_PI), PVector.sub(m, va)) < 0) continue;
+      return true;
+    }
+    return false;
+  }
+  //void moveBy(float x, float y);
+
+  boolean changes = false;
+  void noteChanges() {
+    //changes = true; // Or not? seems to make this crash...
+  }
+  void noteUnchanges() {
+    changes = false;
+  }
+  void moveBy(float x, float y) {
+    PVector move = new PVector(x, y);
+    if (changes) for (int i = 0; i < vertexCount; i++) lvertices[i].add(move);
+    else for (int i = 0; i < vertexCount; i++) lvertices[i] = PVector.add(vertices[i], move);
+    changes = true;
   }
 }

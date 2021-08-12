@@ -192,7 +192,7 @@ class Editor implements Gamemode {
   }
   void madeLocalChange(Platform p) {
     p.noteChanges();
-    int plat_id = -1;
+    int plat_id = -1; // Wow, this is dumb. Shouldn't platforms have their own ID's?
     for (Map.Entry<Integer, Platform> e : platforms.entrySet()) if (e.getValue() == p) {
       plat_id = e.getKey();
       break;

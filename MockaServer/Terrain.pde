@@ -8,6 +8,14 @@ void randomizeTerrain(int num_platforms) {
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
 }
 
+int unusedPlatformId() {
+  int id;
+  do {
+    id = round(random(Integer.MIN_VALUE, 0));
+  } while (platforms.containsKey(id));
+  return id;
+}
+
 HashMap<Integer, Platform> emptyTerrain() {
   HashMap<Integer, Platform> platforms = new HashMap<Integer, Platform>(0);
   return platforms;

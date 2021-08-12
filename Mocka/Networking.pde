@@ -164,7 +164,8 @@ void INTERPRET_RESPAWN() {
 
 void INTERPRET_MAP_UPDATE() {
   int plat_id = network_data.getInt();
-  platforms.get(plat_id).getChanges(network_data);
+  if (platforms.containsKey(plat_id)) platforms.get(plat_id).getChanges(network_data);
+  else platforms.put(plat_id, getPlatform(network_data));
   myRocket.body.applyTorque(0); // wake
 }
 

@@ -836,9 +836,15 @@ class TagGame implements Gamemode {
 // |_|  \_\__,_|_| |_|_| |_|\___|_|
 
 class Runner implements Gamemode {
+  final int CHUNK_SIZE = 60;
+  int leftmost = 0;
+  int rightmost = 0; // [)
+  HashMap<Integer, Integer[]> chunks;
   Runner() {
     platforms = emptyTerrain();
     TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
+    chunks = new HashMap<Integer, Integer[]>();
+    update();
   }
   byte GAME_ID() {
     return 7;
@@ -854,6 +860,74 @@ class Runner implements Gamemode {
     cam_x_pos = 0;
     for (Player p : players.values()) cam_x_pos += p.x_pos;
     cam_x_pos /= players.size();
+
+    int l = floor((cam_x_pos - WIDTH) / CHUNK_SIZE);
+    int r = ceil((cam_x_pos + WIDTH) / CHUNK_SIZE);
+    while (rightmost < r) {
+      addSliceAt(rightmost);
+      rightmost++;
+    }
+    while (rightmost > r) {
+      rightmost--;
+      removeSliceAt(rightmost);
+    }
+    while (leftmost > l) {
+      leftmost--;
+      addSliceAt(leftmost);
+    }
+    while (leftmost < l) {
+      removeSliceAt(leftmost);
+      leftmost++;
+    }
+  }
+  void removeSliceAt(int k) {
+    //if (!chunks.containsKey(k)) return;
+    Integer[] ids = chunks.get(k);
+    for (Integer id : ids) {
+      platforms.remove(id);
+      TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_DELETE(id));
+    }
+    chunks.remove(k);
+  }
+  void addSliceAt(int k) {
+    float x1 = k * CHUNK_SIZE;
+    float x2 = x1 + CHUNK_SIZE;
+    float m1 = HEIGHT*noise(x1*0.002, 0);
+    float m2 = HEIGHT*noise(x2*0.002, 0);
+    float r1 = map(noise(0, x1*0.001), 0, 1, 50, 200);
+    float r2 = map(noise(0, x2*0.001), 0, 1, 50, 200);
+    Platform[] plts = new Platform[2];
+    PVector[] vertices1 = {
+      new PVector(x1, HEIGHT),
+      new PVector(x2, HEIGHT),
+      new PVector(x2, m2+r2),
+      new PVector(x1, m1+r1)
+    };
+    PVector[] vertices2 = {
+      new PVector(x1, 0),
+      new PVector(x2, 0),
+      new PVector(x2, m2-r2),
+      new PVector(x1, m1-r1)
+    };
+    plts[0] = new Polygon(vertices1.length, vertices1);
+    plts[1] = new Polygon(vertices2.length, vertices2);
+    addSlice(k, plts);
+  }
+  void addSliceAt_randomRects(int k) {
+    float x = k * CHUNK_SIZE;
+    Platform[] plts = new Platform[1];
+    plts[0] = new Rectangle(x, HEIGHT*3.0/4, CHUNK_SIZE, random(50, 150));
+    addSlice(k, plts);
+  }
+  void addSlice(int k, Platform[] plts) {
+    //?
+    Integer[] ids = new Integer[plts.length];
+    for (int i = 0; i < plts.length; i++) {
+      ids[i] = unusedPlatformId();
+      platforms.put(ids[i], plts[i]);
+      TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_UPDATE(ids[i]));
+    }
+    chunks.put(k, ids);
   }
   void playerAdd(Player p) {
   }

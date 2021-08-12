@@ -8,6 +8,11 @@ void randomizeTerrain(int num_platforms) {
   TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
 }
 
+HashMap<Integer, Platform> emptyTerrain() {
+  HashMap<Integer, Platform> platforms = new HashMap<Integer, Platform>(0);
+  return platforms;
+}
+
 HashMap<Integer, Platform> randomTerrain(int num_platforms) {
   HashMap<Integer, Platform> platforms = new HashMap<Integer, Platform>(4+num_platforms);
 

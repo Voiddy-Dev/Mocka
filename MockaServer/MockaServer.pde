@@ -40,6 +40,7 @@ void setup() {
 
   randomizeTerrain(8);
   setGamemode(new Freeplay());
+  //setGamemode(new Runner());
 
   SERVER_TCP_SERVER = new Server(this, SERVER_TCP_PORT);
   println("SERVER: Starting server");
@@ -81,9 +82,5 @@ InetAddress InetAddressByName(String ip) {
 }
 
 void updateCamPos() {
-  cam_x_pos++;
-  //if (cam_x_pos>WIDTH*3.0/4)cam_x_pos = WIDTH/4.0;
-  if (frameCount % 100 > 50) cam_x_pos = WIDTH/4.0;
-  else cam_x_pos = 3*WIDTH/4.0;
-  if (frameCount%5==0)TCP_SEND_ALL_CLIENTS(NOTIFY_CAM_POS());
+  if (frameCount%3==0)TCP_SEND_ALL_CLIENTS(NOTIFY_CAM_POS());
 }

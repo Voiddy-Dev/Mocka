@@ -80,7 +80,7 @@ void updateNetwork() {
 }
 
 void interpretNetwork() {
-  if (network_data.remaining()>0) {
+  while (network_data.remaining()>0) {
     byte PACKET_ID = network_data.get();
     if (DEBUG_PACKETS) println("client: received from tcp server PACKET_ID: "+PACKET_ID);
     if (PACKET_ID == 0) INTERPRET_NEW_PLAYER();
@@ -146,6 +146,7 @@ void INTERPRET_GAMEMODE_START() {
   if (MODE_ID == 4) setGamemode(new FloatGame(network_data));
   if (MODE_ID == 5) setGamemode(new CTF(network_data));
   if (MODE_ID == 6) setGamemode(new Editor(network_data));
+  if (MODE_ID == 7) setGamemode(new Runner(network_data));
 }
 
 void INTERPRET_CHAT() {

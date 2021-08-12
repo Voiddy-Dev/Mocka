@@ -32,11 +32,26 @@ HashMap<Integer, Platform> randomTerrain(int num_platforms) {
   return platforms;
 }
 
-Platform randomPlatform() { // Update this to code from Server
+Platform randomPlatform() {
   float rand = random(1);
+  if (true) return randomPolygon();
   if (rand < 0.6) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 200), random(40, 100), 0);
   else if (rand < 0.8) return new Rectangle(random(WIDTH), random(HEIGHT), random(40, 100), random(40, 100), random(TAU));
   else return new Circle(random(WIDTH), random(HEIGHT), random(40, 100));
+}
+
+Polygon randomPolygon() {
+  float center_x = random(WIDTH);
+  float center_y = random(HEIGHT);
+  int vertex_count = round(random(3, 5));
+  PVector[] vertices = new PVector[vertex_count];
+  float average_dist = random(20, 70);
+  for (int i = 0; i < vertex_count; i++) {
+    float dist = average_dist + random(-10, 20);
+    float angle = TAU*i/vertex_count + random(TAU/vertex_count);
+    vertices[i] = new PVector(center_x+dist*cos(angle), center_y+dist*sin(angle));
+  }
+  return new Polygon(vertex_count, vertices);
 }
 
 int sizePlatforms(HashMap<Integer, Platform> plats) {

@@ -1100,3 +1100,36 @@ class TagGame implements Gamemode {
   void kill() {
   }
 }
+
+//  _____
+// |  __ \
+// | |__) |   _ _ __  _ __   ___ _ __
+// |  _  / | | | '_ \| '_ \ / _ \ '__|
+// | | \ \ |_| | | | | | | |  __/ |
+// |_|  \_\__,_|_| |_|_| |_|\___|_|
+
+class Runner implements Gamemode {
+  Runner(ByteBuffer data) {
+  }
+  byte GAME_ID() {
+    return 7;
+  }
+  void update() {
+  }
+  void respawn() {
+  }
+  void beginContact(Contact cp) {
+  }
+  void endContact(Contact cp) {
+  }
+  void INTERPRET(ByteBuffer data) {
+  }
+  void hud() {
+  }
+  void decoratePre(Rocket r) {
+  }
+  void decoratePost(Rocket r) {
+  }
+  void kill() {
+  }
+}

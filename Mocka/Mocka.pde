@@ -31,7 +31,7 @@ void setup() {
   setGamemode(new Disconnected());
   setupBox2D();
   setupNetworking();
-  platforms = randomTerrain(10);
+  platforms = randomTerrain(0);
   myRocket = new MyRocket(1, -2);
   setupBackground();
 
@@ -82,7 +82,7 @@ void drawGame() {
   myRocket.interactions();
   updateEnemies();
   box2d.step();
-  if (frameCount % 10 == 0)NOTIFY_POS();
+  if (frameCount % 3 == 0)NOTIFY_POS();
   gamemode.update();
   informEnemies();
 

@@ -827,3 +827,38 @@ class TagGame implements Gamemode {
     }
   }
 }
+
+//  _____
+// |  __ \
+// | |__) |   _ _ __  _ __   ___ _ __
+// |  _  / | | | '_ \| '_ \ / _ \ '__|
+// | | \ \ |_| | | | | | | |  __/ |
+// |_|  \_\__,_|_| |_|_| |_|\___|_|
+
+class Runner implements Gamemode {
+  Runner() {
+    platforms = emptyTerrain();
+    TCP_SEND_ALL_CLIENTS(NOTIFY_TERRAIN(platforms));
+  }
+  byte GAME_ID() {
+    return 7;
+  }
+  int PACKET_SIZE() {
+    return 0;
+  }
+  void PUT_DATA(ByteBuffer data) {
+  }
+  void INTERPRET(Player p, ByteBuffer data) {
+  }
+  void update() {
+    cam_x_pos = 0;
+    for (Player p : players.values()) cam_x_pos += p.x_pos;
+    cam_x_pos /= players.size();
+  }
+  void playerAdd(Player p) {
+  }
+  void playerRemove(Player p) {
+  }
+  void respawn(Player p) {
+  }
+}

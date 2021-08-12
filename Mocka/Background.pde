@@ -38,6 +38,7 @@ void drawBackground() {
   backgroundGraphics.line(backgroundGraphics.width, backgroundGraphics.height, 0, backgroundGraphics.height);
   backgroundGraphics.line(0, backgroundGraphics.height, 0, 0);
 
+  updateCameraPos();
   neonShader.set("WindowSize", float(backgroundGraphics.width), float(backgroundGraphics.height));
   neonShader.set("do1", frameCount % 8 == 0);
   neonShader.set("do2", random(1) > 0.5);

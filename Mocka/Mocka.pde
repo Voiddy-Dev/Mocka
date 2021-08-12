@@ -86,9 +86,11 @@ void drawGame() {
   gamemode.update();
   informEnemies();
 
-  updateCameraPos();
   if (SETTING_DO_NEON_BACKGROUND) drawBackground();
-  else background(0);
+  else {
+    background(0);
+    updateCameraPos();
+  }
 
   translate(width/2, height/2);
   scale(computeScale());

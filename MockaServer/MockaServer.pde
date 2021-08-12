@@ -82,6 +82,8 @@ InetAddress InetAddressByName(String ip) {
 
 void updateCamPos() {
   cam_x_pos++;
-  if (cam_x_pos>WIDTH*3.0/4)cam_x_pos = WIDTH/4.0;
+  //if (cam_x_pos>WIDTH*3.0/4)cam_x_pos = WIDTH/4.0;
+  if (frameCount % 100 > 50) cam_x_pos = WIDTH/4.0;
+  else cam_x_pos = 3*WIDTH/4.0;
   if (frameCount%5==0)TCP_SEND_ALL_CLIENTS(NOTIFY_CAM_POS());
 }

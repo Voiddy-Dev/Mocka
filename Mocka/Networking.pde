@@ -180,7 +180,7 @@ void INTERPRET_MAP_DELETE() {
 
 void INTERPRET_CAM_POS() {
   cam_x_pos = network_data.getFloat();
-  cam_y_pos = network_data.getFloat();
+  cam_y_pos = network_data.getFloat(); // Buffer underflow exception x3
 }
 
 int SERVER_UDP_PORT;
@@ -215,6 +215,7 @@ void punch_hole() {
       DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
       if (DEBUG_PUNCHING) println("client: Waiting to receive data packet...");
       CLIENT_UDP_PRIVATE_SOCKET.receive(receivePacket);
+      if (DEBUG_PUNCHING) println("client: Response data packet received.");
 
       String[] splitResponse = new String(receivePacket.getData()).split("-");
       InetAddress ENEMY_PUBLIC_IP = InetAddress.getByName(splitResponse[0].substring(1));

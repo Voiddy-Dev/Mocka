@@ -60,7 +60,7 @@ void punch_hole() {
       UDP_SOCKET_B.receive(receivePacketB);
     }
     catch(Exception e) {
-      println("SERVER: ERROR: could not receive... timeout?");
+      println("SERVER: ERROR: could not receive... timeout?"); // Issue here...
       throw new Exception();
     }
 

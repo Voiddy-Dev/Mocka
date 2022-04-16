@@ -79,7 +79,7 @@ HashMap<Integer, Platform> getPlatforms(ByteBuffer data) {
 }
 
 Platform getPlatform(ByteBuffer data) {
-  byte id = data.get();
+  byte id = data.get(); // BufferUnderflowException
   if (id == (byte) 0) return new Rectangle(data);
   if (id == (byte) 1) return new Circle(data);
   if (id == (byte) 2) return new Polygon(data);
@@ -324,7 +324,7 @@ class Polygon implements Platform {
     vertices = new PVector[vertexCount];
     lvertices = new PVector[vertexCount];
     for (int i = 0; i < vertexCount; i++) {
-      vertices[i] = new PVector(data.getFloat(), data.getFloat());
+      vertices[i] = new PVector(data.getFloat(), data.getFloat()); // BufferUnderflowException x2
       lvertices[i] = vertices[i].copy();
     }
     makeBody();

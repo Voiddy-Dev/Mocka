@@ -863,6 +863,8 @@ class Runner implements Gamemode {
 
     int l = floor((cam_x_pos - WIDTH) / CHUNK_SIZE);
     int r = ceil((cam_x_pos + WIDTH) / CHUNK_SIZE);
+    // int l = floor((cam_x_pos - WIDTH/3.0) / CHUNK_SIZE);
+    // int r = ceil((cam_x_pos + WIDTH/3.0) / CHUNK_SIZE);
     while (rightmost < r) {
       addSliceAt(rightmost);
       rightmost++;
@@ -883,7 +885,7 @@ class Runner implements Gamemode {
   void removeSliceAt(int k) {
     //if (!chunks.containsKey(k)) return;
     Integer[] ids = chunks.get(k);
-    for (Integer id : ids) {
+    for (Integer id : ids) { // NullPointerException x2
       platforms.remove(id);
       TCP_SEND_ALL_CLIENTS(NOTIFY_MAP_DELETE(id));
     }
